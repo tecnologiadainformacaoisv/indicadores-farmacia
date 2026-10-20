@@ -55,6 +55,7 @@ body { background: var(--bg); color: var(--txt); font-family: var(--font); font-
 }
 .nav-item:hover { color: var(--txt); background: rgba(255,255,255,.03); }
 .nav-item.active { color: var(--teal); border-left-color: var(--teal); background: rgba(0,201,177,.07); }
+a.nav-item { text-decoration: none; }
 .nav-item .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 
 /* main */

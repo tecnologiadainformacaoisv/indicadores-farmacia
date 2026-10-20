@@ -48,6 +48,20 @@
     padding-bottom: 0;
   }
 
+  .header-actions { display: flex; align-items: center; gap: 12px; }
+
+  .btn-home {
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--accent-teal);
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .btn-home:hover { border-color: var(--accent-teal); }
+
   .logo-area h1 {
     font-size: 18px;
     font-weight: 700;

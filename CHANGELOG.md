@@ -1,5 +1,9 @@
 # Changelog – Indicadores da Farmácia UPA Centro
 
+## v0.1.1 – 2026-10-20
+### Adicionado
+- Botão "Voltar ao início" nas duas telas
+
 ## v0.1.0 – 2026-10-20
 ### Adicionado
 - Dashboard de indicadores (`dashboard.html`) com abas Clínica e Logística
