@@ -1,16 +1,18 @@
 # Changelog – Indicadores da Farmácia UPA Centro
 
-## v0.1.1 – 2026-10-20
+## v0.0.1 – 2026-10-20
 ### Adicionado
-- Botão "Voltar ao início" nas duas telas
-
-## v0.1.0 – 2026-10-20
-### Adicionado
+- Página inicial (`index.html`) com acesso ao acompanhamento mensal e ao dashboard
 - Dashboard de indicadores (`dashboard.html`) com abas Clínica e Logística
 - Tela de acompanhamento mensal com metas (`indicadores.html`), persistência em `localStorage`
-- Planilha-fonte dos relatórios em `data/`
+- Botão "Voltar ao início" em todas as telas
+- Versão visível no cabeçalho e no rodapé (fonte única em `js/version.js`)
+- Cabeçalho com logo do ISV e rodapé institucional
+- Planilha-fonte dos relatórios em `data/` (fora do git)
 
 ### Alterado
+- Interface padronizada no visual ISV: tema claro, paleta institucional, Segoe UI e Manrope, foco visível, alvos de toque maiores
+- Menu lateral do acompanhamento vira barra horizontal no celular
 - Projeto reorganizado no padrão do setor: HTMLs renomeados, CSS e JS extraídos para `css/` e `js/`
 - Adicionados `CLAUDE.md`, `README.md`, `CHANGELOG.md` e `.gitignore`
 
