@@ -1,0 +1,108 @@
+# Briefing — Indicadores da Farmácia
+
+> Definido em reunião com a coordenadora farmacêutica do ISV (Tereza) em 2026-10-20.
+> Documento de referência para o desenvolvimento. Mudanças de regra devem ser registradas aqui.
+
+---
+
+## Objetivo
+
+Permitir que os coordenadores farmacêuticos das unidades de saúde lancem, todo mês, os indicadores da farmácia, e que a coordenadora farmacêutica do Instituto acompanhe todas as unidades num só lugar.
+
+## Perfis
+
+| Perfil | Quem é | O que faz |
+|---|---|---|
+| **Tereza** (administradora) | Coordenadora farmacêutica do Instituto | Acompanha todas as unidades, define as metas, cadastra usuários, atende pedidos de correção. **Não lança dados.** |
+| **Coordenador** | Coordenador farmacêutico de uma unidade | Lança os dados da própria unidade e vê só a própria unidade. |
+
+### Permissões
+
+| Ação | Tereza | Coordenador |
+|---|---|---|
+| Lançar dados do mês | — | só a própria unidade |
+| Ver dashboard | todas as unidades e consolidado | só a própria unidade |
+| Ver metas | todas | da própria unidade |
+| Alterar metas | sim | não |
+| Corrigir mês fechado | sim (a pedido) | não, só solicita |
+| Cadastrar usuários e unidades | sim | não |
+
+## Login
+
+- **Usuário e senha criados pelo sistema** para todos (os coordenadores não têm e-mail institucional).
+- A Tereza cadastra cada coordenador e a unidade dele, e pode redefinir senhas.
+- Primeiro acesso obriga a troca da senha provisória.
+- Senhas guardadas protegidas (hash), nunca em texto. A permissão é conferida no servidor a cada ação, não só na tela.
+
+## Lançamento mensal
+
+**Os dados lançados são sempre do mês que fechou.**
+
+- Durante um mês, fica aberto para lançamento **apenas o mês anterior**.
+  - Exemplo: em **outubro**, os coordenadores preenchem **setembro**.
+  - Na virada para **novembro**, o sistema cria **outubro**, abre outubro para lançamento e **bloqueia setembro**.
+- Meses bloqueados continuam **visíveis**, só não editáveis.
+- A coluna do mês é criada automaticamente na virada do mês, sem depender de alguém lançar.
+- Prazo: o mês inteiro seguinte. Perdeu a virada, o mês bloqueia e só a Tereza pode lançar ou corrigir.
+
+### O que é lançado
+
+Ao clicar em **Lançar dados**, o coordenador preenche duas partes:
+
+1. **Clínica Geral** — conciliações, prescrições analisadas, PRM, intervenções aceitas, altas. Grava numa base central do Instituto.
+2. **Logística Geral** — grava na **planilha da unidade** na nuvem (conta do Instituto), na coluna do mês.
+
+### Correção
+
+- Depois de salvo, o mês fica com o coordenador apenas até o bloqueio da virada. Mês bloqueado só muda **com pedido à Tereza**.
+- O coordenador usa **Solicitar correção** com justificativa. A Tereza vê o pedido, corrige e o sistema registra quem alterou e quando.
+
+## Metas
+
+- Definidas pela Tereza, **uma por unidade**.
+- Cada unidade nova nasce com as metas padrão atuais; a Tereza ajusta quando quiser.
+
+## Unidades e planilhas
+
+Lista oficial e apelidos em [`../../UNIDADES-ISV.md`](../../UNIDADES-ISV.md).
+
+| Município | Unidade | Modelo de planilha | Fase |
+|---|---|---|---|
+| Caucaia | UPA Luiz Nerys (UPA Centro) | UPA | **inicial** |
+| Caucaia | UPA Jurema | UPA | **inicial** |
+| Caucaia | Hospital Municipal Abelardo Gadelha da Rocha (HMAGR) | Hospital | posterior |
+| Caucaia | Hospital e Maternidade Santa Terezinha (HMST) | Maternidade | posterior |
+
+Expansão: **Caucaia** (piloto) → **Maracanaú** → demais municípios.
+
+## Arquitetura proposta
+
+```
+ Site (GitHub Pages)            Apps Script (API do sistema)        Google Drive do Instituto
+ ────────────────────           ────────────────────────────        ─────────────────────────
+ Login usuário/senha ─────────► confere senha, gera sessão ────────► [Config] Usuários
+ Lançar dados                                                        [Config] Unidades
+   • Clínica Geral ───────────► valida perfil, unidade e mês ──────► [Base Clínica]
+   • Logística Geral ─────────► acha a planilha da unidade ────────► Planilha da unidade
+                                e a coluna do mês                    (modelo UPA)
+ Metas (só Tereza) ───────────► só administradora grava ───────────► [Config] Metas
+ Dashboard ◄──────────────────── devolve só o que o perfil pode ver
+                                Rotina no dia 1: cria a coluna do mês que fechou,
+                                abre esse mês e bloqueia o anterior
+```
+
+## Roteiro
+
+| Versão | Entrega |
+|---|---|
+| v0.1.0 | Login com usuário e senha, perfis e unidades; tela muda conforme o perfil |
+| v0.2.0 | Clínica Geral grava na nuvem; metas por unidade, editáveis só pela Tereza |
+| v0.3.0 | Logística grava na planilha da unidade (modelo UPA); abertura e bloqueio automáticos do mês |
+| v0.4.0 | Dashboard com dados reais, filtrado por perfil; pedidos de correção |
+| v1.0.0 | Piloto validado em Caucaia (UPAs) |
+| depois | Modelos Hospital e Maternidade; Maracanaú; demais municípios |
+
+## Em aberto
+
+- Mapear a planilha da UPA Centro (abas MEDICAMENTOS e MATERIAIS) para os campos de Logística Geral.
+- Como a Tereza quer ser avisada dos pedidos de correção (só no sistema, ou também por e-mail).

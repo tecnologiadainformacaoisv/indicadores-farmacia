@@ -58,9 +58,10 @@ function avg(arr) {
 
 // ── Colour helpers ─────────────────────────────────────────────
 const COL = {
-  teal:   '#1e5f8a', blue: '#2980b9', amber: '#d68910',
-  rose:   '#c0392b', purple: '#7d5ba6', green: '#27ae60',
-  txt2:   '#64748b', bd: '#dce6f0',
+  teal:   '#2e86c1', blue: '#17a2b8', amber: '#e0951a',
+  rose:   '#d9534f', purple: '#8e6bbf', green: '#2eaf68',
+  get txt2() { return themeVar('--chart-text'); },
+  get bd()   { return themeVar('--chart-border'); },
 };
 
 function makeGrad(ctx, hex) {
@@ -75,15 +76,15 @@ const baseOpts = (yMax) => ({
   plugins: {
     legend: { display: false },
     tooltip: {
-      backgroundColor: '#ffffff', borderColor: '#dce6f0', borderWidth: 1,
-      titleColor: '#0a3d62', bodyColor: '#2c3e50', padding: 10,
+      backgroundColor: themeVar('--chart-bg'), borderColor: themeVar('--chart-border'), borderWidth: 1,
+      titleColor: themeVar('--chart-title'), bodyColor: themeVar('--chart-body'), padding: 10,
       callbacks: { label: ctx => ` ${ctx.raw !== null ? ctx.raw.toFixed(1) + '%' : '—'}` }
     }
   },
   scales: {
     x: { grid: { color: 'transparent' }, ticks: { color: COL.txt2, font: { size: 11 } }, border: { color: COL.bd } },
     y: {
-      grid: { color: 'rgba(220,230,240,.9)' },
+      grid: { color: themeVar('--chart-grid') },
       ticks: { color: COL.txt2, font: { size: 11 }, callback: v => v + '%' },
       border: { dash: [3, 3], color: 'transparent' },
       ...(yMax !== undefined ? { max: yMax } : {})
@@ -122,7 +123,7 @@ function lineDS(label, data, color) {
     backgroundColor: ctx => makeGrad(ctx.chart.ctx, color),
     fill: true, tension: 0.4,
     pointBackgroundColor: data.map(v => v === null ? 'transparent' : color),
-    pointBorderColor: '#ffffff', pointBorderWidth: 2,
+    pointBorderColor: themeVar('--chart-bg'), pointBorderWidth: 2,
     pointRadius: data.map(v => v === null ? 0 : 4),
     pointHoverRadius: 7,
     spanGaps: false,

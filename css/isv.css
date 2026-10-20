@@ -3,8 +3,57 @@
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap');
 
 :root {
+  color-scheme: light;
   --font-title: 'Manrope', 'Segoe UI', system-ui, sans-serif;
   --text-soft: #64748b; /* texto pequeno: contraste melhor que o muted padrão */
+
+  /* tokens semânticos (o tema escuro sobrescreve todos) */
+  --title: #0a3d62;
+  --tint: #eaf4fb;
+  --soft: #f6f9fc;
+  --input-bg: #ffffff;
+  --input-bd: #b8c7d6;
+  --c-ok: #1e8449;   --ok-bg: #e6f4ec;
+  --c-warn: #b9770e; --warn-bg: #fef5e7; --warn-bd: #f8d9a0;
+  --c-err: #c0392b;  --err-bg: #fdecea;  --err-bd: #f5c6c0;
+  --alert-err-text: #922b21;
+  --alert-warn-text: #7e5109;
+
+  /* gráficos (Chart.js lê estes valores via themeVar) */
+  --chart-text: #64748b;
+  --chart-border: #dce6f0;
+  --chart-grid: rgba(220, 230, 240, .9);
+  --chart-bg: #ffffff;
+  --chart-title: #0a3d62;
+  --chart-body: #2c3e50;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --instituto-bg: #0e1a26;
+  --instituto-surface: #15283a;
+  --instituto-text: #e3ebf3;
+  --instituto-border: #27405a;
+  --instituto-shadow: 0 2px 12px rgba(0, 0, 0, .35);
+  --text-soft: #9fb0c1;
+
+  --title: #8fc7f0;
+  --tint: #1d3a56;
+  --soft: #1a3045;
+  --input-bg: #0e1a26;
+  --input-bd: #3a5774;
+  --c-ok: #5fd08e;   --ok-bg: rgba(46, 175, 104, .16);
+  --c-warn: #f0b44f; --warn-bg: rgba(224, 149, 26, .16); --warn-bd: rgba(240, 180, 79, .35);
+  --c-err: #f08a85;  --err-bg: rgba(217, 83, 79, .16);   --err-bd: rgba(240, 138, 133, .35);
+  --alert-err-text: #f5b7b4;
+  --alert-warn-text: #f3cd8a;
+
+  --chart-text: #9fb0c1;
+  --chart-border: #27405a;
+  --chart-grid: rgba(39, 64, 90, .8);
+  --chart-bg: #15283a;
+  --chart-title: #8fc7f0;
+  --chart-body: #e3ebf3;
 }
 
 * { margin: 0; padding: 0; }
@@ -44,6 +93,12 @@ h1, h2, h3 { font-family: var(--font-title); }
 }
 .header-btn:hover { background: rgba(255, 255, 255, .12); }
 
+button.header-btn { background: none; font-family: inherit; cursor: pointer; gap: 8px; }
+.theme-toggle svg { width: 18px; height: 18px; flex-shrink: 0; }
+.theme-toggle .icon-sun { display: none; }
+:root[data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+:root[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+
 .version-badge {
   display: inline-flex; align-items: center;
   min-height: 28px;
@@ -74,7 +129,7 @@ h1, h2, h3 { font-family: var(--font-title); }
   transition: border-color .2s ease, transform .2s ease;
 }
 .home-card:hover { border-color: var(--instituto-secondary); transform: translateY(-2px); }
-.home-card h2 { font-size: 18px; color: var(--instituto-primary); margin-bottom: 6px; }
+.home-card h2 { font-size: 18px; color: var(--title); margin-bottom: 6px; }
 .home-card p { color: var(--text-soft); font-size: 14px; }
 
 :focus-visible { outline: 3px solid var(--instituto-secondary); outline-offset: 2px; }

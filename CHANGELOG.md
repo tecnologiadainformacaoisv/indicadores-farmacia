@@ -1,5 +1,14 @@
 # Changelog – Indicadores da Farmácia UPA Centro
 
+## Não lançado
+### Adicionado
+- Tema escuro com botão de troca no cabeçalho das três telas (escolha salva no navegador)
+- `docs/BRIEFING.md` com perfis, fluxo mensal, metas e roteiro definidos com a coordenação farmacêutica
+
+### Alterado
+- Cores das séries dos gráficos ajustadas para funcionar nos dois temas
+- Ícone de engrenagem de volta no botão "Metas"
+
 ## v0.0.1 – 2026-10-20
 ### Adicionado
 - Página inicial (`index.html`) com acesso ao acompanhamento mensal e ao dashboard
@@ -17,3 +26,5 @@
 - Adicionados `CLAUDE.md`, `README.md`, `CHANGELOG.md` e `.gitignore`
 
 - Fluxo 
+coordenador da farmacia
+

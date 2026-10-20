@@ -3,19 +3,19 @@
 :root {
   --bg: var(--instituto-bg);
   --surface: var(--instituto-surface);
-  --surface2: #f6f9fc;
+  --surface2: var(--soft);
   --border: var(--instituto-border);
-  --accent-teal: #1e5f8a;
-  --accent-blue: #2980b9;
-  --accent-amber: #d68910;
-  --accent-rose: #c0392b;
-  --accent-purple: #7d5ba6;
+  --accent-teal: #2e86c1;
+  --accent-blue: #17a2b8;
+  --accent-amber: #e0951a;
+  --accent-rose: #d9534f;
+  --accent-purple: #8e6bbf;
   --text-primary: var(--instituto-text);
-  --text-secondary: #64748b;
-  --text-muted: #64748b;
-  --success: #1e8449;
-  --warning: #b9770e;
-  --danger: #c0392b;
+  --text-secondary: var(--text-soft);
+  --text-muted: var(--text-soft);
+  --success: var(--c-ok);
+  --warning: var(--c-warn);
+  --danger: var(--c-err);
 }
 
 body {
@@ -52,8 +52,8 @@ body {
 .tabbar button:hover { color: var(--text-primary); }
 
 .tabbar button.active {
-  color: var(--instituto-primary);
-  border-bottom-color: var(--instituto-primary);
+  color: var(--title);
+  border-bottom-color: var(--title);
 }
 
 main {
@@ -71,7 +71,7 @@ main {
   font-family: var(--font-title);
   font-size: 16px;
   font-weight: 700;
-  color: var(--instituto-primary);
+  color: var(--title);
   margin-bottom: 16px;
   padding-top: 8px;
 }
@@ -165,7 +165,7 @@ main {
   font-family: var(--font-title);
   font-size: 15px;
   font-weight: 700;
-  color: var(--instituto-primary);
+  color: var(--title);
   line-height: 1.3;
 }
 
@@ -183,9 +183,9 @@ main {
   white-space: nowrap;
 }
 
-.badge.good { background: #e6f4ec; color: var(--success); }
-.badge.warn { background: #fef5e7; color: var(--warning); }
-.badge.bad  { background: #fdecea; color: var(--danger); }
+.badge.good { background: var(--ok-bg); color: var(--success); }
+.badge.warn { background: var(--warn-bg); color: var(--warning); }
+.badge.bad  { background: var(--err-bg); color: var(--danger); }
 
 canvas { width: 100% !important; }
 
@@ -214,9 +214,9 @@ canvas { width: 100% !important; }
 .unit-btn:hover { border-color: var(--accent-blue); color: var(--text-primary); }
 
 .unit-btn.active {
-  background: #eaf4fb;
-  border-color: var(--instituto-primary);
-  color: var(--instituto-primary);
+  background: var(--tint);
+  border-color: var(--title);
+  color: var(--title);
 }
 
 /* Table */

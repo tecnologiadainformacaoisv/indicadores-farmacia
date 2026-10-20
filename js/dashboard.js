@@ -2,15 +2,17 @@
 // Config
 // ────────────────────────────────────────────────────────────────
 const C = {
-  teal:   '#1e5f8a',
-  blue:   '#2980b9',
-  amber:  '#d68910',
-  rose:   '#c0392b',
-  purple: '#7d5ba6',
-  green:  '#27ae60',
-  text:   '#64748b',
-  border: '#dce6f0',
-  bg:     '#ffffff',
+  teal:   '#2e86c1',
+  blue:   '#17a2b8',
+  amber:  '#e0951a',
+  rose:   '#d9534f',
+  purple: '#8e6bbf',
+  green:  '#2eaf68',
+  // cores de interface seguem o tema (tokens --chart-* em isv.css)
+  get text()   { return themeVar('--chart-text'); },
+  get border() { return themeVar('--chart-border'); },
+  get grid()   { return themeVar('--chart-grid'); },
+  get bg()     { return themeVar('--chart-bg'); },
 };
 
 const baseOpts = (yMax) => ({
@@ -19,11 +21,11 @@ const baseOpts = (yMax) => ({
   plugins: {
     legend: { display: false },
     tooltip: {
-      backgroundColor: '#ffffff',
-      borderColor: '#dce6f0',
+      backgroundColor: themeVar('--chart-bg'),
+      borderColor: themeVar('--chart-border'),
       borderWidth: 1,
-      titleColor: '#0a3d62',
-      bodyColor: '#2c3e50',
+      titleColor: themeVar('--chart-title'),
+      bodyColor: themeVar('--chart-body'),
       padding: 10,
       callbacks: { label: ctx => ` ${ctx.parsed.y?.toFixed(1)}%` }
     }
@@ -35,7 +37,7 @@ const baseOpts = (yMax) => ({
       border: { color: C.border }
     },
     y: {
-      grid: { color: 'rgba(220,230,240,0.9)' },
+      grid: { color: themeVar('--chart-grid') },
       ticks: {
         color: C.text,
         font: { size: 11 },
@@ -50,7 +52,7 @@ const baseOpts = (yMax) => ({
 const lineOpts = (yMax, color) => ({
   ...baseOpts(yMax),
   elements: {
-    point: { radius: 4, hoverRadius: 6, backgroundColor: color, borderColor: '#ffffff', borderWidth: 2 }
+    point: { radius: 4, hoverRadius: 6, backgroundColor: color, borderColor: themeVar('--chart-bg'), borderWidth: 2 }
   }
 });
 
@@ -68,7 +70,7 @@ function lineDataset(label, data, color) {
     backgroundColor: ctx => makeGrad(ctx.chart.ctx, color),
     fill: true, tension: 0.4,
     pointBackgroundColor: color,
-    pointBorderColor: '#ffffff',
+    pointBorderColor: themeVar('--chart-bg'),
     pointBorderWidth: 2,
     pointRadius: 4, pointHoverRadius: 7
   };
