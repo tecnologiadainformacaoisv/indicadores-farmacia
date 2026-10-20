@@ -1,0 +1,11 @@
+node_modules/
+*.log
+.DS_Store
+Thumbs.db
+.env*
+*.key
+
+# Planilhas-fonte (possíveis dados sensíveis)
+data/*.xlsx
+data/*.xls
+data/*.csv

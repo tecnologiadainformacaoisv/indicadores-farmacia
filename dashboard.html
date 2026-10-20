@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard de Indicadores Farmacêuticos</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo-area">
+      <h1>Indicadores Farmacêuticos</h1>
+      <p>Clínica & Logística · 2025</p>
+    </div>
+    <span class="pill">Ano vigente</span>
+  </div>
+  <nav>
+    <button class="active" onclick="switchTab('clinica', this)">Indicadores Clínicos</button>
+    <button onclick="switchTab('logistica', this)">Indicadores Logísticos</button>
+  </nav>
+</header>
+
+<main>
+
+<!-- ====== ABA CLÍNICA ====== -->
+<div id="tab-clinica" class="tab-content active">
+
+  <p class="section-title">Resumo consolidado · UPA Jurema + Municipal</p>
+
+  <div class="kpi-strip">
+    <div class="kpi teal">
+      <div class="kpi-label">Conciliações</div>
+      <div class="kpi-value">79%</div>
+      <div class="kpi-sub">UPA Jurema · taxa total</div>
+    </div>
+    <div class="kpi blue">
+      <div class="kpi-label">Prescrições Analisadas</div>
+      <div class="kpi-value">37,6%</div>
+      <div class="kpi-sub">Municipal · taxa total</div>
+    </div>
+    <div class="kpi amber">
+      <div class="kpi-label">PRM Identificados</div>
+      <div class="kpi-value">2,8%</div>
+      <div class="kpi-sub">Municipal · taxa total</div>
+    </div>
+    <div class="kpi rose">
+      <div class="kpi-label">Intervenções Aceitas</div>
+      <div class="kpi-value">80%</div>
+      <div class="kpi-sub">Municipal · taxa total</div>
+    </div>
+    <div class="kpi purple">
+      <div class="kpi-label">Altas Realizadas</div>
+      <div class="kpi-value">82,8%</div>
+      <div class="kpi-sub">UPA Jurema · taxa total</div>
+    </div>
+  </div>
+
+  <!-- Unit selector -->
+  <div class="unit-tabs">
+    <button class="unit-btn active" onclick="switchUnit('jurema', this)">UPA Jurema</button>
+    <button class="unit-btn" onclick="switchUnit('municipal', this)">Hospital Municipal</button>
+  </div>
+
+  <!-- Charts UPA Jurema -->
+  <div id="unit-jurema">
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Taxa de Conciliações Medicamentosas (%)</div>
+            <div class="chart-sub">UPA Jurema · por mês</div>
+          </div>
+          <span class="badge good">79%</span>
+        </div>
+        <canvas id="chartConcJurema" height="200"></canvas>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Taxa de Prescrições Analisadas (%)</div>
+            <div class="chart-sub">UPA Jurema · por mês</div>
+          </div>
+          <span class="badge good">100% jan–mai</span>
+        </div>
+        <canvas id="chartPrescJurema" height="200"></canvas>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Taxa de PRM Identificados (%)</div>
+            <div class="chart-sub">UPA Jurema · proporção sobre prescrições analisadas</div>
+          </div>
+          <span class="badge warn">13,6%</span>
+        </div>
+        <canvas id="chartPrmJurema" height="200"></canvas>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Intervenções Farmacêuticas Aceitas (%)</div>
+            <div class="chart-sub">UPA Jurema · por mês</div>
+          </div>
+          <span class="badge good">76,5%</span>
+        </div>
+        <canvas id="chartIntervJurema" height="200"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">Altas Hospitalares Realizadas vs. Totais</div>
+          <div class="chart-sub">UPA Jurema · comparativo mensal</div>
+        </div>
+        <span class="badge good">82,8%</span>
+      </div>
+      <canvas id="chartAltasJurema" height="120"></canvas>
+    </div>
+  </div>
+
+  <!-- Charts Municipal -->
+  <div id="unit-municipal" style="display:none">
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Taxa de Prescrições Analisadas (%)</div>
+            <div class="chart-sub">Hospital Municipal · julho, outubro–dezembro</div>
+          </div>
+          <span class="badge warn">37,6%</span>
+        </div>
+        <canvas id="chartPrescMun" height="200"></canvas>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Taxa de PRM Identificados (%)</div>
+            <div class="chart-sub">Hospital Municipal · por mês</div>
+          </div>
+          <span class="badge good">2,8%</span>
+        </div>
+        <canvas id="chartPrmMun" height="200"></canvas>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Intervenções Aceitas vs. Realizadas</div>
+            <div class="chart-sub">Hospital Municipal</div>
+          </div>
+          <span class="badge good">80,1%</span>
+        </div>
+        <canvas id="chartIntervMun" height="200"></canvas>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Altas Hospitalares Realizadas (%)</div>
+            <div class="chart-sub">Hospital Municipal · julho e novembro</div>
+          </div>
+          <span class="badge warn">27,3%</span>
+        </div>
+        <canvas id="chartAltasMun" height="200"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">Evolução de Conciliações Medicamentosas</div>
+          <div class="chart-sub">Hospital Municipal · admissões vs. conciliações realizadas</div>
+        </div>
+        <span class="badge warn">61%</span>
+      </div>
+      <canvas id="chartConcMun" height="120"></canvas>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <p class="section-title">Tabela comparativa · todos os indicadores</p>
+
+  <div class="chart-card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Indicador</th>
+          <th>UPA Jurema</th>
+          <th>UPA Centro</th>
+          <th>Hospital Municipal</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Conciliações Medicamentosas</td>
+          <td class="val-good">79,1%</td>
+          <td class="val-na">0% (ago)</td>
+          <td class="val-warn">61,1%</td>
+        </tr>
+        <tr>
+          <td>Prescrições Analisadas</td>
+          <td class="val-good">100% (jan–mai)</td>
+          <td class="val-na">—</td>
+          <td class="val-warn">37,6%</td>
+        </tr>
+        <tr>
+          <td>PRM Identificados</td>
+          <td class="val-warn">13,6%</td>
+          <td class="val-na">—</td>
+          <td class="val-good">2,8%</td>
+        </tr>
+        <tr>
+          <td>Intervenções Farmacêuticas Aceitas</td>
+          <td class="val-good">76,5%</td>
+          <td class="val-na">—</td>
+          <td class="val-good">80,1%</td>
+        </tr>
+        <tr>
+          <td>Altas Hospitalares Realizadas</td>
+          <td class="val-good">82,8%</td>
+          <td class="val-na">—</td>
+          <td class="val-bad">27,3%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ====== ABA LOGÍSTICA ====== -->
+<div id="tab-logistica" class="tab-content">
+
+  <p class="section-title">Resumo consolidado · Maternidade, Municipal, UPAs</p>
+
+  <div class="kpi-strip">
+    <div class="kpi teal">
+      <div class="kpi-label">Desabastecimento</div>
+      <div class="kpi-value">0,68%</div>
+      <div class="kpi-sub">Maternidade · média</div>
+    </div>
+    <div class="kpi rose">
+      <div class="kpi-label">Perdas por Validade</div>
+      <div class="kpi-value">7,1%</div>
+      <div class="kpi-sub">Maternidade · média</div>
+    </div>
+    <div class="kpi amber">
+      <div class="kpi-label">Não Conformidades</div>
+      <div class="kpi-value">27%</div>
+      <div class="kpi-sub">Maternidade · entregas</div>
+    </div>
+    <div class="kpi blue">
+      <div class="kpi-label">Conformidade Estoque</div>
+      <div class="kpi-value">100%</div>
+      <div class="kpi-sub">Maternidade & UPA Centro</div>
+    </div>
+    <div class="kpi purple">
+      <div class="kpi-label">Pedidos Emergenciais</div>
+      <div class="kpi-value">4,4%</div>
+      <div class="kpi-sub">UPA Centro · média</div>
+    </div>
+  </div>
+
+  <div class="unit-tabs">
+    <button class="unit-btn active" onclick="switchLogUnit('maternidade', this)">Maternidade</button>
+    <button class="unit-btn" onclick="switchLogUnit('municipal_log', this)">Municipal</button>
+    <button class="unit-btn" onclick="switchLogUnit('upa_centro', this)">UPA Centro</button>
+    <button class="unit-btn" onclick="switchLogUnit('upa_jurema_log', this)">UPA Jurema</button>
+  </div>
+
+  <!-- Maternidade -->
+  <div id="log-maternidade">
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Desabastecimento (%)</div>
+            <div class="chart-sub">Maternidade · jan, fev, ago–dez</div>
+          </div>
+          <span class="badge good">0,68%</span>
+        </div>
+        <canvas id="chartDesabMat" height="200"></canvas>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Perdas por Validade (%)</div>
+            <div class="chart-sub">Maternidade · por mês</div>
+          </div>
+          <span class="badge bad">Ago: 18,9%</span>
+        </div>
+        <canvas id="chartValMat" height="200"></canvas>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Não Conformidades na Entrega (%)</div>
+            <div class="chart-sub">Maternidade · por mês</div>
+          </div>
+          <span class="badge bad">Out: 44,4%</span>
+        </div>
+        <canvas id="chartNcMat" height="200"></canvas>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Pedidos Emergenciais (%)</div>
+            <div class="chart-sub">Maternidade · sobre total de entregas</div>
+          </div>
+          <span class="badge warn">Ago: 12,1%</span>
+        </div>
+        <canvas id="chartEmergMat" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Municipal log -->
+  <div id="log-municipal_log" style="display:none">
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Desabastecimento (%)</div>
+            <div class="chart-sub">Municipal · jul–dez</div>
+          </div>
+          <span class="badge good">1,01%</span>
+        </div>
+        <canvas id="chartDesabMun" height="200"></canvas>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Perdas por Validade (%)</div>
+            <div class="chart-sub">Municipal · jul–dez</div>
+          </div>
+          <span class="badge warn">1,93%</span>
+        </div>
+        <canvas id="chartValMun" height="200"></canvas>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Não Conformidades na Entrega (%)</div>
+            <div class="chart-sub">Municipal · jul–nov</div>
+          </div>
+          <span class="badge warn">Nov: 14,3%</span>
+        </div>
+        <canvas id="chartNcMun" height="200"></canvas>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Conformidade de Estoque (%)</div>
+            <div class="chart-sub">Municipal · jul, set–dez</div>
+          </div>
+          <span class="badge warn">91–98%</span>
+        </div>
+        <canvas id="chartConfMun" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- UPA Centro -->
+  <div id="log-upa_centro" style="display:none">
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Desabastecimento (%)</div>
+            <div class="chart-sub">UPA Centro · jan–mai, ago–dez</div>
+          </div>
+          <span class="badge good">0,36%</span>
+        </div>
+        <canvas id="chartDesabUpaC" height="200"></canvas>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Perdas por Validade (%)</div>
+            <div class="chart-sub">UPA Centro · por mês</div>
+          </div>
+          <span class="badge warn">Mai: 1,5%</span>
+        </div>
+        <canvas id="chartValUpaC" height="200"></canvas>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Não Conformidades na Entrega (%)</div>
+            <div class="chart-sub">UPA Centro · por mês</div>
+          </div>
+          <span class="badge warn">Set: 15%</span>
+        </div>
+        <canvas id="chartNcUpaC" height="200"></canvas>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Pedidos Emergenciais (%)</div>
+            <div class="chart-sub">UPA Centro · por mês</div>
+          </div>
+          <span class="badge good">4,4% média</span>
+        </div>
+        <canvas id="chartEmergUpaC" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- UPA Jurema log -->
+  <div id="log-upa_jurema_log" style="display:none">
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Desabastecimento (%)</div>
+            <div class="chart-sub">UPA Jurema · ago–dez</div>
+          </div>
+          <span class="badge good">0,71%</span>
+        </div>
+        <canvas id="chartDesabUpaJ" height="200"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Perdas por Validade (%)</div>
+            <div class="chart-sub">UPA Jurema · ago–dez</div>
+          </div>
+          <span class="badge warn">~1,8% média</span>
+        </div>
+        <canvas id="chartValUpaJ" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <p class="section-title">Comparativo entre unidades · indicadores logísticos</p>
+
+  <div class="chart-card">
+    <div class="chart-header">
+      <div>
+        <div class="chart-title">Visão Geral por Unidade</div>
+        <div class="chart-sub">Taxas médias dos meses com dados disponíveis</div>
+      </div>
+    </div>
+    <canvas id="chartComparativo" height="140"></canvas>
+  </div>
+
+</div><!-- /logistica -->
+</main>
+
+<script src="js/dashboard.js"></script>
+</body>
+</html>

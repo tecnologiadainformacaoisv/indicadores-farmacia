@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Indicadores Farmacêuticos · Acompanhamento</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="stylesheet" href="css/indicadores.css">
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-brand">
+    <h1>Indicadores</h1>
+    <p>Farmácia · 2025</p>
+  </div>
+  <div class="sidebar-section">Clínica</div>
+  <div class="nav-item active" onclick="goPage('clinica',this)" data-page="clinica">
+    <span class="dot" style="background:var(--teal)"></span> Clínica Geral
+  </div>
+  <div class="sidebar-section">Logística</div>
+  <div class="nav-item" onclick="goPage('logistica',this)" data-page="logistica">
+    <span class="dot" style="background:var(--blue)"></span> Logística Geral
+  </div>
+  <div class="sidebar-section">Config</div>
+  <div class="nav-item" onclick="openMetas()">
+    <span class="dot" style="background:var(--txt3)"></span> Metas & Alertas
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="content">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <h2 id="page-title">Indicadores Clínicos</h2>
+      <p id="page-sub">Acompanhamento mensal · insira os dados pelo botão ao lado</p>
+    </div>
+    <div class="topbar-right">
+      <select class="month-select" id="monthSel" onchange="renderAll()">
+        <option value="0">Janeiro</option><option value="1">Fevereiro</option>
+        <option value="2">Março</option><option value="3">Abril</option>
+        <option value="4">Maio</option><option value="5">Junho</option>
+        <option value="6">Julho</option><option value="7">Agosto</option>
+        <option value="8">Setembro</option><option value="9">Outubro</option>
+        <option value="10">Novembro</option><option value="11">Dezembro</option>
+      </select>
+      <button class="btn btn-ghost" onclick="openMetas()">⚙ Metas</button>
+      <button class="btn btn-primary" id="btnAdd" onclick="openEntry()">+ Lançar dados</button>
+    </div>
+  </div>
+
+  <!-- PAGE: CLÍNICA -->
+  <div class="page active" id="page-clinica">
+    <div class="alerts-bar" id="alerts-clinica"></div>
+    <div class="kpi-row" id="kpi-clinica"></div>
+    <div class="grid2" id="charts-clinica"></div>
+    <div class="card">
+      <div class="card-header"><div><div class="card-title">Histórico anual · todos os indicadores</div><div class="card-sub">Dados inseridos mês a mês</div></div></div>
+      <table class="tbl" id="table-clinica"><thead><tr><th>Mês</th><th>Unidade</th><th>Conciliações</th><th>Prescrições</th><th>PRM</th><th>Intervenções Aceitas</th><th>Altas</th></tr></thead><tbody></tbody></table>
+    </div>
+  </div>
+
+  <!-- PAGE: LOGÍSTICA -->
+  <div class="page" id="page-logistica">
+    <div class="alerts-bar" id="alerts-logistica"></div>
+    <div class="kpi-row" id="kpi-logistica"></div>
+    <div class="grid2" id="charts-logistica"></div>
+    <div class="card">
+      <div class="card-header"><div><div class="card-title">Histórico anual · todos os indicadores</div><div class="card-sub">Dados inseridos mês a mês</div></div></div>
+      <table class="tbl" id="table-logistica"><thead><tr><th>Mês</th><th>Unidade</th><th>Desabastecimento</th><th>Perdas Validade</th><th>Não Conformidades</th><th>Conf. Estoque</th><th>Emergenciais</th></tr></thead><tbody></tbody></table>
+    </div>
+  </div>
+
+</div><!-- /content -->
+</div><!-- /app -->
+
+<!-- ENTRY MODAL -->
+<div class="overlay" id="overlay-entry">
+<div class="modal">
+  <div class="modal-header">
+    <h3>Lançar dados do mês</h3>
+    <button class="modal-close" onclick="closeEntry()">×</button>
+  </div>
+  <div class="modal-body">
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Mês</label>
+        <select id="f-mes">
+          <option value="0">Janeiro</option><option value="1">Fevereiro</option>
+          <option value="2">Março</option><option value="3">Abril</option>
+          <option value="4">Maio</option><option value="5">Junho</option>
+          <option value="6">Julho</option><option value="7">Agosto</option>
+          <option value="8">Setembro</option><option value="9">Outubro</option>
+          <option value="10">Novembro</option><option value="11">Dezembro</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Unidade</label>
+        <select id="f-unidade">
+          <option value="UPA Jurema">UPA Jurema</option>
+          <option value="UPA Centro">UPA Centro</option>
+          <option value="H. Municipal">H. Municipal</option>
+          <option value="Maternidade">Maternidade</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-section">Indicadores Clínicos</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Admissões totais</label><input type="number" id="f-admissoes" placeholder="ex: 120" min="0"></div>
+      <div class="form-group"><label>Conciliações realizadas</label><input type="number" id="f-conciliacoes" placeholder="ex: 95" min="0"></div>
+      <div class="form-group"><label>Prescrições atendidas</label><input type="number" id="f-presc-atend" placeholder="ex: 300" min="0"></div>
+      <div class="form-group"><label>Prescrições analisadas</label><input type="number" id="f-presc-anal" placeholder="ex: 270" min="0"></div>
+      <div class="form-group"><label>PRM identificados</label><input type="number" id="f-prm" placeholder="ex: 12" min="0"></div>
+      <div class="form-group"><label>Intervenções realizadas</label><input type="number" id="f-interv-total" placeholder="ex: 20" min="0"></div>
+      <div class="form-group"><label>Intervenções aceitas</label><input type="number" id="f-interv-aceitas" placeholder="ex: 18" min="0"></div>
+      <div class="form-group"><label>Altas totais</label><input type="number" id="f-altas-total" placeholder="ex: 40" min="0"></div>
+      <div class="form-group"><label>Altas realizadas (farm.)</label><input type="number" id="f-altas-real" placeholder="ex: 35" min="0"></div>
+    </div>
+
+    <div class="form-section">Indicadores Logísticos</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Itens padronizados</label><input type="number" id="f-itens-pad" placeholder="ex: 334" min="0"></div>
+      <div class="form-group"><label>Itens em falta</label><input type="number" id="f-itens-falta" placeholder="ex: 2" min="0"></div>
+      <div class="form-group"><label>Itens vencidos</label><input type="number" id="f-itens-venc" placeholder="ex: 5" min="0"></div>
+      <div class="form-group"><label>Total de entregas</label><input type="number" id="f-entregas" placeholder="ex: 30" min="0"></div>
+      <div class="form-group"><label>Não conformidades entrega</label><input type="number" id="f-nc" placeholder="ex: 3" min="0"></div>
+      <div class="form-group"><label>Itens auditados estoque</label><input type="number" id="f-auditados" placeholder="ex: 360" min="0"></div>
+      <div class="form-group"><label>Itens em conformidade</label><input type="number" id="f-conformes" placeholder="ex: 355" min="0"></div>
+      <div class="form-group"><label>Pedidos emergenciais</label><input type="number" id="f-emergenciais" placeholder="ex: 2" min="0"></div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-ghost" onclick="closeEntry()">Cancelar</button>
+    <button class="btn btn-primary" onclick="saveEntry()">Salvar lançamento</button>
+  </div>
+</div>
+</div>
+
+<!-- METAS MODAL -->
+<div class="overlay" id="overlay-metas">
+<div class="modal">
+  <div class="modal-header">
+    <h3>Configurar Metas & Alertas</h3>
+    <button class="modal-close" onclick="closeMetas()">×</button>
+  </div>
+  <div class="modal-body">
+    <p style="font-size:12px;color:var(--txt2);margin-bottom:16px">Defina a meta esperada para cada indicador. O sistema alertará automaticamente quando o valor estiver abaixo (ou acima) da meta configurada.</p>
+    <div id="metas-list"></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-ghost" onclick="closeMetas()">Cancelar</button>
+    <button class="btn btn-primary" onclick="saveMetas()">Salvar metas</button>
+  </div>
+</div>
+</div>
+
+<script src="js/indicadores.js"></script>
+</body>
+</html>
