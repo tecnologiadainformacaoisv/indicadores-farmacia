@@ -4,24 +4,44 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Indicadores da Farmácia · UPA Centro</title>
-<style>
-  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #0f1117; color: #e8ecf5; font-family: 'Inter', system-ui, sans-serif; }
-  main { padding: 24px 16px; text-align: center; }
-  h1 { font-size: 22px; margin-bottom: 4px; }
-  p { color: #8892aa; margin-top: 0; }
-  nav { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 24px; }
-  a { padding: 12px 20px; border: 1px solid #2a3050; border-radius: 8px; background: #181c27; color: #00c9b1; text-decoration: none; font-weight: 600; }
-  a:hover { border-color: #00c9b1; }
-</style>
+<link rel="icon" href="assets/logo-isv.png">
+<link rel="stylesheet" href="css/instituto.css">
+<link rel="stylesheet" href="css/isv.css">
 </head>
 <body>
-<main>
-  <h1>Indicadores da Farmácia</h1>
-  <p>UPA Centro · Instituto São Vicente</p>
-  <nav>
-    <a href="dashboard.html">Dashboard</a>
-    <a href="indicadores.html">Acompanhamento mensal</a>
-  </nav>
+
+<header class="page-header">
+  <div class="brand">
+    <img class="brand__logo" src="assets/logo-isv.png" alt="Instituto São Vicente" width="48" height="48">
+    <div>
+      <h1 class="page-header__title">Indicadores da Farmácia</h1>
+      <p class="page-header__subtitle">UPA Centro · Instituto São Vicente</p>
+    </div>
+  </div>
+  <div class="page-header__actions">
+    <span class="version-badge" title="Versão do sistema">v<span data-app-version></span></span>
+  </div>
+</header>
+
+<main class="page-content home-main">
+  <p class="home-intro">Escolha o que deseja fazer: lançar os dados do mês ou consultar os indicadores.</p>
+  <div class="home-grid">
+    <a class="home-card card-panel" href="indicadores.html">
+      <h2>Acompanhamento mensal</h2>
+      <p>Lance os dados do mês e defina as metas de cada indicador.</p>
+    </a>
+    <a class="home-card card-panel" href="dashboard.html">
+      <h2>Dashboard</h2>
+      <p>Veja os gráficos dos indicadores clínicos e de logística.</p>
+    </a>
+  </div>
 </main>
+
+<footer class="app-footer">
+  <span>Instituto São Vicente · Indicadores da Farmácia</span>
+  <span>Versão <span data-app-version></span></span>
+</footer>
+
+<script src="js/version.js"></script>
 </body>
 </html>

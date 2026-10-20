@@ -13,3 +13,5 @@
 ### Alterado
 - Projeto reorganizado no padrão do setor: HTMLs renomeados, CSS e JS extraídos para `css/` e `js/`
 - Adicionados `CLAUDE.md`, `README.md`, `CHANGELOG.md` e `.gitignore`
+
+- Fluxo 

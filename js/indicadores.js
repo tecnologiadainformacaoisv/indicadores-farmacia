@@ -58,9 +58,9 @@ function avg(arr) {
 
 // ── Colour helpers ─────────────────────────────────────────────
 const COL = {
-  teal:   '#00c9b1', blue: '#4a7cff', amber: '#f59e0b',
-  rose:   '#f43f5e', purple: '#8b5cf6', green: '#10b981',
-  txt2:   '#7a8599', bd: '#2a3250',
+  teal:   '#1e5f8a', blue: '#2980b9', amber: '#d68910',
+  rose:   '#c0392b', purple: '#7d5ba6', green: '#27ae60',
+  txt2:   '#64748b', bd: '#dce6f0',
 };
 
 function makeGrad(ctx, hex) {
@@ -75,15 +75,15 @@ const baseOpts = (yMax) => ({
   plugins: {
     legend: { display: false },
     tooltip: {
-      backgroundColor: '#1c2235', borderColor: '#2a3250', borderWidth: 1,
-      titleColor: '#e2e8f4', bodyColor: '#7a8599', padding: 10,
+      backgroundColor: '#ffffff', borderColor: '#dce6f0', borderWidth: 1,
+      titleColor: '#0a3d62', bodyColor: '#2c3e50', padding: 10,
       callbacks: { label: ctx => ` ${ctx.raw !== null ? ctx.raw.toFixed(1) + '%' : '—'}` }
     }
   },
   scales: {
     x: { grid: { color: 'transparent' }, ticks: { color: COL.txt2, font: { size: 11 } }, border: { color: COL.bd } },
     y: {
-      grid: { color: 'rgba(42,50,80,.5)' },
+      grid: { color: 'rgba(220,230,240,.9)' },
       ticks: { color: COL.txt2, font: { size: 11 }, callback: v => v + '%' },
       border: { dash: [3, 3], color: 'transparent' },
       ...(yMax !== undefined ? { max: yMax } : {})
@@ -108,7 +108,7 @@ function goalPlugin(metaKey, color) {
       ctx.moveTo(left, yPos); ctx.lineTo(right, yPos);
       ctx.stroke();
       ctx.fillStyle = color + 'bb';
-      ctx.font = '10px Inter';
+      ctx.font = '11px Segoe UI';
       ctx.fillText('Meta ' + meta.val + '%', right - 60, yPos - 4);
       ctx.restore();
     }
@@ -122,7 +122,7 @@ function lineDS(label, data, color) {
     backgroundColor: ctx => makeGrad(ctx.chart.ctx, color),
     fill: true, tension: 0.4,
     pointBackgroundColor: data.map(v => v === null ? 'transparent' : color),
-    pointBorderColor: '#0d1117', pointBorderWidth: 2,
+    pointBorderColor: '#ffffff', pointBorderWidth: 2,
     pointRadius: data.map(v => v === null ? 0 : 4),
     pointHoverRadius: 7,
     spanGaps: false,

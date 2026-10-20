@@ -16,7 +16,8 @@ projeto-indicadores-farmacia/
 ├── CLAUDE.md          ← contexto para o Claude Code
 ├── dashboard.html
 ├── indicadores.html
-├── css/               ← estilos por página
+├── assets/            ← logo ISV
+├── css/               ← tema ISV + estilos por página
 ├── js/                ← lógica por página
 ├── data/              ← planilha-fonte (não versionada)
 └── docs/
@@ -36,4 +37,4 @@ python -m http.server 8000
 
 ---
 
-Versionamento: [Semantic Versioning](https://semver.org/lang/pt-BR/) · Commits: [Conventional Commits](https://www.conventionalcommits.org/pt-br/)
+Versão atual: **v0.0.1** · Versionamento: [Semantic Versioning](https://semver.org/lang/pt-BR/) · Commits: [Conventional Commits](https://www.conventionalcommits.org/pt-br/)

@@ -3,34 +3,44 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Indicadores Farmacêuticos · Acompanhamento</title>
+<title>Acompanhamento mensal · Indicadores da Farmácia</title>
+<link rel="icon" href="assets/logo-isv.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="stylesheet" href="css/instituto.css">
+<link rel="stylesheet" href="css/isv.css">
 <link rel="stylesheet" href="css/indicadores.css">
 </head>
 <body>
+<header class="page-header">
+  <div class="brand">
+    <img class="brand__logo" src="assets/logo-isv.png" alt="Instituto São Vicente" width="48" height="48">
+    <div>
+      <h1 class="page-header__title">Indicadores da Farmácia</h1>
+      <p class="page-header__subtitle">Acompanhamento mensal · UPA Centro</p>
+    </div>
+  </div>
+  <div class="page-header__actions">
+    <a class="header-btn" href="index.html">← Voltar ao início</a>
+    <span class="version-badge" title="Versão do sistema">v<span data-app-version></span></span>
+  </div>
+</header>
+
 <div class="app">
 
 <!-- SIDEBAR -->
-<nav class="sidebar">
-  <div class="sidebar-brand">
-    <h1>Indicadores</h1>
-    <p>Farmácia · 2025</p>
-  </div>
-  <a class="nav-item" href="index.html">
-    <span class="dot" style="background:var(--txt2)"></span> ← Voltar ao início
-  </a>
-  <div class="sidebar-section">Clínica</div>
-  <div class="nav-item active" onclick="goPage('clinica',this)" data-page="clinica">
+<nav class="sidebar" aria-label="Seções">
+  <p class="sidebar-section">Clínica</p>
+  <button class="nav-item active" onclick="goPage('clinica',this)" data-page="clinica">
     <span class="dot" style="background:var(--teal)"></span> Clínica Geral
-  </div>
-  <div class="sidebar-section">Logística</div>
-  <div class="nav-item" onclick="goPage('logistica',this)" data-page="logistica">
+  </button>
+  <p class="sidebar-section">Logística</p>
+  <button class="nav-item" onclick="goPage('logistica',this)" data-page="logistica">
     <span class="dot" style="background:var(--blue)"></span> Logística Geral
-  </div>
-  <div class="sidebar-section">Config</div>
-  <div class="nav-item" onclick="openMetas()">
-    <span class="dot" style="background:var(--txt3)"></span> Metas & Alertas
-  </div>
+  </button>
+  <p class="sidebar-section">Configuração</p>
+  <button class="nav-item" onclick="openMetas()">
+    <span class="dot" style="background:var(--txt3)"></span> Metas e alertas
+  </button>
 </nav>
 
 <!-- MAIN -->
@@ -51,7 +61,7 @@
         <option value="8">Setembro</option><option value="9">Outubro</option>
         <option value="10">Novembro</option><option value="11">Dezembro</option>
       </select>
-      <button class="btn btn-ghost" onclick="openMetas()">⚙ Metas</button>
+      <button class="btn btn-ghost" onclick="openMetas()">Metas</button>
       <button class="btn btn-primary" id="btnAdd" onclick="openEntry()">+ Lançar dados</button>
     </div>
   </div>
@@ -81,12 +91,17 @@
 </div><!-- /content -->
 </div><!-- /app -->
 
+<footer class="app-footer">
+  <span>Instituto São Vicente · Indicadores da Farmácia</span>
+  <span>Versão <span data-app-version></span></span>
+</footer>
+
 <!-- ENTRY MODAL -->
 <div class="overlay" id="overlay-entry">
 <div class="modal">
   <div class="modal-header">
     <h3>Lançar dados do mês</h3>
-    <button class="modal-close" onclick="closeEntry()">×</button>
+    <button class="modal-close" onclick="closeEntry()" aria-label="Fechar">×</button>
   </div>
   <div class="modal-body">
     <div class="form-grid">
@@ -148,8 +163,8 @@
 <div class="overlay" id="overlay-metas">
 <div class="modal">
   <div class="modal-header">
-    <h3>Configurar Metas & Alertas</h3>
-    <button class="modal-close" onclick="closeMetas()">×</button>
+    <h3>Configurar metas e alertas</h3>
+    <button class="modal-close" onclick="closeMetas()" aria-label="Fechar">×</button>
   </div>
   <div class="modal-body">
     <p style="font-size:12px;color:var(--txt2);margin-bottom:16px">Defina a meta esperada para cada indicador. O sistema alertará automaticamente quando o valor estiver abaixo (ou acima) da meta configurada.</p>
@@ -162,6 +177,7 @@
 </div>
 </div>
 
+<script src="js/version.js"></script>
 <script src="js/indicadores.js"></script>
 </body>
 </html>

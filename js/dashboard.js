@@ -2,15 +2,15 @@
 // Config
 // ────────────────────────────────────────────────────────────────
 const C = {
-  teal:   '#00c9b1',
-  blue:   '#4a7cff',
-  amber:  '#ffb347',
-  rose:   '#ff6b7a',
-  purple: '#a78bfa',
-  green:  '#34d399',
-  text:   '#8892aa',
-  border: '#2a3050',
-  bg:     '#181c27',
+  teal:   '#1e5f8a',
+  blue:   '#2980b9',
+  amber:  '#d68910',
+  rose:   '#c0392b',
+  purple: '#7d5ba6',
+  green:  '#27ae60',
+  text:   '#64748b',
+  border: '#dce6f0',
+  bg:     '#ffffff',
 };
 
 const baseOpts = (yMax) => ({
@@ -19,11 +19,11 @@ const baseOpts = (yMax) => ({
   plugins: {
     legend: { display: false },
     tooltip: {
-      backgroundColor: '#1e2335',
-      borderColor: '#2a3050',
+      backgroundColor: '#ffffff',
+      borderColor: '#dce6f0',
       borderWidth: 1,
-      titleColor: '#e8ecf5',
-      bodyColor: '#8892aa',
+      titleColor: '#0a3d62',
+      bodyColor: '#2c3e50',
       padding: 10,
       callbacks: { label: ctx => ` ${ctx.parsed.y?.toFixed(1)}%` }
     }
@@ -31,11 +31,11 @@ const baseOpts = (yMax) => ({
   scales: {
     x: {
       grid: { color: 'transparent' },
-      ticks: { color: C.text, font: { size: 11, family: 'Inter' } },
+      ticks: { color: C.text, font: { size: 11, family: 'Segoe UI' } },
       border: { color: C.border }
     },
     y: {
-      grid: { color: 'rgba(42,48,80,0.6)' },
+      grid: { color: 'rgba(220,230,240,0.9)' },
       ticks: {
         color: C.text,
         font: { size: 11 },
@@ -50,7 +50,7 @@ const baseOpts = (yMax) => ({
 const lineOpts = (yMax, color) => ({
   ...baseOpts(yMax),
   elements: {
-    point: { radius: 4, hoverRadius: 6, backgroundColor: color, borderColor: '#0f1117', borderWidth: 2 }
+    point: { radius: 4, hoverRadius: 6, backgroundColor: color, borderColor: '#ffffff', borderWidth: 2 }
   }
 });
 
@@ -68,7 +68,7 @@ function lineDataset(label, data, color) {
     backgroundColor: ctx => makeGrad(ctx.chart.ctx, color),
     fill: true, tension: 0.4,
     pointBackgroundColor: color,
-    pointBorderColor: '#0f1117',
+    pointBorderColor: '#ffffff',
     pointBorderWidth: 2,
     pointRadius: 4, pointHoverRadius: 7
   };

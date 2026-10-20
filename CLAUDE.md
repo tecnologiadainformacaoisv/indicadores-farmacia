@@ -28,10 +28,15 @@ projeto-indicadores-farmacia/
 ├── index.html              ← página inicial (links para as telas)
 ├── dashboard.html          ← dashboard de visualização
 ├── indicadores.html        ← acompanhamento mensal (entrada de dados + metas)
+├── assets/
+│   └── logo-isv.png        ← logo oficial (cópia de ../shared/assets/)
 ├── css/
+│   ├── instituto.css       ← cópia de ../shared/styles/instituto.css (tokens ISV)
+│   ├── isv.css             ← cabeçalho, rodapé, versão, foco (comum às 3 telas)
 │   ├── dashboard.css
 │   └── indicadores.css
 ├── js/
+│   ├── version.js          ← ÚNICA fonte da versão exibida (cabeçalho e rodapé)
 │   ├── dashboard.js
 │   └── indicadores.js
 ├── data/
@@ -72,6 +77,8 @@ Este projeto faz parte da pasta `Desenvolvimento/`, que reúne os sistemas do
 - Mantém-se vanilla (sem framework/build); não introduzir dependências sem alinhamento.
 - CSS em `css/` e JS em `js/`, um arquivo por página — não voltar a embutir inline nos HTMLs.
 - Metas (`farma_metas`) têm direção `min`/`max`; preservar o formato ao alterar.
+- Interface no padrão ISV (`../_ux-design/referencia/tokens-isv.md`): tema claro, azul `#0a3d62`, Segoe UI + Manrope nos títulos, cabeçalho com logo e versão, rodapé com versão. Páginas publicadas não enxergam `../shared`: ao mudar o padrão lá, recopie `instituto.css` e o logo.
+- Ao subir a versão, altere `js/version.js` e o `CHANGELOG.md` juntos.
 - Versionamento: **Semantic Versioning** (`MAJOR.MINOR.PATCH`); `MAJOR` = 0 em pré-produção.
 - Commits no padrão **Conventional Commits** (`feat:`, `fix:`, `chore:`, `docs:`, `refactor:`).
 - Dados da planilha podem conter informações de pacientes/insumos: não versionar `.xlsx` (LGPD).
@@ -90,8 +97,9 @@ Este projeto faz parte da pasta `Desenvolvimento/`, que reúne os sistemas do
 
 > Última atualização: 2026-10-20
 
-- **Versão:** v0.1.0 — protótipos importados e reorganizados na estrutura padrão do setor.
-- Os dois HTMLs funcionam isolados; CSS/JS foram extraídos para `css/` e `js/` sem alteração de lógica.
+- **Versão:** v0.0.1 — protótipos reorganizados na estrutura padrão do setor e interface padronizada no visual ISV.
+- Os dois HTMLs funcionam isolados; a lógica dos indicadores não foi alterada (só cores dos gráficos).
+- Revisão estrutural (2026-10-20) apontou melhorias ainda não feitas: backup/validação de dados, dashboard lendo `farma_data`, filtros por unidade/ano, acessibilidade dos modais. Aguardam definição com a usuária final.
 
 ## Próximos passos
 
