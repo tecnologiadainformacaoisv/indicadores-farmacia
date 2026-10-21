@@ -132,7 +132,7 @@ function render() {
     const v = alt && alt[campo] !== undefined ? alt[campo] : valor;
     if (!ed) return `<td class="col-aberto">${fmt(v)}</td>`;
     const mudou = alt && alt[campo] !== undefined;
-    return `<td class="col-aberto"><input class="num-input${mudou ? ' mudou' : ''}" type="number" min="0" step="1" inputmode="numeric" enterkeyhint="next"
+    return `<td class="col-aberto"><input class="num-input${mudou ? ' ' + classeMudanca(valor, alt[campo]) : ''}" type="number" min="0" step="1" inputmode="numeric" enterkeyhint="next"
       data-linha="${it.linha}" data-campo="${campo}" value="${v === null || v === undefined || v === '' ? '' : v}"
       aria-label="${campo === 'saida' ? 'Saídas' : campo === 'cmm' ? 'CMM' : 'Estoque disponível'} de ${esc(it.produto)}"></td>`;
   };
@@ -160,6 +160,13 @@ function filtrar() {
 }
 
 // ── Edição ─────────────────────────────────────────────────────
+// Borda do campo: verde se o valor subiu, vermelha se desceu (apagar conta como descer).
+function classeMudanca(orig, novo) {
+  const o = orig === null || orig === undefined || orig === '' ? 0 : Number(orig);
+  const n = novo === null || novo === undefined || novo === '' ? 0 : Number(novo);
+  return n > o ? 'subiu' : 'desceu';
+}
+
 function valorOriginal(aba, it, campo) {
   if (campo === 'cmm') return it.cmm;
   if (campo === 'estoque') return it.estoque;
@@ -183,7 +190,8 @@ function aoEditar(input) {
   // valor inválido não entra nas alterações; a barra bloqueia o salvar até corrigir
   if (invalido || n === orig || (n === null && (orig === null || orig === undefined))) delete alt[campo];
   else alt[campo] = n;
-  input.classList.toggle('mudou', alt[campo] !== undefined);
+  input.classList.remove('subiu', 'desceu');
+  if (alt[campo] !== undefined) input.classList.add(classeMudanca(orig, alt[campo]));
 
   if (CAMPOS.some(c => alt[c] !== undefined)) alteracoes.set(chave, alt);
   else alteracoes.delete(chave);

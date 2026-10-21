@@ -11,7 +11,7 @@
 - Validações no lançamento (inteiros, sem negativos, numerador ≤ denominador)
 - `docs/IMPLANTACAO.md` com o passo a passo de implantação
 - Dashboard restrito à coordenação, com aviso de dados de exemplo
-- Planilha de saídas: coluna do produto fixa ao rolar, celular só com os campos do mês aberto, resumo por aba, confirmação de "salvo às hh:mm" e rascunho recuperado se a sessão expirar
+- Planilha de saídas: borda verde quando o valor sobe e vermelha quando desce; coluna do produto fixa ao rolar, celular só com os campos do mês aberto, resumo por aba, confirmação de "salvo às hh:mm" e rascunho recuperado se a sessão expirar
 - Login: "Mostrar senha" e "Tentar de novo" em falha de rede (sem deslogar)
 - Modais de lançamento e metas com semântica de diálogo, foco preso e aviso antes de descartar dados digitados
 

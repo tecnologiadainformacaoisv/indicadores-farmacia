@@ -80,8 +80,9 @@
   font: inherit; font-size: 14px; text-align: right;
 }
 .num-input:focus { border-color: var(--instituto-secondary); }
-.num-input.mudou { border-color: var(--c-warn); border-width: 2px; }
-.num-input.invalido { border-color: var(--c-err); border-width: 2px; }
+.num-input.subiu { border-color: var(--c-ok); border-width: 2px; }
+.num-input.desceu { border-color: var(--c-err); border-width: 2px; }
+.num-input.invalido { border: 2px dashed var(--c-err); background: var(--err-bg); }
 
 .log-empty { padding: 24px; text-align: center; color: var(--text-soft); }
 
