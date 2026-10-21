@@ -445,7 +445,7 @@ function salvarLogistica_(req, u) {
 function planilhaDaUnidade_(un) {
   if (!un.planilhaId) throw erro_('A planilha de saídas de ' + un.nome + ' ainda não foi configurada.', 'configuracao');
   try {
-    return SpreadsheetApp.openById(String(un.planilhaId).trim());
+    return repetir_(() => SpreadsheetApp.openById(String(un.planilhaId).trim()));
   } catch (e) {
     console.error(e);
     throw erro_('Não foi possível abrir a planilha de saídas de ' + un.nome + '. Avise a TI.', 'configuracao');
@@ -535,17 +535,31 @@ function virarMes() {
 
 let sistemaCache_ = null; // uma abertura por execução
 
+// Os serviços do Google falham de forma intermitente ("INTERNAL"). Só para LEITURAS:
+// repete com pausa curta antes de desistir. Nunca usar em gravação (poderia duplicar).
+function repetir_(fn) {
+  let ultimo;
+  for (let i = 0; i < 3; i++) {
+    try { return fn(); } catch (e) {
+      ultimo = e;
+      if (e.codigo) throw e; // erro de regra do sistema não é falha do Google
+      if (i < 2) Utilities.sleep(400 * (i + 1));
+    }
+  }
+  throw ultimo;
+}
+
 function sistema_() {
   if (sistemaCache_) return sistemaCache_;
-  const id = PropertiesService.getScriptProperties().getProperty('SISTEMA_ID');
+  const id = repetir_(() => PropertiesService.getScriptProperties().getProperty('SISTEMA_ID'));
   if (!id) throw erro_('Sistema não configurado. Rode configurarSistema() no editor.', 'configuracao');
-  sistemaCache_ = SpreadsheetApp.openById(id);
+  sistemaCache_ = repetir_(() => SpreadsheetApp.openById(id));
   return sistemaCache_;
 }
 
 function lerTabela_(nome) {
   const sh = sistema_().getSheetByName(nome);
-  const v = sh.getDataRange().getValues();
+  const v = repetir_(() => sh.getDataRange().getValues());
   const cab = v[0].map(String);
   return v.slice(1).map((linha, i) => {
     const o = { _linha: i + 2 };
