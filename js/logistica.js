@@ -258,8 +258,11 @@ function aoEditar(input) {
   atualizarBarra();
 }
 
+let mensagemSalvo = '';   // "N itens salvos às hh:mm", exibida até a próxima alteração
+
 function atualizarBarra(persistir = true) {
   const n = alteracoes.size;
+  if (n) mensagemSalvo = '';
   const el = document.getElementById('save-info');
   const invalidos = document.querySelectorAll('.num-input.invalido').length;
   // resumo por aba: quem troca de aba vê que o que digitou na outra continua lá
@@ -268,8 +271,8 @@ function atualizarBarra(persistir = true) {
   const resumo = Object.entries(porAba).map(([aba, q]) => `${aba.charAt(0) + aba.slice(1).toLowerCase()}: ${q}`).join(' · ');
   el.textContent = invalidos
     ? `Corrija ${invalidos} valor(es) inválido(s) antes de salvar.`
-    : n ? `${n} ${n === 1 ? 'item alterado' : 'itens alterados'}, ainda não salvo${n === 1 ? '' : 's'} (${resumo}).` : 'Nenhuma alteração.';
-  el.className = n || invalidos ? 'pendente' : '';
+    : n ? `${n} ${n === 1 ? 'item alterado' : 'itens alterados'}, ainda não salvo${n === 1 ? '' : 's'} (${resumo}).` : (mensagemSalvo || 'Nenhuma alteração.');
+  el.className = n || invalidos ? 'pendente' : (mensagemSalvo ? 'salvo' : '');
   document.getElementById('btnSalvar').disabled = !n || invalidos > 0;
   if (persistir) salvarRascunho();
 }
@@ -292,22 +295,48 @@ async function salvar() {
       salvas.push(aba.toLowerCase());
     }
     alteracoes.clear();
-    cacheRemover('log:');
-    // recarrega para mostrar o que ficou gravado, sem perder o ponto da lista
-    const wrap = document.getElementById('log-wrap');
-    const rolagem = { wrap: wrap.scrollTop, pagina: window.scrollY };
-    await carregarPlanilha();
-    wrap.scrollTop = rolagem.wrap;
-    window.scrollTo(0, rolagem.pagina);
+    // a tabela já mostra o que foi gravado: atualiza o modelo local e redesenha, sem tela de carregamento
+    aplicarSalvos(porAba);
+    cacheRemover('log:inicial');
+    cacheGravar('log:' + unidadeSel, { sessao: info, logistica: planilha });
     const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-    const el = document.getElementById('save-info');
-    el.textContent = `${total} ${total === 1 ? 'item salvo' : 'itens salvos'} na planilha às ${hora}.`;
-    el.className = 'salvo';
+    mensagemSalvo = `${total} ${total === 1 ? 'item salvo' : 'itens salvos'} na planilha às ${hora}.`;
+    setStatus(planilha.mesAberto.teste ? `Ambiente de teste: o mês aberto está fixo em ${nomeMes(planilha.mesAberto)}.` : '', planilha.mesAberto.teste ? 'warn' : '');
+    render();
+    atualizarEmSegundoPlano();
   } catch (e) {
     setStatus((salvas.length ? 'Salvo: ' + salvas.join(' e ') + '. Não salvo: ' : '') + e.message, 'erro');
     render();
     atualizarBarra();
   }
+}
+
+// Copia para o modelo local o que acabou de ser gravado (a planilha do servidor já tem esses valores).
+function aplicarSalvos(porAba) {
+  Object.keys(porAba).forEach(nomeAba => {
+    const aba = planilha.abas.find(a => a.nome === nomeAba);
+    if (!aba) return;
+    const idx = aba.meses.findIndex(m => m.mes === planilha.mesAberto.mes);
+    porAba[nomeAba].forEach(alt => {
+      const it = aba.itens.find(x => x.linha === alt.linha);
+      if (!it) return;
+      if (alt.saida !== undefined && idx >= 0) it.valores[idx] = alt.saida;
+      if (alt.cmm !== undefined) it.cmm = alt.cmm;
+      if (alt.estoque !== undefined) it.estoque = alt.estoque;
+    });
+  });
+}
+
+// Confirma com o servidor sem esconder nada: se a coluna do mês acabou de ser criada, ou outra
+// pessoa mexeu na planilha, a tela se corrige sozinha. Não interrompe quem voltou a digitar.
+async function atualizarEmSegundoPlano() {
+  try {
+    const r = await api('logistica.carregar', { unidade: unidadeSel });
+    cacheGravar('log:' + r.logistica.unidade, r);
+    const ativo = document.activeElement;
+    if (alteracoes.size || (ativo && ativo.classList && ativo.classList.contains('num-input'))) return;
+    exibirPlanilha(r, []);
+  } catch (e) { /* a tela já reflete o que foi salvo */ }
 }
 
 // ── Eventos ────────────────────────────────────────────────────

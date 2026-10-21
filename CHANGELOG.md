@@ -1,5 +1,10 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.3.3 – 2026-10-21
+### Corrigido
+- Planilha de saídas: depois de salvar, a tabela se atualiza no lugar, sem a tela vazia de "Carregando…"; a confirmação com o servidor acontece em segundo plano
+- A mensagem "N itens salvos às hh:mm" permanece até a próxima alteração
+
 ## v0.3.2 – 2026-10-21
 ### Alterado
 - Telas abrem mais rápido: uma única chamada ao servidor traz sessão e dados (antes eram duas ou três em sequência)
