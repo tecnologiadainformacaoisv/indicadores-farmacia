@@ -22,6 +22,12 @@
   --mono: var(--font-title);
 }
 
+/* tons mais claros das séries no tema escuro (valores de KPI sobre fundo escuro) */
+:root[data-theme="dark"] {
+  --teal: #5dade2; --blue: #48c9d9; --amber: #f0b44f;
+  --rose: #f08a85; --purple: #b39ddb; --green: #5fd08e;
+}
+
 body { background: var(--bg); color: var(--txt); font-family: var(--font); font-size: 14px; }
 
 /* ── LAYOUT ── */
@@ -76,8 +82,6 @@ body { background: var(--bg); color: var(--txt); font-family: var(--font); font-
 .btn-primary:hover { opacity: .92; }
 .btn-ghost { background: var(--s1); color: var(--title); border: 1px solid var(--bd); }
 .btn-ghost:hover { border-color: var(--instituto-secondary); }
-.btn-danger { background: var(--err-bg); color: var(--err); border: 1px solid var(--err-bd); }
-.btn-danger:hover { background: var(--err-bd); }
 
 .month-select {
   background: var(--s1); border: 1px solid var(--bd); color: var(--txt);
@@ -137,7 +141,6 @@ body { background: var(--bg); color: var(--txt); font-family: var(--font); font-
 
 /* chart grid */
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
-.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px; }
 .span2 { grid-column: span 2; }
 
 .card {
@@ -219,11 +222,6 @@ body { background: var(--bg); color: var(--txt); font-family: var(--font); font-
 
 canvas { width: 100% !important; }
 
-/* legenda de meta */
-.legend-row { display: flex; gap: 16px; margin-bottom: 10px; flex-wrap: wrap; }
-.legend-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--txt2); }
-.legend-line { width: 18px; height: 2px; border-radius: 1px; }
-.legend-dash { border-top: 2px dashed; width: 18px; }
 
 @media (max-width: 900px) {
   .app { flex-direction: column; }
@@ -236,7 +234,7 @@ canvas { width: 100% !important; }
   .nav-item { width: auto; white-space: nowrap; border-left: none; border-bottom: 3px solid transparent; padding: 9px 16px; }
   .nav-item.active { border-bottom-color: var(--title); }
   .topbar, .page { padding-left: 16px; padding-right: 16px; }
-  .grid2, .grid3 { grid-template-columns: 1fr; }
+  .grid2 { grid-template-columns: 1fr; }
   .span2 { grid-column: span 1; }
   .kpi-row { grid-template-columns: repeat(2, 1fr); }
   .form-grid { grid-template-columns: 1fr; }

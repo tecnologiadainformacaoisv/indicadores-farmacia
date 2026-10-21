@@ -18,6 +18,11 @@
   --danger: var(--c-err);
 }
 
+:root[data-theme="dark"] {
+  --accent-teal: #5dade2; --accent-blue: #48c9d9; --accent-amber: #f0b44f;
+  --accent-rose: #f08a85; --accent-purple: #b39ddb;
+}
+
 body {
   background: var(--bg);
   color: var(--text-primary);

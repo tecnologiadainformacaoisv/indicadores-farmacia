@@ -9,6 +9,7 @@ const C = {
   purple: '#8e6bbf',
   green:  '#2eaf68',
   // cores de interface seguem o tema (tokens --chart-* em isv.css)
+  neutro: '#94a3b8', // cinza-azulado que serve nos dois temas (barras de total)
   get text()   { return themeVar('--chart-text'); },
   get border() { return themeVar('--chart-border'); },
   get grid()   { return themeVar('--chart-grid'); },
@@ -123,7 +124,7 @@ new Chart(document.getElementById('chartAltasJurema'), {
   data: {
     labels: ['Jan','Fev','Mar','Abr','Mai','Ago'],
     datasets: [
-      barDataset('Total de Altas', [3,9,4,5,3,5], C.border),
+      barDataset('Total de Altas', [3,9,4,5,3,5], C.neutro),
       barDataset('Altas Realizadas', [3,9,4,5,3,0], C.teal),
     ]
   },
@@ -159,7 +160,7 @@ new Chart(document.getElementById('chartIntervMun'), {
   data: {
     labels: mMun,
     datasets: [
-      barDataset('Realizadas', [73,91,86,102], C.border),
+      barDataset('Realizadas', [73,91,86,102], C.neutro),
       barDataset('Aceitas', [70,66,68,78], C.rose),
     ]
   },
@@ -187,7 +188,7 @@ new Chart(document.getElementById('chartConcMun'), {
   data: {
     labels: ['Jul','Nov'],
     datasets: [
-      barDataset('Admissões', [3000, 990], C.border),
+      barDataset('Admissões', [3000, 990], C.neutro),
       barDataset('Conciliações', [1900, 536], C.teal),
     ]
   },
@@ -358,4 +359,11 @@ exigirSessao()
     if (sessao.usuario.perfil !== 'admin') location.href = 'indicadores.html';
     else document.body.classList.remove('aguardando-sessao');
   })
-  .catch(() => { location.href = 'index.html'; });
+  .catch(e => {
+    // sessão inválida já redireciona em api(); aqui é falha de rede ou do servidor: avisa em vez de deslogar
+    const aviso = document.createElement('p');
+    aviso.className = 'notice erro';
+    aviso.style.margin = '16px';
+    aviso.textContent = 'Não foi possível confirmar o seu acesso: ' + e.message + ' Recarregue a página para tentar de novo.';
+    document.querySelector('header').after(aviso);
+  });

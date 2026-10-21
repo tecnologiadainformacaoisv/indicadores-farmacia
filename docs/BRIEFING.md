@@ -106,3 +106,18 @@ Expansão: **Caucaia** (piloto) → **Maracanaú** → demais municípios.
 
 - Mapear a planilha da UPA Centro (abas MEDICAMENTOS e MATERIAIS) para os campos de Logística Geral.
 - Como a Tereza quer ser avisada dos pedidos de correção (só no sistema, ou também por e-mail).
+- **Virada de ano nas planilhas de saídas.** A planilha não guarda o ano: em fevereiro de 2027 o mês aberto (janeiro) fica antes de dezembro, e o sistema recusa a gravação ("já passou de JANEIRO"). Definir com a Tereza: aba nova por ano, planilha nova por ano ou colunas com o ano no cabeçalho.
+- **Logística no formulário.** O modal "Lançar dados" ainda tem 8 campos de logística digitados (itens padronizados, em falta, vencidos, entregas…). Confirmar se continuam ali ou se passam a sair da planilha de saídas.
+- **Média de "Todas as unidades".** Hoje é a média simples dos percentuais de cada unidade; definir se vale o consolidado (somando numeradores e denominadores).
+- **Regra do PRM.** Não há conferência de PRM × prescrições analisadas (pode haver mais de um PRM por prescrição).
+- **Bloqueio de login.** O bloqueio de 15 minutos é por usuário, então alguém pode travar a conta de outra pessoa errando a senha de propósito. Revisar a política se virar problema.
+- **Sessão em computador compartilhado.** O login fica guardado no navegador até "Sair". Avaliar sessão que termina ao fechar a aba.
+
+## Estado de implementação (2026-10-21)
+
+Este documento descreve a regra-alvo. Ainda **não** implementado: pedidos de correção de mês fechado (hoje o administrador não lança em nenhum caso), cadastro de usuários pela tela (hoje pelo editor do Apps Script) e dashboard com dados reais (usa dados de exemplo). Implementado: login e perfis, lançamento da Clínica Geral na nuvem, metas por unidade, planilha de saídas item por item, mês aberto e virada automática do mês.
+
+## Anotações soltas do desenvolvedor (movidas do CHANGELOG)
+
+- Fluxo
+  coordenador da farmácia

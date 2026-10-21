@@ -51,6 +51,7 @@ const PARES = [
   ['itens-falta', 'itens-pad', 'Itens em falta', 'itens padronizados'],
   ['itens-venc', 'itens-pad', 'Itens vencidos', 'itens padronizados'],
   ['nc', 'entregas', 'Não conformidades', 'entregas'],
+  ['emergenciais', 'entregas', 'Pedidos emergenciais', 'entregas'],
   ['conformes', 'auditados', 'Itens em conformidade', 'itens auditados'],
 ];
 
@@ -79,6 +80,9 @@ const ABAS_LOGISTICA = ['MEDICAMENTOS', 'MATERIAIS'];
 // ── Entrada ────────────────────────────────────────────────────
 
 function doPost(e) {
+  // cada requisição é uma execução nova no Apps Script; isto só garante o mesmo comportamento fora dele
+  sistemaCache_ = null;
+  tabelaCache_ = {};
   let req;
   try {
     req = JSON.parse(e.postData.contents);
@@ -86,8 +90,8 @@ function doPost(e) {
     return resposta_({ ok: false, erro: 'Requisição inválida.' });
   }
   try {
-    const rota = ROTAS[req.action];
-    if (!rota) throw erro_('Ação desconhecida: ' + req.action);
+    const rota = Object.prototype.hasOwnProperty.call(ROTAS, req.action) ? ROTAS[req.action] : null;
+    if (!rota) throw erro_('Ação desconhecida.');
     const usuario = rota.publica ? null : usuarioDaSessao_(req.token);
     // com senha provisória, só dá para ver a sessão, sair ou trocar a senha
     if (usuario && ativo_(usuario.trocarSenha) && !rota.semSenhaDefinitiva) {
@@ -140,12 +144,17 @@ function login_(req) {
   const chaveTent = 'tent:' + login;
   const tentativas = +(cache.get(chaveTent) || 0);
   if (tentativas >= TENTATIVAS_MAX) {
+    registrar_(login, 'login.bloqueado', '');
     throw erro_('Muitas tentativas. Aguarde 15 minutos ou peça à coordenação para redefinir a senha.');
   }
 
   const u = buscarUsuario_(login);
-  if (!u || !ativo_(u.ativo) || hashSenha_(senha, u.salt) !== u.hash) {
+  const existe = !!u && ativo_(u.ativo);
+  // calcula o hash mesmo sem usuário: o tempo de resposta não revela quais logins existem
+  const hash = hashSenha_(senha, existe ? u.salt : 'sem-usuario');
+  if (!existe || hash !== u.hash) {
     cache.put(chaveTent, String(tentativas + 1), BLOQUEIO_SEG);
+    registrar_(login, 'login.falha', '');
     throw erro_('Usuário ou senha incorretos.');
   }
   cache.remove(chaveTent);
@@ -277,6 +286,15 @@ function mesAberto_() {
 
 // ── Lançamentos (base central) ─────────────────────────────────
 
+// O mês é sempre decidido aqui; o front só informa qual mês está exibindo.
+// Se a virada do mês aconteceu com a página aberta, recusa em vez de gravar no mês novo.
+function exigirMesAberto_(req, ref) {
+  const r = req.ref || {};
+  if (+r.ano !== ref.ano || +r.mes !== ref.mes) {
+    throw erro_('O mês aberto para lançamento mudou. Recarregue a página para continuar.');
+  }
+}
+
 function listarLancamentos_(req, u) {
   const ids = req.unidade ? [exigirVisivel_(u, req.unidade).id] : unidadesVisiveis_(u).map(un => un.id);
   return lerTabela_(ABAS.LANC)
@@ -291,6 +309,7 @@ function listarLancamentos_(req, u) {
 function salvarLancamento_(req, u) {
   const un = exigirLancamento_(u, req.unidade);
   const ref = mesAberto_();
+  exigirMesAberto_(req, ref);
   const dados = req.dados || {};
 
   const linha = { unidade: un.id, ano: ref.ano, mes: ref.mes, lancadoPor: u.login, lancadoEm: new Date() };
@@ -307,10 +326,11 @@ function salvarLancamento_(req, u) {
       erros.push(rNum + ' (' + linha[num] + ') não pode ser maior que ' + rDen + ' (' + linha[den] + ').');
     }
   });
+  if (CAMPOS.every(c => linha[c] === '')) erros.push('Preencha pelo menos um campo antes de salvar.');
   if (erros.length) throw erro_(erros.join('\n'));
 
   comTrava_(() => {
-    const existente = lerTabela_(ABAS.LANC).find(r => r.unidade === un.id && +r.ano === ref.ano && +r.mes === ref.mes);
+    const existente = lerTabela_(ABAS.LANC, true).find(r => r.unidade === un.id && +r.ano === ref.ano && +r.mes === ref.mes);
     if (existente) atualizarLinha_(ABAS.LANC, existente._linha, linha);
     else inserirLinha_(ABAS.LANC, linha);
   });
@@ -344,7 +364,7 @@ function salvarMetas_(req, u) {
   if (erros.length) throw erro_(erros.join('\n'));
 
   comTrava_(() => {
-    const atuais = lerTabela_(ABAS.METAS).filter(m => m.unidade === un.id);
+    const atuais = lerTabela_(ABAS.METAS, true).filter(m => m.unidade === un.id);
     METAS_PADRAO.forEach(([k, v, d, r]) => {
       if (novas[k] === undefined) return;
       const atual = atuais.find(m => m.indicador === k);
@@ -370,11 +390,9 @@ function lerLogistica_(req, u) {
     if (!sh) return null;
     const est = estruturaAba_(sh);
     const valores = sh.getRange(1, 1, sh.getLastRow(), sh.getLastColumn()).getValues();
-    const colAberto = est.meses.find(m => m.mes === ref.mes);
     return {
       nome: nome,
       meses: est.meses.map(m => ({ mes: m.mes, rotulo: MESES_ROTULO[m.mes] })),
-      mesAbertoExiste: !!colAberto,
       itens: est.itens.map(r => ({
         linha: r + 1,
         produto: String(valores[r][est.colProd]).trim(),
@@ -395,6 +413,7 @@ function salvarLogistica_(req, u) {
   if (!itens.length) throw erro_('Nenhuma alteração para salvar.');
 
   const ref = mesAberto_();
+  exigirMesAberto_(req, ref);
   const campos = ['saida', 'cmm', 'estoque'];
   const erros = [];
   itens.forEach(it => campos.forEach(c => {
@@ -435,8 +454,20 @@ function salvarLogistica_(req, u) {
       });
       gravados++;
     });
-    // grava só as células alteradas: o resto da planilha fica intacto
-    escritas.forEach(([lin, col, v]) => sh.getRange(lin, col).setValue(v));
+    // grava só as células alteradas: linhas vizinhas da mesma coluna vão juntas (uma chamada por trecho),
+    // e nada fora delas é reescrito
+    const porColuna = {};
+    escritas.forEach(([lin, col, v]) => { (porColuna[col] = porColuna[col] || []).push({ lin: lin, v: v }); });
+    Object.keys(porColuna).forEach(col => {
+      const cel = porColuna[col].sort((a, b) => a.lin - b.lin);
+      let ini = 0;
+      for (let i = 1; i <= cel.length; i++) {
+        if (i < cel.length && cel[i].lin === cel[i - 1].lin + 1) continue;
+        const trecho = cel.slice(ini, i);
+        sh.getRange(trecho[0].lin, +col, trecho.length, 1).setValues(trecho.map(x => [x.v]));
+        ini = i;
+      }
+    });
   });
   registrar_(u.login, 'logistica.salvar', un.id + ' ' + req.aba + ' ' + (ref.mes + 1) + '/' + ref.ano + ' (' + gravados + ' itens)');
   return { gravados: gravados };
@@ -469,11 +500,13 @@ function estruturaAba_(sh) {
 
   const meses = [];
   let colCmm = -1, colEst = -1;
+  let linhaMeses = -1; // linha (0-based) onde estão os nomes dos meses
   for (let c = 0; c < nCol; c++) {
     [hr, hr + 1].forEach(r => {
       if (r >= nLin) return;
       const t = normalizar_(txt[r][c]);
       const m = MESES.indexOf(t);
+      if (m >= 0 && linhaMeses < 0) linhaMeses = r;
       if (m >= 0 && !meses.some(x => x.col === c)) meses.push({ mes: m, col: c });
       if (t === 'CMM' && colCmm < 0) colCmm = c;
       // "ESTOQUE DISP." / "ESTOQUE DISPONÍVEL"; não confundir com outros estoques
@@ -487,7 +520,7 @@ function estruturaAba_(sh) {
   for (let r = primeira; r < nLin; r++) {
     if (String(txt[r][colProd]).trim()) itens.push(r);
   }
-  return { hr: hr, linhaMeses: hr + 1, colProd: colProd, meses: meses, colCmm: colCmm, colEst: colEst, primeira: primeira, itens: itens };
+  return { hr: hr, linhaMeses: linhaMeses >= 0 ? linhaMeses : hr + 1, colProd: colProd, meses: meses, colCmm: colCmm, colEst: colEst, primeira: primeira, itens: itens };
 }
 
 // Cria a coluna do mês (depois do último mês, antes do CMM) se ainda não existir.
@@ -557,21 +590,28 @@ function sistema_() {
   return sistemaCache_;
 }
 
-function lerTabela_(nome) {
+let tabelaCache_ = {}; // tabelas do Sistema lidas nesta execução
+
+// "fresco" ignora o cache: use dentro de comTrava_, para ver o que outro usuário acabou de gravar.
+function lerTabela_(nome, fresco) {
+  if (!fresco && tabelaCache_[nome]) return tabelaCache_[nome];
   const sh = sistema_().getSheetByName(nome);
   const v = repetir_(() => sh.getDataRange().getValues());
   const cab = v[0].map(String);
-  return v.slice(1).map((linha, i) => {
+  const linhas = v.slice(1).map((linha, i) => {
     const o = { _linha: i + 2 };
     cab.forEach((c, j) => { o[c] = linha[j]; });
     return o;
   }).filter(o => cab.some(c => o[c] !== ''));
+  tabelaCache_[nome] = linhas;
+  return linhas;
 }
 
 function inserirLinha_(nome, obj) {
   const sh = sistema_().getSheetByName(nome);
   const cab = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(String);
   sh.appendRow(cab.map(c => obj[c] === undefined ? '' : obj[c]));
+  tabelaCache_ = {};
 }
 
 function atualizarLinha_(nome, linha, obj) {
@@ -579,6 +619,7 @@ function atualizarLinha_(nome, linha, obj) {
   const cab = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(String);
   const atual = sh.getRange(linha, 1, 1, cab.length).getValues()[0];
   sh.getRange(linha, 1, 1, cab.length).setValues([cab.map((c, j) => obj[c] === undefined ? atual[j] : obj[c])]);
+  tabelaCache_ = {};
 }
 
 function config_(chave) {

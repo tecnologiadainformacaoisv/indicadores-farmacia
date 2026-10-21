@@ -28,7 +28,7 @@ projeto-indicadores-farmacia/
 - Regras do sistema: [docs/BRIEFING.md](docs/BRIEFING.md)
 - Implantação (Apps Script, usuários, Web App): [docs/IMPLANTACAO.md](docs/IMPLANTACAO.md)
 
-Para ver as telas localmente, sirva a pasta (Live Server ou `python -m http.server 8000`). Sem a `API_URL` configurada em `js/api.js`, o login avisa que o sistema ainda não está ligado ao servidor.
+Para ver as telas localmente, sirva a pasta (Live Server ou `python -m http.server 8000`). O site conversa com a API do Apps Script pela `API_URL` de `js/api.js`; sem ela, o login avisa que o sistema não está ligado ao servidor.
 
 ---
 

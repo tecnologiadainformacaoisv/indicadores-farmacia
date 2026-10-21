@@ -24,6 +24,7 @@ projeto-indicadores-farmacia/
 ├── indicadores.html        ← acompanhamento mensal (lançamento + metas + gráficos)
 ├── logistica.html          ← planilha de saídas: lançamento item por item
 ├── dashboard.html          ← dashboard (só admin; dados de EXEMPLO fixos, ainda não ligado à base)
+├── .clasp.json             ← ID do projeto Apps Script (a conta logada no clasp precisa ser a da TI)
 ├── appscript/
 │   ├── appsscript.json     ← manifesto (Web App: executa como a TI, acesso anônimo)
 │   └── codigo.js           ← API, regras de permissão e funções de administração
@@ -107,18 +108,18 @@ Tudo na pasta **"Indicadores Farmácia"** do Drive da **conta da TI** (ID na pro
 
 > Última atualização: 2026-10-21
 
-- **Versão publicada:** v0.0.1 (visual). **Em desenvolvimento:** versão de teste para a Tereza validar o fluxo (ver "Não lançado" no CHANGELOG).
-- Código da versão de teste pronto: API (`appscript/codigo.js`), login, acompanhamento na nuvem, planilha de saídas item por item.
-- Validado localmente com Apps Script simulado (fluxo de login, permissões, lançamento, metas, gravação na planilha e criação de coluna) e com a estrutura real da planilha de maio (169 medicamentos, 156 materiais).
-- **Falta implantar** (docs/IMPLANTACAO.md): `clasp create/push` na conta da TI, `configurarSistema`, IDs das planilhas, usuários, Web App e `API_URL` em `js/api.js`.
-- Os testes usam a planilha com dados até **maio/2026** (`MES_ABERTO_TESTE = 2026-05`). A versão atualizada só sobe depois da validação da Tereza.
+- **Versão publicada no site:** v0.0.1 (`js/version.js`). O código já inclui a versão de teste (ver "Não lançado" no CHANGELOG); a versão sobe quando a Tereza validar o fluxo.
+- **Implantado e em teste:** API (Web App na conta da TI), planilha "Sistema", usuário `tereza` e usuários de teste de coordenador, login, Clínica Geral na nuvem, metas por unidade e planilha de saídas item por item. `API_URL` já está em `js/api.js`.
+- Os testes usam a planilha com dados até **maio/2026** (`MES_ABERTO_TESTE = 2026-05` na aba `Config`). A versão atualizada só entra depois da validação da Tereza; antes de uso real, seguir o checklist de `docs/IMPLANTACAO.md`.
+- Validação automatizada: não há suíte no repositório; o servidor foi testado com Apps Script simulado (48 verificações: login, permissões, mês aberto, lançamentos, metas, gravação na planilha, fórmulas, criação de coluna) e a estrutura foi conferida com a planilha real de maio (169 medicamentos, 156 materiais).
+- Para publicar mudanças no servidor: `clasp push` + nova versão + `clasp update-deployment` (a URL do Web App não muda). Antes, `clasp show-authorized-user` deve mostrar a conta da TI.
 
 ## Próximos passos
 
-1. Implantar e testar o fluxo com a Tereza (docs/IMPLANTACAO.md → "Teste do fluxo").
-2. Pedidos de correção de mês fechado (aguardando a Tereza definir o aviso).
-3. Dashboard lendo os lançamentos reais, filtrado por perfil.
-4. Indicadores de logística: confirmar se continuam no formulário ou se saem da planilha de saídas.
+1. Rodada de testes com a Tereza e os coordenadores (docs/IMPLANTACAO.md → "Teste do fluxo").
+2. Decisões em aberto de negócio, listadas em docs/BRIEFING.md → "Em aberto" (virada de ano, logística no formulário, média das unidades, pedidos de correção).
+3. Pedidos de correção de mês fechado.
+4. Dashboard lendo os lançamentos reais, filtrado por perfil.
 5. Importação de arquivo na planilha de saídas (depois do item por item validado).
 6. Modelos Hospital e Maternidade; Maracanaú; demais municípios.
 7. Tela de cadastro de usuários para a Tereza (hoje é pelo editor do Apps Script).

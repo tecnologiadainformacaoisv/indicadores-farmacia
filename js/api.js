@@ -57,7 +57,10 @@ async function api(action, dados) {
   }
   if (!json.ok) {
     if (action !== 'login' && (json.codigo === 'sessao' || json.codigo === 'senhaProvisoria')) {
-      if (json.codigo === 'sessao') limparToken();
+      if (json.codigo === 'sessao') {
+        limparToken();
+        try { sessionStorage.setItem('farma_aviso', json.erro); } catch (e) { /* sem armazenamento: sem aviso */ }
+      }
       // a tela pode guardar o que estava sendo digitado antes de sair (ver logistica.js)
       if (typeof window.antesDeSairDaSessao === 'function') window.antesDeSairDaSessao();
       location.href = 'index.html';

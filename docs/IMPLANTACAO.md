@@ -97,6 +97,13 @@ Commit + push → o GitHub Pages atualiza.
 - [ ] Conferir que a pasta e as planilhas **não** estão com "Qualquer pessoa com o link".
 - [ ] Senhas provisórias aparecem no registro de execução do Apps Script: entregar a cada pessoa por canal privado.
 
+## Observações de operação
+
+- **Gatilho da virada do mês e modo de teste:** com `MES_ABERTO_TESTE` preenchido, o gatilho `virarMes` só recria a coluna do mês de teste.
+- **Virada de ano:** a planilha de saídas não guarda o ano; em fevereiro de 2027 a gravação é recusada até definirmos o formato (ver "Em aberto" no BRIEFING).
+- **Depois de mudar o código:** `clasp push`, `clasp create-version "descrição"` e `clasp update-deployment <id> --versionNumber N` mantêm a mesma URL. O gatilho já instalado continua valendo; não é preciso rodar `instalarGatilhos` de novo.
+- **Ao mudar o formato dos campos ou da API:** o site envia o mês exibido (`ref`) em cada lançamento; páginas abertas antes da atualização pedem para recarregar.
+
 ## Operação
 
 | Situação | Como fazer (editor do Apps Script) |

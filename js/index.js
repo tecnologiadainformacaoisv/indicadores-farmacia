@@ -5,8 +5,9 @@ const views = ['login', 'senha', 'home'];
 function mostrar(view) {
   views.forEach(v => { document.getElementById('view-' + v).hidden = v !== view; });
   document.getElementById('btn-retry').hidden = true;
+  // no celular, focar abriria o teclado e esconderia o formulário
   const primeiro = document.querySelector('#view-' + view + ' input');
-  if (primeiro) primeiro.focus();
+  if (primeiro && window.matchMedia('(min-width: 768px)').matches) primeiro.focus();
 }
 
 function status(msg, tipo) {
@@ -23,7 +24,15 @@ function msg(id, texto, tipo) {
 }
 
 async function carregar() {
-  if (!lerToken()) { mostrar('login'); return; }
+  if (!lerToken()) {
+    mostrar('login');
+    // motivo do retorno ao login (ex.: sessão expirada em outra tela)
+    try {
+      const aviso = sessionStorage.getItem('farma_aviso');
+      if (aviso) { sessionStorage.removeItem('farma_aviso'); msg('login-msg', aviso, 'erro'); }
+    } catch (e) { /* ignora */ }
+    return;
+  }
   status('Carregando…');
   try {
     const info = await api('sessao');

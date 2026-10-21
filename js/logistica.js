@@ -64,7 +64,7 @@ async function carregarPlanilha(restaurar) {
   if (alteracoes.size && !confirm('Há alterações não salvas. Descartar?')) return false;
   const rascunho = restaurar ? lerRascunho() : [];
   alteracoes.clear();
-  atualizarBarra();
+  atualizarBarra(false); // não regrava o rascunho ainda: se a leitura falhar, ele continua guardado
   setStatus('Carregando a planilha da unidade…');
   document.getElementById('log-wrap').hidden = true;
   document.getElementById('log-toolbar').hidden = true;
@@ -92,6 +92,7 @@ async function carregarPlanilha(restaurar) {
   }
   montarAbas();
   render();
+  salvarRascunho(); // leitura ok: agora o rascunho reflete o que está na tela
   document.getElementById('log-toolbar').hidden = false;
   document.getElementById('log-wrap').hidden = false;
   document.getElementById('log-dica').hidden = !planilha.editavel;
@@ -146,6 +147,7 @@ function render() {
       ${cel(it, 'estoque', it.estoque)}
     </tr>`).join('');
   filtrar();
+  atualizarBarra();
 }
 
 function filtrar() {
@@ -199,7 +201,7 @@ function aoEditar(input) {
   atualizarBarra();
 }
 
-function atualizarBarra() {
+function atualizarBarra(persistir = true) {
   const n = alteracoes.size;
   const el = document.getElementById('save-info');
   const invalidos = document.querySelectorAll('.num-input.invalido').length;
@@ -212,7 +214,7 @@ function atualizarBarra() {
     : n ? `${n} ${n === 1 ? 'item alterado' : 'itens alterados'}, ainda não salvo${n === 1 ? '' : 's'} (${resumo}).` : 'Nenhuma alteração.';
   el.className = n || invalidos ? 'pendente' : '';
   document.getElementById('btnSalvar').disabled = !n || invalidos > 0;
-  salvarRascunho();
+  if (persistir) salvarRascunho();
 }
 
 async function salvar() {
@@ -226,7 +228,7 @@ async function salvar() {
     for (const aba of Object.keys(porAba)) {
       setStatus(`Salvando ${aba.toLowerCase()}…`);
       const itens = porAba[aba].map(a => ({ linha: a.linha, produto: a.produto, saida: a.saida, cmm: a.cmm, estoque: a.estoque }));
-      const r = await api('logistica.salvar', { unidade: unidadeSel, aba, itens });
+      const r = await api('logistica.salvar', { unidade: unidadeSel, aba, itens, ref: { ano: planilha.mesAberto.ano, mes: planilha.mesAberto.mes } });
       total += r.gravados;
       // aba gravada sai das pendências: se a próxima falhar, só ela fica para salvar
       porAba[aba].forEach(a => alteracoes.delete(a.aba + "|" + a.linha));

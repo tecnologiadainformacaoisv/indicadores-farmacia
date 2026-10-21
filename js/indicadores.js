@@ -426,18 +426,28 @@ async function saveEntry() {
     setMsg('entry-msg', 'Use números inteiros, sem negativos: ' + invalidos.join(', ') + '.', 'erro');
     return;
   }
+  if (FIELDS.every(f => dados[f] === null)) {
+    setMsg('entry-msg', 'Preencha pelo menos um campo antes de salvar.', 'erro');
+    return;
+  }
   const btn = document.getElementById('btnSaveEntry');
   btn.disabled = true;
   setMsg('entry-msg', 'Salvando…');
   try {
-    await api('lancamentos.salvar', { unidade: info.usuario.unidade, dados });
-    closeEntry();
+    await api('lancamentos.salvar', { unidade: info.usuario.unidade, dados, ref: { ano: info.mesAberto.ano, mes: info.mesAberto.mes } });
+  } catch (e) {
+    setMsg('entry-msg', e.message, 'erro');
+    btn.disabled = false;
+    return;
+  }
+  // salvou: fecha o modal e atualiza; se só a atualização falhar, avisa na página (o modal já fechou)
+  btn.disabled = false;
+  fecharModal('overlay-entry');
+  try {
     await carregarDados();
     setStatus('Lançamento de ' + nomeMes(info.mesAberto) + ' salvo.', '');
   } catch (e) {
-    setMsg('entry-msg', e.message, 'erro');
-  } finally {
-    btn.disabled = false;
+    setStatus('Lançamento salvo, mas não consegui atualizar a tela: ' + e.message + ' Recarregue a página.', 'erro');
   }
 }
 
@@ -481,13 +491,18 @@ async function saveMetas() {
   setMsg('metas-msg', 'Salvando…');
   try {
     await api('metas.salvar', { unidade: unidadeSel, metas: novas });
-    closeMetas();
+  } catch (e) {
+    setMsg('metas-msg', e.message, 'erro');
+    btn.disabled = false;
+    return;
+  }
+  btn.disabled = false;
+  closeMetas();
+  try {
     await carregarDados();
     setStatus('Metas de ' + nomeUnidade(unidadeSel) + ' salvas.', '');
   } catch (e) {
-    setMsg('metas-msg', e.message, 'erro');
-  } finally {
-    btn.disabled = false;
+    setStatus('Metas salvas, mas não consegui atualizar a tela: ' + e.message + ' Recarregue a página.', 'erro');
   }
 }
 
