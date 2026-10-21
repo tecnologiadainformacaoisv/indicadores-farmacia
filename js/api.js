@@ -18,26 +18,42 @@ function limparToken() {
   try { localStorage.removeItem(SESSAO_KEY); } catch (e) { /* ignora */ }
 }
 
+// O Apps Script falha de forma intermitente: às vezes devolve uma página de erro 500
+// (sem cabeçalho CORS, então o navegador vê "falha de rede"). Repetir a chamada resolve.
+// Todas as ações aceitam repetição, menos a troca de senha (a 2ª tentativa viria com a senha antiga).
+const TENTATIVAS_REDE = 3;
+const SEM_REPETICAO = ['trocarSenha'];
+
+async function chamar(action, dados) {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    // text/plain evita o preflight de CORS, que o Apps Script não responde
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action, token: lerToken(), ...(dados || {}) }),
+    redirect: 'follow',
+  });
+  return res.json();
+}
+
 async function api(action, dados) {
   if (!API_URL) throw new Error('O sistema ainda não está ligado ao servidor. Avise a TI.');
-  let res;
-  try {
-    res = await fetch(API_URL, {
-      method: 'POST',
-      // text/plain evita o preflight de CORS, que o Apps Script não responde
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action, token: lerToken(), ...(dados || {}) }),
-      redirect: 'follow',
-    });
-  } catch (e) {
-    throw new Error('Sem conexão com o servidor. Verifique a internet e tente de novo.');
-  }
+  const max = SEM_REPETICAO.includes(action) ? 1 : TENTATIVAS_REDE;
   let json;
-  try {
-    json = await res.json();
-  } catch (e) {
-    // o Apps Script devolve HTML quando a implantação está errada ou a cota acabou
-    throw new Error('O servidor respondeu de forma inesperada. Tente de novo em instantes; se continuar, avise a TI.');
+  let falhou = null;
+  for (let i = 1; i <= max; i++) {
+    try {
+      json = await chamar(action, dados);
+      falhou = null;
+      break;
+    } catch (e) {
+      falhou = e;
+      if (i < max) await new Promise(r => setTimeout(r, 700 * i));
+    }
+  }
+  if (falhou) {
+    throw new Error(falhou instanceof SyntaxError
+      ? 'O servidor respondeu de forma inesperada. Tente de novo em instantes; se continuar, avise a TI.'
+      : 'Sem conexão com o servidor. Verifique a internet e tente de novo.');
   }
   if (!json.ok) {
     if (action !== 'login' && (json.codigo === 'sessao' || json.codigo === 'senhaProvisoria')) {
