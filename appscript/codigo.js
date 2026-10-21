@@ -119,6 +119,8 @@ const ROTAS = {
   'trocarSenha':        { fn: trocarSenha_, semSenhaDefinitiva: true },
   'lancamentos.listar': { fn: listarLancamentos_ },
   'lancamentos.salvar': { fn: salvarLancamento_ },
+  'indicadores.carregar': { fn: carregarIndicadores_ },
+  'logistica.carregar': { fn: carregarLogistica_ },
   'metas.listar':       { fn: listarMetas_ },
   'metas.salvar':       { fn: salvarMetas_ },
   'logistica.ler':      { fn: lerLogistica_ },
@@ -338,6 +340,29 @@ function salvarLancamento_(req, u) {
   });
   registrar_(u.login, 'lancamentos.salvar', un.id + ' ' + (ref.mes + 1) + '/' + ref.ano);
   return { ano: ref.ano, mes: ref.mes };
+}
+
+// ── Cargas completas de tela ───────────────────────────────────
+// Uma chamada traz sessão + dados: cada ida e volta ao Google custa 1 a 2 s, então a tela abre com uma só.
+
+// unidade: indefinida = padrão do perfil (coordenação: todas; coordenador: a própria); '' = todas (só coordenação)
+function carregarIndicadores_(req, u) {
+  let unidade = req.unidade;
+  if (unidade === undefined || (unidade === '' && !ehAdmin_(u))) unidade = ehAdmin_(u) ? '' : u.unidade;
+  return {
+    sessao: sessao_(req, u),
+    unidade: unidade,
+    lancamentos: listarLancamentos_({ unidade: unidade }, u),
+    metas: listarMetas_({ unidade: unidade }, u),
+  };
+}
+
+// unidade: indefinida = a primeira que o usuário enxerga
+function carregarLogistica_(req, u) {
+  const vis = unidadesVisiveis_(u);
+  const unidade = req.unidade || (vis[0] && vis[0].id);
+  if (!unidade) throw erro_('Nenhuma unidade disponível para o seu usuário.', 'permissao');
+  return { sessao: sessao_(req, u), logistica: lerLogistica_({ unidade: unidade }, u) };
 }
 
 // ── Metas por unidade ──────────────────────────────────────────

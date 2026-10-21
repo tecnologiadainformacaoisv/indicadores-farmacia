@@ -16,6 +16,44 @@ function gravarToken(token) {
 
 function limparToken() {
   try { localStorage.removeItem(SESSAO_KEY); } catch (e) { /* ignora */ }
+  cacheRemover('');
+}
+
+// ── Cache da última resposta ──
+// A tela abre na hora com o que foi carregado da última vez e atualiza por trás.
+// Cada item guarda o token da sessão: outra pessoa (outro login) nunca enxerga o cache alheio,
+// e sair do sistema apaga tudo.
+const CACHE_PREFIXO = 'farma_cache_';
+
+function cacheLer(chave) {
+  try {
+    const o = JSON.parse(localStorage.getItem(CACHE_PREFIXO + chave));
+    if (o && o.token && o.token === lerToken()) return o;
+  } catch (e) { /* cache ilegível: ignora */ }
+  return null;
+}
+
+function cacheGravar(chave, dados) {
+  try { localStorage.setItem(CACHE_PREFIXO + chave, JSON.stringify({ token: lerToken(), ts: Date.now(), dados })); } catch (e) { /* sem espaço: segue sem cache */ }
+}
+
+// Remove os itens cujo nome começa com o prefixo ('' apaga todos).
+function cacheRemover(prefixo) {
+  try {
+    Object.keys(localStorage)
+      .filter(k => k.startsWith(CACHE_PREFIXO + prefixo))
+      .forEach(k => localStorage.removeItem(k));
+  } catch (e) { /* ignora */ }
+}
+
+// Confere a sessão devolvida pela API; senha provisória volta para a tela inicial.
+function validarSessao(info) {
+  if (info.usuario.trocarSenha) {
+    location.href = 'index.html';
+    return false;
+  }
+  mostrarUsuario(info.usuario);
+  return true;
 }
 
 // O Apps Script falha de forma intermitente: às vezes devolve uma página de erro 500

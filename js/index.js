@@ -33,13 +33,22 @@ async function carregar() {
     } catch (e) { /* ignora */ }
     return;
   }
-  status('Carregando…');
+  // abre na hora com o que foi carregado da última vez e atualiza por trás
+  const emCache = cacheLer('sessao');
+  const mostrouCache = !!emCache && !emCache.dados.usuario.trocarSenha;
+  if (mostrouCache) montarHome(emCache.dados);
+  else status('Carregando…');
   try {
     const info = await api('sessao');
+    cacheGravar('sessao', info);
     status('');
     if (info.usuario.trocarSenha) { mostrarUsuario(info.usuario); mostrar('senha'); return; }
     montarHome(info);
   } catch (e) {
+    if (mostrouCache && lerToken()) {   // falha ao atualizar: mantém o que já está na tela
+      status(e.message + ' Mostrando os dados da última visita.', 'warn');
+      return;
+    }
     if (!lerToken()) {          // sessão inválida: volta ao login
       status('');
       mostrar('login');

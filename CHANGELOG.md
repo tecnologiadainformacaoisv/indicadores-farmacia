@@ -1,5 +1,11 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.3.2 – 2026-10-21
+### Alterado
+- Telas abrem mais rápido: uma única chamada ao servidor traz sessão e dados (antes eram duas ou três em sequência)
+- A última carga fica guardada no navegador e aparece na hora enquanto a atualização chega por trás; sair do sistema apaga esse cache
+- Se a atualização falhar, a tela mantém os dados da última visita e avisa
+
 ## v0.3.1 – 2026-10-21
 ### Corrigido
 - Planilha de saídas carrega mais rápido: cada aba é lida uma vez só no servidor

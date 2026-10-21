@@ -444,7 +444,8 @@ async function saveEntry() {
   btn.disabled = false;
   fecharModal('overlay-entry');
   try {
-    await carregarDados();
+    cacheRemover('ind:'); // o que está guardado ficou velho
+    await carregarDados(unidadeSel);
     setStatus('Lançamento de ' + nomeMes(info.mesAberto) + ' salvo.', '');
   } catch (e) {
     setStatus('Lançamento salvo, mas não consegui atualizar a tela: ' + e.message + ' Recarregue a página.', 'erro');
@@ -499,7 +500,8 @@ async function saveMetas() {
   btn.disabled = false;
   closeMetas();
   try {
-    await carregarDados();
+    cacheRemover('ind:');
+    await carregarDados(unidadeSel);
     setStatus('Metas de ' + nomeUnidade(unidadeSel) + ' salvas.', '');
   } catch (e) {
     setStatus('Metas salvas, mas não consegui atualizar a tela: ' + e.message + ' Recarregue a página.', 'erro');
@@ -521,15 +523,49 @@ function setStatus(texto, tipo) {
 }
 
 // ── Dados ──────────────────────────────────────────────────────
-async function carregarDados() {
-  const [lanc, m] = await Promise.all([
-    api('lancamentos.listar', { unidade: unidadeSel }),
-    api('metas.listar', { unidade: unidadeSel }),
-  ]);
-  todosLanc = lanc;
-  data = lanc.filter(r => r.ano === info.mesAberto.ano);
-  metas = m;
+let unidadesProntas = false;
+let cargaId = 0;                       // descarta resposta antiga se o usuário já trocou de unidade
+
+function aplicarCarga(r) {
+  info = r.sessao;
+  unidadeSel = r.unidade;
+  todosLanc = r.lancamentos;
+  data = r.lancamentos.filter(x => x.ano === info.mesAberto.ano);
+  metas = r.metas;
+}
+
+function exibirCarga(r) {
+  aplicarCarga(r);
+  if (!validarSessao(info)) return;
+  if (!unidadesProntas) {
+    unidadesProntas = true;
+    document.getElementById('monthSel').value = info.mesAberto.mes;
+    montarUnidades();
+  }
   renderAll();
+}
+
+// unidadeReq: indefinida = padrão do perfil; '' = todas (coordenação); id = uma unidade.
+// Uma chamada traz sessão, lançamentos e metas; a última resposta aparece na hora enquanto a nova chega.
+async function carregarDados(unidadeReq) {
+  const minhaCarga = ++cargaId;
+  const chave = 'ind:' + (unidadeReq === undefined ? 'inicial' : (unidadeReq || 'todas'));
+  const emCache = cacheLer(chave);
+  if (emCache) {
+    exibirCarga(emCache.dados);
+    setStatus('Atualizando…');
+  }
+  let r;
+  try {
+    r = await api('indicadores.carregar', unidadeReq === undefined ? {} : { unidade: unidadeReq });
+  } catch (e) {
+    if (emCache) e.message += ' Mostrando os dados da última visita.';
+    throw e;
+  }
+  cacheGravar('ind:' + (r.unidade || 'todas'), r);
+  if (unidadeReq === undefined) cacheGravar('ind:inicial', r);
+  if (minhaCarga !== cargaId) return;  // chegou uma carga mais nova
+  exibirCarga(r);
 }
 
 function montarUnidades() {
@@ -539,14 +575,14 @@ function montarUnidades() {
   if (admin) {
     sel.innerHTML = '<option value="">Todas as unidades</option>' +
       info.unidades.map(u => `<option value="${esc(u.id)}">${esc(u.nome)}</option>`).join('');
+    sel.value = unidadeSel;
     sel.hidden = false;
     sel.addEventListener('change', async () => {
       unidadeSel = sel.value;
       setStatus('Carregando…');
-      try { await carregarDados(); setStatus(''); } catch (e) { setStatus(e.message, 'erro'); }
+      try { await carregarDados(sel.value); setStatus(''); } catch (e) { setStatus(e.message, 'erro'); }
     });
   } else {
-    unidadeSel = info.usuario.unidade;
     label.textContent = nomeUnidade(unidadeSel);
   }
   document.getElementById('btnAdd').hidden = admin;
@@ -556,9 +592,6 @@ function montarUnidades() {
 (async function init() {
   setStatus('Carregando…');
   try {
-    info = await exigirSessao();
-    document.getElementById('monthSel').value = info.mesAberto.mes;
-    montarUnidades();
     await carregarDados();
     const avisos = [];
     if (info.mesAberto.teste) avisos.push(`Ambiente de teste: o mês aberto para lançamento está fixo em ${nomeMes(info.mesAberto)}.`);

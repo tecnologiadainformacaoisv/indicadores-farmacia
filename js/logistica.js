@@ -60,20 +60,34 @@ function restaurarRascunho(lista) {
 window.antesDeSairDaSessao = () => { salvarRascunho(); saindoDaSessao = true; };
 
 // ── Leitura ────────────────────────────────────────────────────
-async function carregarPlanilha(restaurar) {
-  if (alteracoes.size && !confirm('Há alterações não salvas. Descartar?')) return false;
-  const rascunho = restaurar ? lerRascunho() : [];
-  alteracoes.clear();
-  atualizarBarra(false); // não regrava o rascunho ainda: se a leitura falhar, ele continua guardado
-  setStatus('Carregando a planilha da unidade…');
-  document.getElementById('log-wrap').hidden = true;
-  document.getElementById('log-toolbar').hidden = true;
-  try {
-    planilha = await api('logistica.ler', { unidade: unidadeSel });
-  } catch (e) {
-    setStatus(e.message, 'erro');
-    return false;
+let seletorPronto = false;
+
+function montarSeletorUnidade() {
+  if (seletorPronto) return;
+  seletorPronto = true;
+  const sel = document.getElementById('unitSel');
+  if (info.usuario.perfil === 'admin') {
+    sel.innerHTML = info.unidades.map(u => `<option value="${esc(u.id)}">${esc(u.nome)}</option>`).join('');
+    sel.value = unidadeSel;
+    sel.hidden = false;
+    sel.addEventListener('change', async () => {
+      const anterior = unidadeSel;
+      unidadeSel = sel.value;
+      if (!(await carregarPlanilha()) && alteracoes.size) { unidadeSel = anterior; sel.value = anterior; }
+    });
+  } else {
+    const un = info.unidades.find(u => u.id === unidadeSel);
+    document.getElementById('unitLabel').textContent = un ? un.nome : '';
   }
+}
+
+// Mostra uma carga (vinda do cache ou do servidor). Não mexe nas alterações já digitadas.
+function exibirPlanilha(r, rascunho) {
+  info = r.sessao;
+  if (!validarSessao(info)) return false;
+  planilha = r.logistica;
+  unidadeSel = planilha.unidade;
+  montarSeletorUnidade();
   const ref = planilha.mesAberto;
   document.getElementById('log-sub').textContent = planilha.editavel
     ? `Lance as saídas de ${nomeMes(ref)}, o CMM e o estoque disponível de cada item.`
@@ -90,14 +104,57 @@ async function carregarPlanilha(restaurar) {
     if (n) setStatus(`Recuperamos ${n} ${n === 1 ? 'alteração não salva' : 'alterações não salvas'} da sua última visita. Confira e clique em Salvar.`, 'warn');
     atualizarBarra();
   }
+  const wrap = document.getElementById('log-wrap');
+  const rolagem = wrap.scrollTop;
   montarAbas();
   render();
+  wrap.scrollTop = rolagem;
   salvarRascunho(); // leitura ok: agora o rascunho reflete o que está na tela
   document.getElementById('log-toolbar').hidden = false;
-  document.getElementById('log-wrap').hidden = false;
+  wrap.hidden = false;
   document.getElementById('log-dica').hidden = !planilha.editavel;
   document.getElementById('save-bar').hidden = !planilha.editavel;
   return true;
+}
+
+// Uma chamada traz sessão e planilha; a última carga aparece na hora enquanto a nova chega.
+async function carregarPlanilha(restaurar) {
+  if (alteracoes.size && !confirm('Há alterações não salvas. Descartar?')) return false;
+  const rascunho = restaurar ? lerRascunho() : [];
+  alteracoes.clear();
+  atualizarBarra(false); // não regrava o rascunho ainda: se a leitura falhar, ele continua guardado
+
+  const chave = 'log:' + (unidadeSel || 'inicial');
+  const emCache = cacheLer(chave);
+  let mostrouCache = false;
+  if (emCache) {
+    mostrouCache = exibirPlanilha(emCache.dados, rascunho);
+    if (mostrouCache) setStatus('Atualizando…');
+  }
+  if (!mostrouCache) {
+    setStatus('Carregando a planilha da unidade…');
+    document.getElementById('log-wrap').hidden = true;
+    document.getElementById('log-toolbar').hidden = true;
+  }
+
+  let r;
+  try {
+    r = await api('logistica.carregar', unidadeSel ? { unidade: unidadeSel } : {});
+  } catch (e) {
+    if (!mostrouCache) document.getElementById('log-sub').textContent = '';
+    setStatus(e.message + (mostrouCache ? ' Mostrando os dados da última visita.' : ''), 'erro');
+    return mostrouCache;
+  }
+  cacheGravar('log:' + r.logistica.unidade, r);
+  if (!unidadeSel) cacheGravar('log:inicial', r);
+
+  // não troca a tabela debaixo de quem já está digitando
+  const ativo = document.activeElement;
+  if (mostrouCache && ativo && ativo.classList && ativo.classList.contains('num-input')) {
+    setStatus('Há uma versão mais nova da planilha. Salve o que digitou e recarregue a página para vê-la.', 'warn');
+    return true;
+  }
+  return exibirPlanilha(r, mostrouCache ? [] : rascunho);
 }
 
 function montarAbas() {
@@ -235,6 +292,7 @@ async function salvar() {
       salvas.push(aba.toLowerCase());
     }
     alteracoes.clear();
+    cacheRemover('log:');
     // recarrega para mostrar o que ficou gravado, sem perder o ponto da lista
     const wrap = document.getElementById('log-wrap');
     const rolagem = { wrap: wrap.scrollTop, pagina: window.scrollY };
@@ -283,29 +341,4 @@ window.addEventListener('beforeunload', e => {
 });
 
 // ── Init ───────────────────────────────────────────────────────
-(async function init() {
-  try {
-    info = await exigirSessao();
-  } catch (e) {
-    document.getElementById('log-sub').textContent = '';
-    setStatus(e.message, 'erro');
-    return;
-  }
-  const sel = document.getElementById('unitSel');
-  if (info.usuario.perfil === 'admin') {
-    sel.innerHTML = info.unidades.map(u => `<option value="${esc(u.id)}">${esc(u.nome)}</option>`).join('');
-    sel.hidden = false;
-    unidadeSel = sel.value;
-    sel.addEventListener('change', async () => {
-      const anterior = unidadeSel;
-      unidadeSel = sel.value;
-      if (!(await carregarPlanilha()) && alteracoes.size) { unidadeSel = anterior; sel.value = anterior; }
-    });
-  } else {
-    unidadeSel = info.usuario.unidade;
-    const un = info.unidades.find(u => u.id === unidadeSel);
-    document.getElementById('unitLabel').textContent = un ? un.nome : '';
-  }
-  if (!unidadeSel) { setStatus('Nenhuma unidade disponível para o seu usuário.', 'erro'); return; }
-  carregarPlanilha(true);
-})();
+carregarPlanilha(true).catch(e => setStatus(e.message, 'erro'));
