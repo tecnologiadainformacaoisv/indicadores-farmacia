@@ -1,39 +1,34 @@
-# Indicadores da Farmácia — UPA Centro
+# Indicadores da Farmácia — ISV
 
-Painéis web do **Instituto São Vicente (ISV)** para acompanhamento mensal dos indicadores clínicos e de logística da Farmácia da UPA Centro.
+Sistema do **Instituto São Vicente (ISV)** para os coordenadores farmacêuticos das unidades de saúde lançarem os indicadores mensais da farmácia, e para a coordenação farmacêutica do Instituto acompanhar todas as unidades.
 
-- `dashboard.html` — visualização com gráficos e KPIs
-- `indicadores.html` — entrada mensal de dados e definição de metas (salvos no navegador)
+- `index.html` — login e menu
+- `indicadores.html` — acompanhamento mensal: lançamento, metas, gráficos
+- `logistica.html` — planilha de saídas: medicamentos e materiais, item por item
+- `dashboard.html` — visão geral (coordenação; dados de exemplo nesta fase)
 
-**Stack:** HTML5 + CSS3 + JavaScript vanilla + Chart.js (CDN). Sem build.
+**Stack:** HTML5 + CSS3 + JavaScript vanilla + Chart.js (GitHub Pages) · API em Google Apps Script · dados em Planilhas Google.
 
 ## Estrutura
 
 ```
 projeto-indicadores-farmacia/
-├── README.md
-├── CHANGELOG.md
-├── CLAUDE.md          ← contexto para o Claude Code
-├── dashboard.html
-├── indicadores.html
+├── README.md · CHANGELOG.md · CLAUDE.md
+├── index.html · indicadores.html · logistica.html · dashboard.html
+├── appscript/         ← API (Apps Script, publicada com clasp)
 ├── assets/            ← logo ISV
 ├── css/               ← tema ISV + estilos por página
-├── js/                ← lógica por página
-├── data/              ← planilha-fonte (não versionada)
-└── docs/
+├── js/                ← API/sessão, tema, versão e lógica por página
+├── data/              ← planilha-fonte local (não versionada)
+└── docs/              ← briefing e implantação
 ```
 
 ## Como usar
 
-Projeto estático — basta servir a pasta:
+- Regras do sistema: [docs/BRIEFING.md](docs/BRIEFING.md)
+- Implantação (Apps Script, usuários, Web App): [docs/IMPLANTACAO.md](docs/IMPLANTACAO.md)
 
-```bash
-python -m http.server 8000
-# http://localhost:8000/dashboard.html
-# http://localhost:8000/indicadores.html
-```
-
-> Os dados de `indicadores.html` ficam no `localStorage` do navegador (chaves `farma_data` e `farma_metas`).
+Para ver as telas localmente, sirva a pasta (Live Server ou `python -m http.server 8000`). Sem a `API_URL` configurada em `js/api.js`, o login avisa que o sistema ainda não está ligado ao servidor.
 
 ---
 

@@ -85,6 +85,20 @@ body { background: var(--bg); color: var(--txt); font-family: var(--font); font-
   border-radius: 10px; cursor: pointer;
 }
 
+.unit-label { font-weight: 700; color: var(--title); }
+.page-status { padding: 16px 28px 0; }
+.page-status:has(.notice[hidden]) { display: none; }
+
+.link-card {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  margin-bottom: 20px; color: inherit; text-decoration: none;
+  border: 1px solid var(--bd);
+}
+.link-card:hover { border-color: var(--instituto-secondary); }
+
+.modal-intro { font-size: 13px; color: var(--txt2); margin-bottom: 16px; }
+.modal-footer .form-msg { flex: 1; margin: 0; align-self: center; }
+
 /* page content */
 .page { display: none; padding: 24px 28px; }
 .page.active { display: block; }
@@ -227,3 +241,4 @@ canvas { width: 100% !important; }
   .kpi-row { grid-template-columns: repeat(2, 1fr); }
   .form-grid { grid-template-columns: 1fr; }
 }
+.tbl td.vazio { text-align: center; padding: 20px; }

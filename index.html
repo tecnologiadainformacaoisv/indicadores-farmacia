@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Indicadores da Farmácia · UPA Centro</title>
+<title>Indicadores da Farmácia · Instituto São Vicente</title>
 <link rel="icon" href="assets/logo-isv.png">
 <script src="js/theme.js"></script>
 <link rel="stylesheet" href="css/instituto.css">
@@ -16,7 +16,7 @@
     <img class="brand__logo" src="assets/logo-isv.png" alt="Instituto São Vicente" width="48" height="48">
     <div>
       <h1 class="page-header__title">Indicadores da Farmácia</h1>
-      <p class="page-header__subtitle">UPA Centro · Instituto São Vicente</p>
+      <p class="page-header__subtitle">Instituto São Vicente</p>
     </div>
   </div>
   <div class="page-header__actions">
@@ -30,16 +30,72 @@
 </header>
 
 <main class="page-content home-main">
-  <p class="home-intro">Escolha o que deseja fazer: lançar os dados do mês ou consultar os indicadores.</p>
-  <div class="home-grid">
-    <a class="home-card card-panel" href="indicadores.html">
-      <h2>Acompanhamento mensal</h2>
-      <p>Lance os dados do mês e defina as metas de cada indicador.</p>
-    </a>
-    <a class="home-card card-panel" href="dashboard.html">
-      <h2>Dashboard</h2>
-      <p>Veja os gráficos dos indicadores clínicos e de logística.</p>
-    </a>
+
+  <!-- LOGIN -->
+  <section id="view-login" hidden>
+    <form class="auth-card card-panel" id="form-login" novalidate>
+      <h2>Entrar</h2>
+      <p>Use o usuário e a senha que a coordenação farmacêutica enviou para você.</p>
+      <div class="field">
+        <label for="login-usuario">Usuário</label>
+        <input id="login-usuario" autocomplete="username" autocapitalize="none" required>
+      </div>
+      <div class="field">
+        <label for="login-senha">Senha</label>
+        <input id="login-senha" type="password" aria-describedby="login-msg" autocomplete="current-password" required>
+      </div>
+      <label class="show-pass"><input type="checkbox" data-mostrar-senha> Mostrar senha</label>
+      <p class="form-msg" id="login-msg" role="alert"></p>
+      <button class="btn btn--primary btn-block" type="submit">Entrar</button>
+    </form>
+  </section>
+
+  <!-- TROCA DA SENHA PROVISÓRIA -->
+  <section id="view-senha" hidden>
+    <form class="auth-card card-panel" id="form-senha" novalidate>
+      <h2>Crie sua senha</h2>
+      <p>No primeiro acesso, troque a senha provisória por uma só sua, com pelo menos 8 caracteres.</p>
+      <div class="field">
+        <label for="senha-atual">Senha provisória</label>
+        <input id="senha-atual" type="password" aria-describedby="senha-msg" autocomplete="current-password" required>
+      </div>
+      <div class="field">
+        <label for="senha-nova">Nova senha</label>
+        <input id="senha-nova" type="password" aria-describedby="senha-msg" autocomplete="new-password" minlength="8" required>
+      </div>
+      <div class="field">
+        <label for="senha-conf">Repita a nova senha</label>
+        <input id="senha-conf" type="password" autocomplete="new-password" minlength="8" required>
+      </div>
+      <label class="show-pass"><input type="checkbox" data-mostrar-senha> Mostrar senhas</label>
+      <p class="form-msg" id="senha-msg" role="alert"></p>
+      <button class="btn btn--primary btn-block" type="submit">Salvar senha</button>
+    </form>
+  </section>
+
+  <!-- INÍCIO (logado) -->
+  <section id="view-home" hidden>
+    <h2 class="home-ola" id="home-ola"></h2>
+    <p class="home-intro" id="home-intro"></p>
+    <div class="home-grid">
+      <a class="home-card card-panel" href="indicadores.html">
+        <h2>Acompanhamento mensal</h2>
+        <p id="card-indicadores">Indicadores clínicos e de logística, mês a mês.</p>
+      </a>
+      <a class="home-card card-panel" href="logistica.html">
+        <h2>Planilha de saídas</h2>
+        <p id="card-logistica">Saídas de medicamentos e materiais, item por item.</p>
+      </a>
+      <a class="home-card card-panel" href="dashboard.html" id="card-dashboard" hidden>
+        <h2>Dashboard</h2>
+        <p>Visão geral das unidades (dados de exemplo nesta fase de testes).</p>
+      </a>
+    </div>
+  </section>
+
+  <div class="index-status">
+    <p class="notice" id="index-status" role="status" hidden></p>
+    <button class="btn btn--primary" type="button" id="btn-retry" hidden>Tentar de novo</button>
   </div>
 </main>
 
@@ -49,5 +105,7 @@
 </footer>
 
 <script src="js/version.js"></script>
+<script src="js/api.js"></script>
+<script src="js/index.js"></script>
 </body>
 </html>

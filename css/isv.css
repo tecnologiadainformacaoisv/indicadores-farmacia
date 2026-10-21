@@ -57,6 +57,12 @@
 }
 
 * { margin: 0; padding: 0; }
+[hidden] { display: none !important; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
 
 body {
   font-family: 'Segoe UI', system-ui, sans-serif;
@@ -131,6 +137,47 @@ button.header-btn { background: none; font-family: inherit; cursor: pointer; gap
 .home-card:hover { border-color: var(--instituto-secondary); transform: translateY(-2px); }
 .home-card h2 { font-size: 18px; color: var(--title); margin-bottom: 6px; }
 .home-card p { color: var(--text-soft); font-size: 14px; }
+.home-card[hidden] { display: none; }
+
+/* usuário logado no cabeçalho */
+.user-chip { display: inline-flex; flex-direction: column; line-height: 1.2; color: #fff; text-align: right; }
+.user-chip b { font-size: 14px; }
+.user-chip small { font-size: 12px; opacity: .85; }
+
+/* login e troca de senha */
+.auth-card {
+  width: 100%; max-width: 400px; margin: 24px auto;
+  padding: 28px 24px;
+  border: 1px solid var(--instituto-border);
+}
+.auth-card h2 { font-size: 20px; color: var(--title); margin-bottom: 4px; }
+.auth-card > p { color: var(--text-soft); font-size: 14px; margin-bottom: 20px; }
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.field label { font-size: 14px; font-weight: 600; }
+.field input {
+  min-height: 44px; padding: 10px 12px;
+  border: 1px solid var(--input-bd); border-radius: 10px;
+  background: var(--input-bg); color: var(--instituto-text);
+  font: inherit; font-size: 15px;
+}
+.btn-block { width: 100%; min-height: 44px; }
+.show-pass { display: flex; align-items: center; gap: 8px; min-height: 44px; font-size: 14px; cursor: pointer; }
+.show-pass input { width: 18px; height: 18px; }
+.index-status { max-width: 520px; margin: 0 auto; text-align: center; }
+.form-msg { min-height: 20px; margin-bottom: 12px; font-size: 14px; white-space: pre-line; }
+.form-msg.erro { color: var(--c-err); }
+.form-msg.ok { color: var(--c-ok); }
+.home-ola { font-size: 22px; color: var(--title); margin-bottom: 4px; }
+
+/* avisos em faixa (teste, carregando, erro) */
+.notice {
+  padding: 12px 16px; border-radius: 10px; margin-bottom: 16px;
+  font-size: 14px; background: var(--tint); color: var(--instituto-text);
+  border: 1px solid var(--instituto-border);
+}
+.notice.warn { background: var(--warn-bg); border-color: var(--warn-bd); color: var(--alert-warn-text); }
+.notice.erro { background: var(--err-bg); border-color: var(--err-bd); color: var(--alert-err-text); white-space: pre-line; }
+.notice[hidden] { display: none; }
 
 :focus-visible { outline: 3px solid var(--instituto-secondary); outline-offset: 2px; }
 

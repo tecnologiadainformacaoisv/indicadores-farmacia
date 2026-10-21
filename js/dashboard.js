@@ -351,3 +351,11 @@ function switchLogUnit(unit, btn) {
   document.getElementById('log-' + unit).style.display = 'block';
   btn.classList.add('active');
 }
+
+// Acesso: só a coordenação do Instituto, enquanto os dados desta tela são de exemplo
+exigirSessao()
+  .then(sessao => {
+    if (sessao.usuario.perfil !== 'admin') location.href = 'indicadores.html';
+    else document.body.classList.remove('aguardando-sessao');
+  })
+  .catch(() => { location.href = 'index.html'; });

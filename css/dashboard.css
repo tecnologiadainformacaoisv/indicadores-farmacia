@@ -270,3 +270,6 @@ canvas { width: 100% !important; }
   .kpi-strip { grid-template-columns: repeat(2, 1fr); }
   .chart-card { overflow-x: auto; }
 }
+
+/* conteúdo só aparece depois de confirmar o perfil (js/dashboard.js) */
+.aguardando-sessao main, .aguardando-sessao .tabbar { visibility: hidden; }

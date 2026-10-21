@@ -2,20 +2,13 @@
 const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 const MONTHS_FULL = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
-let data = JSON.parse(localStorage.getItem('farma_data') || '[]');
+const FIELDS = ['admissoes','conciliacoes','presc-atend','presc-anal','prm','interv-total','interv-aceitas','altas-total','altas-real','itens-pad','itens-falta','itens-venc','entregas','nc','auditados','conformes','emergenciais'];
 
-let metas = JSON.parse(localStorage.getItem('farma_metas') || 'null') || {
-  conciliacoes:   { val: 80,  dir: 'min', label: 'Conciliações Medicamentosas (%)' },
-  prescricoes:    { val: 80,  dir: 'min', label: 'Prescrições Analisadas (%)' },
-  prm:            { val: 5,   dir: 'max', label: 'PRM Identificados (%)' },
-  intervencoes:   { val: 75,  dir: 'min', label: 'Intervenções Aceitas (%)' },
-  altas:          { val: 80,  dir: 'min', label: 'Altas Hospitalares (%)' },
-  desabastecimento:{ val: 2,  dir: 'max', label: 'Desabastecimento (%)' },
-  perdas:         { val: 5,   dir: 'max', label: 'Perdas por Validade (%)' },
-  nconformidades: { val: 10,  dir: 'max', label: 'Não Conformidades Entrega (%)' },
-  estoque:        { val: 95,  dir: 'min', label: 'Conformidade de Estoque (%)' },
-  emergenciais:   { val: 10,  dir: 'max', label: 'Pedidos Emergenciais (%)' },
-};
+let info = null;        // sessão: usuário, unidades visíveis, mês aberto
+let unidadeSel = '';    // '' = todas as unidades (só coordenação do Instituto)
+let data = [];          // lançamentos do ano do mês aberto, da seleção atual
+let todosLanc = [];     // todos os lançamentos visíveis (para o modal)
+let metas = {};         // metas da unidade selecionada (ou padrão, em "todas")
 
 // chart instances
 const charts = {};
@@ -39,8 +32,8 @@ function calcRow(r) {
 }
 
 function status(key, val) {
-  if (val === null) return 'na';
   const m = metas[key];
+  if (val === null || !m) return 'na';
   if (m.dir === 'min') return val >= m.val ? 'ok' : val >= m.val * .8 ? 'warn' : 'err';
   else                 return val <= m.val ? 'ok' : val <= m.val * 1.3 ? 'warn' : 'err';
 }
@@ -140,6 +133,11 @@ function barDS(label, data, color) {
 }
 
 function mkOrUpdate(id, type, cfg) {
+  // os cards são recriados a cada render: gráfico preso a um canvas antigo é descartado
+  if (charts[id] && charts[id].canvas !== document.getElementById(id)) {
+    charts[id].destroy();
+    delete charts[id];
+  }
   if (charts[id]) {
     charts[id].data = cfg.data;
     charts[id].options = cfg.options;
@@ -157,11 +155,9 @@ function renderAll() {
   renderLogistica();
 }
 
-function dataForKey(key, monthFilter = null) {
-  const rows = monthFilter !== null
-    ? data.filter(r => r.mes === monthFilter)
-    : data;
-  return rows.map(r => ({ ...calcRow(r), mes: r.mes, unidade: r.unidade }));
+function nomeUnidade(id) {
+  const un = info.unidades.find(u => u.id === id);
+  return un ? un.nome : id;
 }
 
 function byMonth(key) {
@@ -231,8 +227,7 @@ function renderClinica() {
   `;
 
   setTimeout(() => {
-    const opts = baseOpts(110);
-    mkOrUpdate('c-conc',  'line', { data: { labels, datasets: [lineDS('Conc.', byMonth('conciliacoes'), COL.teal)]  }, options: { ...baseOpts(110), plugins: { ...baseOpts(110).plugins, ...{} } }, plugins: [goalPlugin('conciliacoes', COL.teal)] });
+    mkOrUpdate('c-conc',  'line', { data: { labels, datasets: [lineDS('Conc.', byMonth('conciliacoes'), COL.teal)]  }, options: baseOpts(110), plugins: [goalPlugin('conciliacoes', COL.teal)] });
     mkOrUpdate('c-presc', 'line', { data: { labels, datasets: [lineDS('Presc.', byMonth('prescricoes'), COL.blue)] }, options: baseOpts(110), plugins: [goalPlugin('prescricoes', COL.blue)] });
     mkOrUpdate('c-prm',   'bar',  { data: { labels, datasets: [barDS('PRM', byMonth('prm'), COL.amber)]            }, options: baseOpts(),    plugins: [goalPlugin('prm', COL.amber)] });
     mkOrUpdate('c-interv','line', { data: { labels, datasets: [lineDS('Interv.', byMonth('intervencoes'), COL.rose)]}, options: baseOpts(110),plugins: [goalPlugin('intervencoes', COL.rose)] });
@@ -242,12 +237,12 @@ function renderClinica() {
   // Table
   const tbody = document.querySelector('#table-clinica tbody');
   tbody.innerHTML = '';
-  const sorted = [...data].sort((a, b) => a.mes - b.mes);
+  const sorted = [...data].sort((a, b) => a.mes - b.mes || nomeUnidade(a.unidade).localeCompare(nomeUnidade(b.unidade)));
   sorted.forEach(r => {
     const c = calcRow(r);
     tbody.innerHTML += `<tr>
       <td>${MONTHS[r.mes]}</td>
-      <td>${r.unidade}</td>
+      <td>${esc(nomeUnidade(r.unidade))}</td>
       <td class="mono ${status('conciliacoes', c.conciliacoes) === 'ok' ? 'c-ok' : status('conciliacoes', c.conciliacoes) === 'warn' ? 'c-warn' : c.conciliacoes !== null ? 'c-err' : 'c-na'}">${fmtVal(c.conciliacoes)}</td>
       <td class="mono ${statusClass('prescricoes', c.prescricoes)}">${fmtVal(c.prescricoes)}</td>
       <td class="mono ${statusClass('prm', c.prm)}">${fmtVal(c.prm)}</td>
@@ -255,7 +250,13 @@ function renderClinica() {
       <td class="mono ${statusClass('altas', c.altas)}">${fmtVal(c.altas)}</td>
     </tr>`;
   });
-  if (!sorted.length) tbody.innerHTML = '<tr><td colspan="7" class="c-na" style="text-align:center;padding:20px">Nenhum dado lançado ainda. Use "+ Lançar dados" para começar.</td></tr>';
+  if (!sorted.length) tbody.innerHTML = `<tr><td colspan="7" class="c-na vazio">${textoVazio()}</td></tr>`;
+}
+
+function textoVazio() {
+  return info.usuario.perfil === 'admin'
+    ? `Nenhum lançamento em ${info.mesAberto.ano} ainda. Os coordenadores das unidades lançam os dados do mês.`
+    : `Nenhum lançamento em ${info.mesAberto.ano} ainda. Use "+ Lançar dados" para lançar ${nomeMes(info.mesAberto)}.`;
 }
 
 function statusClass(key, val) {
@@ -323,12 +324,12 @@ function renderLogistica() {
 
   const tbody = document.querySelector('#table-logistica tbody');
   tbody.innerHTML = '';
-  const sorted = [...data].sort((a, b) => a.mes - b.mes);
+  const sorted = [...data].sort((a, b) => a.mes - b.mes || nomeUnidade(a.unidade).localeCompare(nomeUnidade(b.unidade)));
   sorted.forEach(r => {
     const c = calcRow(r);
     tbody.innerHTML += `<tr>
       <td>${MONTHS[r.mes]}</td>
-      <td>${r.unidade}</td>
+      <td>${esc(nomeUnidade(r.unidade))}</td>
       <td class="mono ${statusClass('desabastecimento', c.desabastecimento)}">${fmtVal(c.desabastecimento)}</td>
       <td class="mono ${statusClass('perdas', c.perdas)}">${fmtVal(c.perdas)}</td>
       <td class="mono ${statusClass('nconformidades', c.nconformidades)}">${fmtVal(c.nconformidades)}</td>
@@ -336,7 +337,7 @@ function renderLogistica() {
       <td class="mono ${statusClass('emergenciais', c.emergenciais)}">${fmtVal(c.emergenciais)}</td>
     </tr>`;
   });
-  if (!sorted.length) tbody.innerHTML = '<tr><td colspan="7" class="c-na" style="text-align:center;padding:20px">Nenhum dado lançado ainda.</td></tr>';
+  if (!sorted.length) tbody.innerHTML = `<tr><td colspan="7" class="c-na vazio">${textoVazio()}</td></tr>`;
 }
 
 // ── Navigation ─────────────────────────────────────────────────
@@ -351,59 +352,204 @@ function goPage(page, el) {
 }
 
 // ── Entry modal ────────────────────────────────────────────────
+// Só o coordenador da unidade lança, e sempre no mês aberto (definido pelo servidor).
 function openEntry() {
-  document.getElementById('f-mes').value = document.getElementById('monthSel').value;
-  document.getElementById('overlay-entry').classList.add('open');
-}
-function closeEntry() { document.getElementById('overlay-entry').classList.remove('open'); }
-
-function saveEntry() {
-  const fields = ['admissoes','conciliacoes','presc-atend','presc-anal','prm','interv-total','interv-aceitas','altas-total','altas-real','itens-pad','itens-falta','itens-venc','entregas','nc','auditados','conformes','emergenciais'];
-  const row = {
-    mes: +document.getElementById('f-mes').value,
-    unidade: document.getElementById('f-unidade').value,
-  };
-  fields.forEach(f => {
-    const v = document.getElementById('f-' + f).value;
-    row[f] = v !== '' ? +v : null;
+  const ref = info.mesAberto;
+  const unidade = info.usuario.unidade;
+  const atual = todosLanc.find(r => r.unidade === unidade && r.ano === ref.ano && r.mes === ref.mes);
+  document.getElementById('entry-ref').textContent =
+    `${nomeUnidade(unidade)} · mês de referência: ${nomeMes(ref)}` +
+    (atual ? ` · já lançado por ${atual.lancadoPor} em ${atual.lancadoEm} (salvar substitui)` : '');
+  FIELDS.forEach(f => {
+    const v = atual ? atual[f] : null;
+    document.getElementById('f-' + f).value = v === null || v === undefined ? '' : v;
   });
-  // Remove existing entry for same month + unit
-  data = data.filter(r => !(r.mes === row.mes && r.unidade === row.unidade));
-  data.push(row);
-  localStorage.setItem('farma_data', JSON.stringify(data));
-  closeEntry();
-  // Reset fields
-  fields.forEach(f => { document.getElementById('f-' + f).value = ''; });
-  renderAll();
+  entradaInicial = valoresEntrada();
+  setMsg('entry-msg', '');
+  abrirModal('overlay-entry', 'f-admissoes');
+}
+
+let entradaInicial = '';
+function valoresEntrada() { return FIELDS.map(f => document.getElementById('f-' + f).value).join('|'); }
+
+// fechar sem salvar pede confirmação se algo foi digitado
+function closeEntry(confirmar) {
+  const ov = document.getElementById('overlay-entry');
+  if (!ov.classList.contains('open')) return;
+  if (confirmar && valoresEntrada() !== entradaInicial && !confirm('Descartar os dados digitados?')) return;
+  fecharModal('overlay-entry');
+}
+
+// ── Modais: foco entra no diálogo, fica preso nele e volta ao botão de origem ──
+let focoAntes = null;
+
+function abrirModal(id, focarId) {
+  focoAntes = document.activeElement;
+  document.getElementById(id).classList.add('open');
+  document.getElementById(focarId).focus();
+}
+
+function fecharModal(id) {
+  document.getElementById(id).classList.remove('open');
+  if (focoAntes && focoAntes.focus) focoAntes.focus();
+  focoAntes = null;
+}
+
+document.addEventListener('keydown', e => {
+  const ov = document.querySelector('.overlay.open');
+  if (!ov) return;
+  if (e.key === 'Escape') {
+    if (ov.id === 'overlay-entry') closeEntry(true);
+    else closeMetas();
+    return;
+  }
+  if (e.key !== 'Tab') return;
+  const focaveis = [...ov.querySelectorAll('button, input, select')].filter(el => !el.disabled && !el.hidden && el.offsetParent !== null);
+  if (!focaveis.length) return;
+  const primeiro = focaveis[0], ultimo = focaveis[focaveis.length - 1];
+  if (e.shiftKey && document.activeElement === primeiro) { e.preventDefault(); ultimo.focus(); }
+  else if (!e.shiftKey && document.activeElement === ultimo) { e.preventDefault(); primeiro.focus(); }
+});
+
+async function saveEntry() {
+  const dados = {};
+  const invalidos = [];
+  FIELDS.forEach(f => {
+    const el = document.getElementById('f-' + f);
+    const v = el.value.trim();
+    if (v === '') { dados[f] = null; return; }
+    const n = Number(v);
+    if (!Number.isInteger(n) || n < 0) invalidos.push(el.labels[0] ? el.labels[0].textContent : f);
+    dados[f] = n;
+  });
+  if (invalidos.length) {
+    setMsg('entry-msg', 'Use números inteiros, sem negativos: ' + invalidos.join(', ') + '.', 'erro');
+    return;
+  }
+  const btn = document.getElementById('btnSaveEntry');
+  btn.disabled = true;
+  setMsg('entry-msg', 'Salvando…');
+  try {
+    await api('lancamentos.salvar', { unidade: info.usuario.unidade, dados });
+    closeEntry();
+    await carregarDados();
+    setStatus('Lançamento de ' + nomeMes(info.mesAberto) + ' salvo.', '');
+  } catch (e) {
+    setMsg('entry-msg', e.message, 'erro');
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 // ── Metas modal ────────────────────────────────────────────────
+// Todos veem; só a coordenação do Instituto altera, e sempre de uma unidade específica.
+function podeEditarMetas() {
+  return info.usuario.perfil === 'admin' && unidadeSel !== '';
+}
+
 function openMetas() {
-  const list = document.getElementById('metas-list');
-  list.innerHTML = Object.entries(metas).map(([key, m]) => `
+  const editavel = podeEditarMetas();
+  const intro = info.usuario.perfil !== 'admin'
+    ? 'Metas da sua unidade, definidas pela coordenação farmacêutica do Instituto.'
+    : editavel
+      ? `Metas de ${nomeUnidade(unidadeSel)}. O sistema alerta quando o valor fica abaixo (ou acima) da meta.`
+      : 'Metas de referência. Para alterar, escolha uma unidade no topo da página.';
+  document.getElementById('metas-intro').textContent = intro;
+  document.getElementById('metas-list').innerHTML = Object.entries(metas).map(([key, m]) => `
     <div class="meta-row">
-      <span class="meta-label">${m.label}</span>
-      <input class="meta-input" id="meta-${key}" type="number" value="${m.val}" min="0" max="100" step="0.5">
+      <label class="meta-label" for="meta-${key}">${esc(m.label)}</label>
+      <input class="meta-input" id="meta-${key}" type="number" value="${m.val}" min="0" max="100" step="0.5" ${editavel ? '' : 'disabled'}>
       <span class="meta-unit">%</span>
       <span class="meta-dir">${m.dir === 'min' ? '↑ mínimo' : '↓ máximo'}</span>
     </div>`).join('');
-  document.getElementById('overlay-metas').classList.add('open');
+  document.getElementById('btnSaveMetas').hidden = !editavel;
+  setMsg('metas-msg', '');
+  abrirModal('overlay-metas', editavel ? 'meta-' + Object.keys(metas)[0] : 'metas-fechar');
 }
-function closeMetas() { document.getElementById('overlay-metas').classList.remove('open'); }
-function saveMetas() {
+function closeMetas() {
+  if (document.getElementById('overlay-metas').classList.contains('open')) fecharModal('overlay-metas');
+}
+
+async function saveMetas() {
+  const novas = {};
   Object.keys(metas).forEach(key => {
     const el = document.getElementById('meta-' + key);
-    if (el) metas[key].val = +el.value;
+    if (el) novas[key] = el.value === '' ? '' : +el.value;
   });
-  localStorage.setItem('farma_metas', JSON.stringify(metas));
-  closeMetas();
+  const btn = document.getElementById('btnSaveMetas');
+  btn.disabled = true;
+  setMsg('metas-msg', 'Salvando…');
+  try {
+    await api('metas.salvar', { unidade: unidadeSel, metas: novas });
+    closeMetas();
+    await carregarDados();
+    setStatus('Metas de ' + nomeUnidade(unidadeSel) + ' salvas.', '');
+  } catch (e) {
+    setMsg('metas-msg', e.message, 'erro');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ── Mensagens ──────────────────────────────────────────────────
+function setMsg(id, texto, tipo) {
+  const el = document.getElementById(id);
+  el.textContent = texto || '';
+  el.className = 'form-msg' + (tipo ? ' ' + tipo : '');
+}
+
+function setStatus(texto, tipo) {
+  const el = document.getElementById('page-status');
+  el.textContent = texto || '';
+  el.className = 'notice' + (tipo ? ' ' + tipo : '');
+  el.hidden = !texto;
+}
+
+// ── Dados ──────────────────────────────────────────────────────
+async function carregarDados() {
+  const [lanc, m] = await Promise.all([
+    api('lancamentos.listar', { unidade: unidadeSel }),
+    api('metas.listar', { unidade: unidadeSel }),
+  ]);
+  todosLanc = lanc;
+  data = lanc.filter(r => r.ano === info.mesAberto.ano);
+  metas = m;
   renderAll();
 }
 
-// ── Init ───────────────────────────────────────────────────────
-// Set current month
-const now = new Date();
-document.getElementById('monthSel').value = now.getMonth();
-document.getElementById('f-mes').value    = now.getMonth();
+function montarUnidades() {
+  const admin = info.usuario.perfil === 'admin';
+  const sel = document.getElementById('unitSel');
+  const label = document.getElementById('unitLabel');
+  if (admin) {
+    sel.innerHTML = '<option value="">Todas as unidades</option>' +
+      info.unidades.map(u => `<option value="${esc(u.id)}">${esc(u.nome)}</option>`).join('');
+    sel.hidden = false;
+    sel.addEventListener('change', async () => {
+      unidadeSel = sel.value;
+      setStatus('Carregando…');
+      try { await carregarDados(); setStatus(''); } catch (e) { setStatus(e.message, 'erro'); }
+    });
+  } else {
+    unidadeSel = info.usuario.unidade;
+    label.textContent = nomeUnidade(unidadeSel);
+  }
+  document.getElementById('btnAdd').hidden = admin;
+}
 
-renderAll();
+// ── Init ───────────────────────────────────────────────────────
+(async function init() {
+  setStatus('Carregando…');
+  try {
+    info = await exigirSessao();
+    document.getElementById('monthSel').value = info.mesAberto.mes;
+    montarUnidades();
+    await carregarDados();
+    const avisos = [];
+    if (info.mesAberto.teste) avisos.push(`Ambiente de teste: o mês aberto para lançamento está fixo em ${nomeMes(info.mesAberto)}.`);
+    if (info.usuario.perfil === 'admin') avisos.push('Os coordenadores de cada unidade fazem os lançamentos; aqui você acompanha e define as metas.');
+    setStatus(avisos.join(' '), info.mesAberto.teste ? 'warn' : '');
+  } catch (e) {
+    setStatus(e.message, 'erro');
+  }
+})();

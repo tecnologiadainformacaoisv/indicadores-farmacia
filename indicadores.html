@@ -17,7 +17,7 @@
     <img class="brand__logo" src="assets/logo-isv.png" alt="Instituto São Vicente" width="48" height="48">
     <div>
       <h1 class="page-header__title">Indicadores da Farmácia</h1>
-      <p class="page-header__subtitle">Acompanhamento mensal · UPA Centro</p>
+      <p class="page-header__subtitle">Acompanhamento mensal</p>
     </div>
   </div>
   <div class="page-header__actions">
@@ -43,6 +43,9 @@
   <button class="nav-item" onclick="goPage('logistica',this)" data-page="logistica">
     <span class="dot" style="background:var(--blue)"></span> Logística Geral
   </button>
+  <a class="nav-item" href="logistica.html">
+    <span class="dot" style="background:var(--green)"></span> Planilha de saídas
+  </a>
   <p class="sidebar-section">Configuração</p>
   <button class="nav-item" onclick="openMetas()">
     <span class="dot" style="background:var(--txt3)"></span> Metas e alertas
@@ -59,6 +62,10 @@
       <p id="page-sub">Acompanhamento mensal · insira os dados pelo botão ao lado</p>
     </div>
     <div class="topbar-right">
+      <label class="sr-only" for="unitSel">Unidade</label>
+      <select class="month-select" id="unitSel" hidden></select>
+      <span class="unit-label" id="unitLabel"></span>
+      <label class="sr-only" for="monthSel">Mês exibido</label>
       <select class="month-select" id="monthSel" onchange="renderAll()">
         <option value="0">Janeiro</option><option value="1">Fevereiro</option>
         <option value="2">Março</option><option value="3">Abril</option>
@@ -68,9 +75,11 @@
         <option value="10">Novembro</option><option value="11">Dezembro</option>
       </select>
       <button class="btn btn-ghost" onclick="openMetas()">⚙ Metas</button>
-      <button class="btn btn-primary" id="btnAdd" onclick="openEntry()">+ Lançar dados</button>
+      <button class="btn btn-primary" id="btnAdd" onclick="openEntry()" hidden>+ Lançar dados</button>
     </div>
   </div>
+
+  <div class="page-status"><p class="notice" id="page-status" role="status" hidden></p></div>
 
   <!-- PAGE: CLÍNICA -->
   <div class="page active" id="page-clinica">
@@ -85,6 +94,10 @@
 
   <!-- PAGE: LOGÍSTICA -->
   <div class="page" id="page-logistica">
+    <a class="card link-card" href="logistica.html">
+      <div><div class="card-title">Planilha de saídas</div><div class="card-sub">Saídas, CMM e estoque de cada medicamento e material, lançados item por item.</div></div>
+      <span class="btn btn-ghost">Abrir planilha →</span>
+    </a>
     <div class="alerts-bar" id="alerts-logistica"></div>
     <div class="kpi-row" id="kpi-logistica"></div>
     <div class="grid2" id="charts-logistica"></div>
@@ -104,86 +117,68 @@
 
 <!-- ENTRY MODAL -->
 <div class="overlay" id="overlay-entry">
-<div class="modal">
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="entry-titulo">
   <div class="modal-header">
-    <h3>Lançar dados do mês</h3>
-    <button class="modal-close" onclick="closeEntry()" aria-label="Fechar">×</button>
+    <h3 id="entry-titulo">Lançar dados do mês</h3>
+    <button class="modal-close" onclick="closeEntry(true)" aria-label="Fechar">×</button>
   </div>
   <div class="modal-body">
-    <div class="form-grid">
-      <div class="form-group">
-        <label>Mês</label>
-        <select id="f-mes">
-          <option value="0">Janeiro</option><option value="1">Fevereiro</option>
-          <option value="2">Março</option><option value="3">Abril</option>
-          <option value="4">Maio</option><option value="5">Junho</option>
-          <option value="6">Julho</option><option value="7">Agosto</option>
-          <option value="8">Setembro</option><option value="9">Outubro</option>
-          <option value="10">Novembro</option><option value="11">Dezembro</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Unidade</label>
-        <select id="f-unidade">
-          <option value="UPA Jurema">UPA Jurema</option>
-          <option value="UPA Centro">UPA Centro</option>
-          <option value="H. Municipal">H. Municipal</option>
-          <option value="Maternidade">Maternidade</option>
-        </select>
-      </div>
-    </div>
+    <p class="notice" id="entry-ref"></p>
 
     <div class="form-section">Indicadores Clínicos</div>
     <div class="form-grid">
-      <div class="form-group"><label>Admissões totais</label><input type="number" id="f-admissoes" placeholder="ex: 120" min="0"></div>
-      <div class="form-group"><label>Conciliações realizadas</label><input type="number" id="f-conciliacoes" placeholder="ex: 95" min="0"></div>
-      <div class="form-group"><label>Prescrições atendidas</label><input type="number" id="f-presc-atend" placeholder="ex: 300" min="0"></div>
-      <div class="form-group"><label>Prescrições analisadas</label><input type="number" id="f-presc-anal" placeholder="ex: 270" min="0"></div>
-      <div class="form-group"><label>PRM identificados</label><input type="number" id="f-prm" placeholder="ex: 12" min="0"></div>
-      <div class="form-group"><label>Intervenções realizadas</label><input type="number" id="f-interv-total" placeholder="ex: 20" min="0"></div>
-      <div class="form-group"><label>Intervenções aceitas</label><input type="number" id="f-interv-aceitas" placeholder="ex: 18" min="0"></div>
-      <div class="form-group"><label>Altas totais</label><input type="number" id="f-altas-total" placeholder="ex: 40" min="0"></div>
-      <div class="form-group"><label>Altas realizadas (farm.)</label><input type="number" id="f-altas-real" placeholder="ex: 35" min="0"></div>
+      <div class="form-group"><label for="f-admissoes">Admissões totais</label><input type="number" id="f-admissoes" inputmode="numeric" step="1" placeholder="ex: 120" min="0"></div>
+      <div class="form-group"><label for="f-conciliacoes">Conciliações realizadas</label><input type="number" id="f-conciliacoes" inputmode="numeric" step="1" placeholder="ex: 95" min="0"></div>
+      <div class="form-group"><label for="f-presc-atend">Prescrições atendidas</label><input type="number" id="f-presc-atend" inputmode="numeric" step="1" placeholder="ex: 300" min="0"></div>
+      <div class="form-group"><label for="f-presc-anal">Prescrições analisadas</label><input type="number" id="f-presc-anal" inputmode="numeric" step="1" placeholder="ex: 270" min="0"></div>
+      <div class="form-group"><label for="f-prm">PRM identificados</label><input type="number" id="f-prm" inputmode="numeric" step="1" placeholder="ex: 12" min="0"></div>
+      <div class="form-group"><label for="f-interv-total">Intervenções realizadas</label><input type="number" id="f-interv-total" inputmode="numeric" step="1" placeholder="ex: 20" min="0"></div>
+      <div class="form-group"><label for="f-interv-aceitas">Intervenções aceitas</label><input type="number" id="f-interv-aceitas" inputmode="numeric" step="1" placeholder="ex: 18" min="0"></div>
+      <div class="form-group"><label for="f-altas-total">Altas totais</label><input type="number" id="f-altas-total" inputmode="numeric" step="1" placeholder="ex: 40" min="0"></div>
+      <div class="form-group"><label for="f-altas-real">Altas realizadas (farm.)</label><input type="number" id="f-altas-real" inputmode="numeric" step="1" placeholder="ex: 35" min="0"></div>
     </div>
 
     <div class="form-section">Indicadores Logísticos</div>
     <div class="form-grid">
-      <div class="form-group"><label>Itens padronizados</label><input type="number" id="f-itens-pad" placeholder="ex: 334" min="0"></div>
-      <div class="form-group"><label>Itens em falta</label><input type="number" id="f-itens-falta" placeholder="ex: 2" min="0"></div>
-      <div class="form-group"><label>Itens vencidos</label><input type="number" id="f-itens-venc" placeholder="ex: 5" min="0"></div>
-      <div class="form-group"><label>Total de entregas</label><input type="number" id="f-entregas" placeholder="ex: 30" min="0"></div>
-      <div class="form-group"><label>Não conformidades entrega</label><input type="number" id="f-nc" placeholder="ex: 3" min="0"></div>
-      <div class="form-group"><label>Itens auditados estoque</label><input type="number" id="f-auditados" placeholder="ex: 360" min="0"></div>
-      <div class="form-group"><label>Itens em conformidade</label><input type="number" id="f-conformes" placeholder="ex: 355" min="0"></div>
-      <div class="form-group"><label>Pedidos emergenciais</label><input type="number" id="f-emergenciais" placeholder="ex: 2" min="0"></div>
+      <div class="form-group"><label for="f-itens-pad">Itens padronizados</label><input type="number" id="f-itens-pad" inputmode="numeric" step="1" placeholder="ex: 334" min="0"></div>
+      <div class="form-group"><label for="f-itens-falta">Itens em falta</label><input type="number" id="f-itens-falta" inputmode="numeric" step="1" placeholder="ex: 2" min="0"></div>
+      <div class="form-group"><label for="f-itens-venc">Itens vencidos</label><input type="number" id="f-itens-venc" inputmode="numeric" step="1" placeholder="ex: 5" min="0"></div>
+      <div class="form-group"><label for="f-entregas">Total de entregas</label><input type="number" id="f-entregas" inputmode="numeric" step="1" placeholder="ex: 30" min="0"></div>
+      <div class="form-group"><label for="f-nc">Não conformidades entrega</label><input type="number" id="f-nc" inputmode="numeric" step="1" placeholder="ex: 3" min="0"></div>
+      <div class="form-group"><label for="f-auditados">Itens auditados estoque</label><input type="number" id="f-auditados" inputmode="numeric" step="1" placeholder="ex: 360" min="0"></div>
+      <div class="form-group"><label for="f-conformes">Itens em conformidade</label><input type="number" id="f-conformes" inputmode="numeric" step="1" placeholder="ex: 355" min="0"></div>
+      <div class="form-group"><label for="f-emergenciais">Pedidos emergenciais</label><input type="number" id="f-emergenciais" inputmode="numeric" step="1" placeholder="ex: 2" min="0"></div>
     </div>
   </div>
   <div class="modal-footer">
-    <button class="btn btn-ghost" onclick="closeEntry()">Cancelar</button>
-    <button class="btn btn-primary" onclick="saveEntry()">Salvar lançamento</button>
+    <p class="form-msg" id="entry-msg" role="alert"></p>
+    <button class="btn btn-ghost" onclick="closeEntry(true)">Cancelar</button>
+    <button class="btn btn-primary" id="btnSaveEntry" onclick="saveEntry()">Salvar lançamento</button>
   </div>
 </div>
 </div>
 
 <!-- METAS MODAL -->
 <div class="overlay" id="overlay-metas">
-<div class="modal">
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="metas-titulo">
   <div class="modal-header">
-    <h3>Configurar metas e alertas</h3>
+    <h3 id="metas-titulo">Metas e alertas</h3>
     <button class="modal-close" onclick="closeMetas()" aria-label="Fechar">×</button>
   </div>
   <div class="modal-body">
-    <p style="font-size:12px;color:var(--txt2);margin-bottom:16px">Defina a meta esperada para cada indicador. O sistema alertará automaticamente quando o valor estiver abaixo (ou acima) da meta configurada.</p>
+    <p class="modal-intro" id="metas-intro"></p>
     <div id="metas-list"></div>
   </div>
   <div class="modal-footer">
-    <button class="btn btn-ghost" onclick="closeMetas()">Cancelar</button>
-    <button class="btn btn-primary" onclick="saveMetas()">Salvar metas</button>
+    <p class="form-msg" id="metas-msg" role="alert"></p>
+    <button class="btn btn-ghost" id="metas-fechar" onclick="closeMetas()">Fechar</button>
+    <button class="btn btn-primary" id="btnSaveMetas" onclick="saveMetas()">Salvar metas</button>
   </div>
 </div>
 </div>
 
 <script src="js/version.js"></script>
+<script src="js/api.js"></script>
 <script src="js/indicadores.js"></script>
 </body>
 </html>
