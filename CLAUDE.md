@@ -89,7 +89,7 @@ Tudo na pasta **"Indicadores Farmácia"** do Drive da **conta da TI** (ID na pro
 - Mantém-se vanilla (sem framework/build); não introduzir dependências sem alinhamento.
 - CSS em `css/` e JS em `js/`, um arquivo por página — não embutir inline nos HTMLs.
 - Interface no padrão ISV (`../_ux-design/referencia/tokens-isv.md`), tema claro padrão + escuro; cores sempre via tokens de `isv.css`. Páginas publicadas não enxergam `../shared`: ao mudar o padrão lá, recopie `instituto.css` e o logo.
-- Ao subir a versão, altere `js/version.js` e o `CHANGELOG.md` juntos.
+- **Cada mudança sobe a versão**: altere `js/version.js` e o `CHANGELOG.md` juntos, no mesmo commit, e crie a tag `vX.Y.Z`. PATCH = correções e ajustes; MINOR = nova etapa do fluxo.
 - Versionamento: **Semantic Versioning**; `MAJOR` = 0 em pré-produção. Commits em **Conventional Commits**.
 - Planilhas com dados reais não vão para o git (`data/*.xlsx` ignorado).
 
@@ -108,7 +108,7 @@ Tudo na pasta **"Indicadores Farmácia"** do Drive da **conta da TI** (ID na pro
 
 > Última atualização: 2026-10-21
 
-- **Versão publicada no site:** v0.0.1 (`js/version.js`). O código já inclui a versão de teste (ver "Não lançado" no CHANGELOG); a versão sobe quando a Tereza validar o fluxo.
+- **Versão:** v0.3.0 (`js/version.js`), em teste com a Tereza. **Regra: toda mudança sobe a versão** (PATCH para correções e ajustes, MINOR para nova etapa do fluxo), alterando `js/version.js` e o `CHANGELOG.md` no mesmo commit, com tag `vX.Y.Z`.
 - **Implantado e em teste:** API (Web App na conta da TI), planilha "Sistema", usuário `tereza` e usuários de teste de coordenador, login, Clínica Geral na nuvem, metas por unidade e planilha de saídas item por item. `API_URL` já está em `js/api.js`.
 - Os testes usam a planilha com dados até **maio/2026** (`MES_ABERTO_TESTE = 2026-05` na aba `Config`). A versão atualizada só entra depois da validação da Tereza; antes de uso real, seguir o checklist de `docs/IMPLANTACAO.md`.
 - Validação automatizada: não há suíte no repositório; o servidor foi testado com Apps Script simulado (48 verificações: login, permissões, mês aberto, lançamentos, metas, gravação na planilha, fórmulas, criação de coluna) e a estrutura foi conferida com a planilha real de maio (169 medicamentos, 156 materiais).

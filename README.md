@@ -32,4 +32,4 @@ Para ver as telas localmente, sirva a pasta (Live Server ou `python -m http.serv
 
 ---
 
-Versão atual: **v0.0.1** · Versionamento: [Semantic Versioning](https://semver.org/lang/pt-BR/) · Commits: [Conventional Commits](https://www.conventionalcommits.org/pt-br/)
+Versão atual: **v0.3.0** · Versionamento: [Semantic Versioning](https://semver.org/lang/pt-BR/) · Commits: [Conventional Commits](https://www.conventionalcommits.org/pt-br/)

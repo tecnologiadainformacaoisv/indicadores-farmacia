@@ -1,6 +1,6 @@
 # Changelog – Indicadores da Farmácia
 
-## Não lançado
+## v0.3.0 – 2026-10-21
 ### Adicionado
 - API em Google Apps Script (`appscript/`): login com usuário e senha, perfis coordenação (admin) e coordenador, permissões conferidas no servidor
 - Login, troca obrigatória da senha provisória e menu inicial conforme o perfil (`index.html`)
