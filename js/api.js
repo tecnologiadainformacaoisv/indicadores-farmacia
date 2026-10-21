@@ -1,7 +1,7 @@
 // Cliente da API (Apps Script) e sessão do usuário. Usado por todas as telas.
 
 // URL do Web App (Apps Script → Implantar → App da Web). Ver docs/IMPLANTACAO.md.
-const API_URL = '';
+const API_URL = 'https://script.google.com/macros/s/AKfycbyXW2DjopCrX4Xa_Kwdd7fSblDptfisk2Usa0ZmEBuL7bCFY3DbZhory-VbaqXQrzA6/exec';
 
 const SESSAO_KEY = 'farma_sessao';
 const MESES_NOME = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
