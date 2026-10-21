@@ -1,5 +1,10 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.3.1 – 2026-10-21
+### Corrigido
+- Planilha de saídas carrega mais rápido: cada aba é lida uma vez só no servidor
+- A resposta da API informa o tempo gasto no servidor (`ms`), para diagnosticar lentidão
+
 ## v0.3.0 – 2026-10-21
 ### Adicionado
 - API em Google Apps Script (`appscript/`): login com usuário e senha, perfis coordenação (admin) e coordenador, permissões conferidas no servidor

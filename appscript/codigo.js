@@ -89,6 +89,7 @@ function doPost(e) {
   } catch (err) {
     return resposta_({ ok: false, erro: 'Requisição inválida.' });
   }
+  const inicio = Date.now();
   try {
     const rota = Object.prototype.hasOwnProperty.call(ROTAS, req.action) ? ROTAS[req.action] : null;
     if (!rota) throw erro_('Ação desconhecida.');
@@ -97,7 +98,8 @@ function doPost(e) {
     if (usuario && ativo_(usuario.trocarSenha) && !rota.semSenhaDefinitiva) {
       throw erro_('Troque a senha provisória antes de continuar.', 'senhaProvisoria');
     }
-    return resposta_({ ok: true, dados: rota.fn(req, usuario) });
+    const dados = rota.fn(req, usuario);
+    return resposta_({ ok: true, dados: dados, ms: Date.now() - inicio });
   } catch (err) {
     if (err.codigo) return resposta_({ ok: false, erro: err.message, codigo: err.codigo });
     // erro inesperado: detalhe só no log do Apps Script, nunca para o cliente
@@ -388,8 +390,8 @@ function lerLogistica_(req, u) {
   const abas = ABAS_LOGISTICA.map(nome => {
     const sh = ss.getSheetByName(nome);
     if (!sh) return null;
-    const est = estruturaAba_(sh);
     const valores = sh.getRange(1, 1, sh.getLastRow(), sh.getLastColumn()).getValues();
+    const est = estruturaAba_(sh, valores);
     return {
       nome: nome,
       meses: est.meses.map(m => ({ mes: m.mes, rotulo: MESES_ROTULO[m.mes] })),
@@ -485,11 +487,12 @@ function planilhaDaUnidade_(un) {
 
 // Localiza cabeçalho, colunas de mês, CMM, estoque e linhas de produto.
 // O modelo tem linhas de título variáveis, então tudo é achado pelo texto.
-function estruturaAba_(sh) {
+function estruturaAba_(sh, matriz) {
   const nLin = sh.getLastRow();
   const nCol = sh.getLastColumn();
   if (!nLin || !nCol) throw erro_('A aba ' + sh.getName() + ' está vazia.', 'configuracao');
-  const txt = sh.getRange(1, 1, nLin, nCol).getDisplayValues();
+  // "matriz" (getValues já lido) evita ler a aba inteira outra vez; os testes de texto usam String()
+  const txt = matriz || sh.getRange(1, 1, nLin, nCol).getDisplayValues();
 
   let hr = -1, colProd = -1;
   for (let r = 0; r < Math.min(nLin, 20) && hr < 0; r++) {
