@@ -89,6 +89,7 @@ function montarHome(info) {
     ? 'Consulte as saídas de medicamentos e materiais de cada unidade.'
     : 'Lance as saídas, o CMM e o estoque de cada item.';
   document.getElementById('card-dashboard').hidden = !admin;
+  document.getElementById('card-usuarios').hidden = !admin;
   if (info.mesAberto.teste) status('Ambiente de teste: o mês aberto está fixo em ' + nomeMes(info.mesAberto) + '.', 'warn');
   mostrar('home');
 }

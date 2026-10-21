@@ -125,6 +125,11 @@ const ROTAS = {
   'metas.salvar':       { fn: salvarMetas_ },
   'logistica.ler':      { fn: lerLogistica_ },
   'logistica.salvar':   { fn: salvarLogistica_ },
+  'usuarios.carregar':      { fn: carregarUsuarios_ },
+  'usuarios.criar':         { fn: criarUsuarioApi_ },
+  'usuarios.atualizar':     { fn: atualizarUsuarioApi_ },
+  'usuarios.redefinirSenha': { fn: redefinirSenhaApi_ },
+  'usuarios.definirAtivo':  { fn: definirAtivoApi_ },
 };
 
 function resposta_(obj) {
@@ -340,6 +345,105 @@ function salvarLancamento_(req, u) {
   });
   registrar_(u.login, 'lancamentos.salvar', un.id + ' ' + (ref.mes + 1) + '/' + ref.ano);
   return { ano: ref.ano, mes: ref.mes };
+}
+
+// ── Usuários (só a coordenação do Instituto) ───────────────────
+// A tela cadastra e mantém coordenadores. Contas da coordenação (admin) só pelo editor do Apps Script.
+
+function exigirAdmin_(u) {
+  if (!ehAdmin_(u)) throw erro_('Só a coordenação do Instituto gerencia usuários.', 'permissao');
+}
+
+function usuarioPublico_(x) {
+  return {
+    login: String(x.login), nome: String(x.nome), perfil: String(x.perfil), unidade: String(x.unidade || ''),
+    ativo: ativo_(x.ativo), trocarSenha: ativo_(x.trocarSenha),
+  };
+}
+
+function carregarUsuarios_(req, u) {
+  exigirAdmin_(u);
+  return { sessao: sessao_(req, u), usuarios: lerTabela_(ABAS.USUARIOS).map(usuarioPublico_) };
+}
+
+// Valida nome e unidade; devolve os valores limpos ou lança com todos os problemas.
+function validarNomeUnidade_(req, erros) {
+  const nome = String(req.nome || '').trim().replace(/\s+/g, ' ');
+  const unidade = String(req.unidade || '').trim();
+  if (nome.length < 2 || nome.length > 80) erros.push('Informe o nome (até 80 caracteres).');
+  // texto que começa com = + - @ viraria fórmula na planilha
+  if (/^[=+\-@]/.test(nome)) erros.push('O nome não pode começar com = + - ou @.');
+  if (!unidades_().some(un => un.id === unidade)) erros.push('Escolha uma unidade válida.');
+  return { nome: nome, unidade: unidade };
+}
+
+function criarUsuarioApi_(req, u) {
+  exigirAdmin_(u);
+  const login = String(req.login || '').trim().toLowerCase();
+  const erros = [];
+  if (!/^[a-z0-9._-]{3,30}$/.test(login)) erros.push('O usuário deve ter de 3 a 30 caracteres: letras minúsculas, números, ponto, hífen ou sublinhado.');
+  const v = validarNomeUnidade_(req, erros);
+  if (erros.length) throw erro_(erros.join('\n'));
+
+  const senha = senhaProvisoria_();
+  comTrava_(() => {
+    if (lerTabela_(ABAS.USUARIOS, true).some(x => String(x.login).trim().toLowerCase() === login)) {
+      throw erro_('Já existe um usuário com esse login.');
+    }
+    const salt = Utilities.getUuid();
+    inserirLinha_(ABAS.USUARIOS, { login: login, nome: v.nome, perfil: 'coordenador', unidade: v.unidade, salt: salt, hash: hashSenha_(senha, salt), trocarSenha: true, ativo: true });
+  });
+  registrar_(u.login, 'usuarios.criar', login + ' · ' + v.unidade);
+  // a senha provisória só existe nesta resposta: não fica guardada em lugar nenhum
+  return { login: login, nome: v.nome, unidade: v.unidade, senhaProvisoria: senha };
+}
+
+// Só coordenadores: a conta da coordenação não pode ser alterada por aqui (evita trancar o sistema).
+function alvoCoordenador_(login, fresco) {
+  const alvo = lerTabela_(ABAS.USUARIOS, fresco).find(x => String(x.login).trim().toLowerCase() === String(login || '').trim().toLowerCase());
+  if (!alvo) throw erro_('Usuário não encontrado.');
+  if (alvo.perfil !== 'coordenador') throw erro_('Por esta tela só é possível gerenciar coordenadores. Para a coordenação, fale com a TI.', 'permissao');
+  return alvo;
+}
+
+function atualizarUsuarioApi_(req, u) {
+  exigirAdmin_(u);
+  const erros = [];
+  const v = validarNomeUnidade_(req, erros);
+  if (erros.length) throw erro_(erros.join('\n'));
+  let alvo;
+  comTrava_(() => {
+    alvo = alvoCoordenador_(req.login, true);
+    atualizarLinha_(ABAS.USUARIOS, alvo._linha, { nome: v.nome, unidade: v.unidade });
+  });
+  registrar_(u.login, 'usuarios.atualizar', alvo.login + ' · ' + v.unidade);
+  return true;
+}
+
+function redefinirSenhaApi_(req, u) {
+  exigirAdmin_(u);
+  const senha = senhaProvisoria_();
+  let alvo;
+  comTrava_(() => {
+    alvo = alvoCoordenador_(req.login, true);
+    const salt = Utilities.getUuid(); // salt novo derruba as sessões abertas dessa pessoa
+    atualizarLinha_(ABAS.USUARIOS, alvo._linha, { salt: salt, hash: hashSenha_(senha, salt), trocarSenha: true });
+  });
+  CacheService.getScriptCache().remove('tent:' + String(alvo.login).trim().toLowerCase()); // libera bloqueio por tentativas
+  registrar_(u.login, 'usuarios.redefinirSenha', alvo.login);
+  return { login: String(alvo.login), nome: String(alvo.nome), senhaProvisoria: senha };
+}
+
+function definirAtivoApi_(req, u) {
+  exigirAdmin_(u);
+  const ativo = req.ativo === true;
+  let alvo;
+  comTrava_(() => {
+    alvo = alvoCoordenador_(req.login, true);
+    atualizarLinha_(ABAS.USUARIOS, alvo._linha, { ativo: ativo });
+  });
+  registrar_(u.login, ativo ? 'usuarios.ativar' : 'usuarios.desativar', alvo.login);
+  return true;
 }
 
 // ── Cargas completas de tela ───────────────────────────────────
@@ -754,9 +858,67 @@ function senhaProvisoria_() {
 
 // 1x: agenda a virada do mês para o dia 1, de madrugada.
 function instalarGatilhos() {
-  ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'virarMes').forEach(t => ScriptApp.deleteTrigger(t));
+  ScriptApp.getProjectTriggers()
+    .filter(t => ['virarMes', 'backupDiario'].indexOf(t.getHandlerFunction()) >= 0)
+    .forEach(t => ScriptApp.deleteTrigger(t));
   ScriptApp.newTrigger('virarMes').timeBased().onMonthDay(1).atHour(1).create();
-  Logger.log('Gatilho mensal de virarMes instalado.');
+  ScriptApp.newTrigger('backupDiario').timeBased().everyDays(1).atHour(2).create();
+  Logger.log('Gatilhos instalados: virada do mês (dia 1, 1h) e backup diário (2h).');
+}
+
+// ── Backup ─────────────────────────────────────────────────────
+// Copia a planilha do Sistema e a planilha de saídas de cada unidade para a pasta "Backup"
+// (dentro da pasta do projeto), uma cópia por dia, e apaga as cópias com mais de 30 dias.
+const BACKUP_DIAS = 30;
+
+function pastaBackup_() {
+  const pastaId = PropertiesService.getScriptProperties().getProperty('PASTA_ID');
+  if (!pastaId) throw new Error('Defina a propriedade de script PASTA_ID.');
+  const raiz = DriveApp.getFolderById(pastaId);
+  const achadas = raiz.getFoldersByName('Backup');
+  return achadas.hasNext() ? achadas.next() : raiz.createFolder('Backup');
+}
+
+// Data (AAAA-MM-DD) no fim do nome da cópia, ou null se o arquivo não for uma cópia nossa.
+function dataDoBackup_(nome) {
+  const m = / — (\d{4}-\d{2}-\d{2})$/.exec(String(nome));
+  return m ? m[1] : null;
+}
+
+function backupDiario() {
+  const pasta = pastaBackup_();
+  const hoje = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd');
+  const alvos = [{ nome: 'Sistema', id: PropertiesService.getScriptProperties().getProperty('SISTEMA_ID') }];
+  unidades_().forEach(un => { if (un.planilhaId) alvos.push({ nome: 'Saídas ' + un.id, id: String(un.planilhaId).trim() }); });
+
+  let feitos = 0;
+  alvos.forEach(a => {
+    const nomeCopia = a.nome + ' — ' + hoje;
+    try {
+      if (pasta.getFilesByName(nomeCopia).hasNext()) return; // já feito hoje
+      DriveApp.getFileById(a.id).makeCopy(nomeCopia, pasta);
+      feitos++;
+    } catch (err) {
+      registrar_('sistema', 'backup.erro', a.nome + ': ' + err.message);
+    }
+  });
+
+  // retenção: só mexe em arquivos com o padrão "nome — AAAA-MM-DD"
+  const limite = Utilities.formatDate(new Date(Date.now() - BACKUP_DIAS * 86400000), TZ, 'yyyy-MM-dd');
+  let apagados = 0;
+  const arquivos = pasta.getFiles();
+  while (arquivos.hasNext()) {
+    const arq = arquivos.next();
+    const dia = dataDoBackup_(arq.getName());
+    if (dia && dia < limite) { arq.setTrashed(true); apagados++; }
+  }
+  registrar_('sistema', 'backup', feitos + ' cópia(s) feita(s), ' + apagados + ' antiga(s) removida(s)');
+}
+
+// Para rodar à mão no editor (testar o backup sem esperar o gatilho).
+function backupAgora() {
+  backupDiario();
+  Logger.log('Backup concluído. Veja a pasta "Backup" dentro da pasta do projeto e a aba Log.');
 }
 
 // Diagnóstico: mostra o que o sistema enxerga na planilha de cada unidade.

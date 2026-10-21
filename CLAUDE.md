@@ -23,6 +23,7 @@ projeto-indicadores-farmacia/
 ├── index.html              ← login, troca da senha provisória e menu inicial
 ├── indicadores.html        ← acompanhamento mensal (lançamento + metas + gráficos)
 ├── logistica.html          ← planilha de saídas: lançamento item por item
+├── usuarios.html           ← cadastro de coordenadores (só admin)
 ├── dashboard.html          ← dashboard (só admin; dados de EXEMPLO fixos, ainda não ligado à base)
 ├── .clasp.json             ← ID do projeto Apps Script (a conta logada no clasp precisa ser a da TI)
 ├── appscript/
@@ -32,12 +33,12 @@ projeto-indicadores-farmacia/
 ├── css/
 │   ├── instituto.css       ← cópia de ../shared/styles/instituto.css (tokens ISV)
 │   ├── isv.css             ← tema claro/escuro, cabeçalho, rodapé, login, avisos (comum)
-│   └── dashboard.css · indicadores.css · logistica.css
+│   └── dashboard.css · indicadores.css · logistica.css · usuarios.css
 ├── js/
 │   ├── version.js          ← ÚNICA fonte da versão exibida
 │   ├── theme.js            ← tema claro/escuro (carregado no <head>)
 │   ├── api.js              ← API_URL, chamadas à API, sessão, cabeçalho com usuário
-│   └── index.js · indicadores.js · logistica.js · dashboard.js
+│   └── index.js · indicadores.js · logistica.js · usuarios.js · dashboard.js
 ├── data/                   ← planilha-fonte local (fora do git)
 └── docs/
     ├── BRIEFING.md         ← regras de negócio definidas com a Tereza
@@ -108,7 +109,7 @@ Tudo na pasta **"Indicadores Farmácia"** do Drive da **conta da TI** (ID na pro
 
 > Última atualização: 2026-10-21
 
-- **Versão:** v0.3.0 (`js/version.js`), em teste com a Tereza. **Regra: toda mudança sobe a versão** (PATCH para correções e ajustes, MINOR para nova etapa do fluxo), alterando `js/version.js` e o `CHANGELOG.md` no mesmo commit, com tag `vX.Y.Z`.
+- **Versão:** v0.4.0 (`js/version.js`), em teste com a Tereza. **Regra: toda mudança sobe a versão** (PATCH para correções e ajustes, MINOR para nova etapa do fluxo), alterando `js/version.js` e o `CHANGELOG.md` no mesmo commit, com tag `vX.Y.Z`.
 - **Implantado e em teste:** API (Web App na conta da TI), planilha "Sistema", usuário `tereza` e usuários de teste de coordenador, login, Clínica Geral na nuvem, metas por unidade e planilha de saídas item por item. `API_URL` já está em `js/api.js`.
 - Os testes usam a planilha com dados até **maio/2026** (`MES_ABERTO_TESTE = 2026-05` na aba `Config`). A versão atualizada só entra depois da validação da Tereza; antes de uso real, seguir o checklist de `docs/IMPLANTACAO.md`.
 - Validação automatizada: não há suíte no repositório; o servidor foi testado com Apps Script simulado (48 verificações: login, permissões, mês aberto, lançamentos, metas, gravação na planilha, fórmulas, criação de coluna) e a estrutura foi conferida com a planilha real de maio (169 medicamentos, 156 materiais).
@@ -122,4 +123,3 @@ Tudo na pasta **"Indicadores Farmácia"** do Drive da **conta da TI** (ID na pro
 4. Dashboard lendo os lançamentos reais, filtrado por perfil.
 5. Importação de arquivo na planilha de saídas (depois do item por item validado).
 6. Modelos Hospital e Maternidade; Maracanaú; demais municípios.
-7. Tela de cadastro de usuários para a Tereza (hoje é pelo editor do Apps Script).

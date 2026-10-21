@@ -5,6 +5,7 @@ Sistema do **Instituto São Vicente (ISV)** para os coordenadores farmacêuticos
 - `index.html` — login e menu
 - `indicadores.html` — acompanhamento mensal: lançamento, metas, gráficos
 - `logistica.html` — planilha de saídas: medicamentos e materiais, item por item
+- `usuarios.html` — cadastro de coordenadores (coordenação)
 - `dashboard.html` — visão geral (coordenação; dados de exemplo nesta fase)
 
 **Stack:** HTML5 + CSS3 + JavaScript vanilla + Chart.js (GitHub Pages) · API em Google Apps Script · dados em Planilhas Google.
@@ -32,4 +33,4 @@ Para ver as telas localmente, sirva a pasta (Live Server ou `python -m http.serv
 
 ---
 
-Versão atual: **v0.3.0** · Versionamento: [Semantic Versioning](https://semver.org/lang/pt-BR/) · Commits: [Conventional Commits](https://www.conventionalcommits.org/pt-br/)
+Versão atual: **v0.4.0** · Versionamento: [Semantic Versioning](https://semver.org/lang/pt-BR/) · Commits: [Conventional Commits](https://www.conventionalcommits.org/pt-br/)

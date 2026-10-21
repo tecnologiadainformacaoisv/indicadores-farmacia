@@ -1,0 +1,101 @@
+/* Usuários — cadastro de coordenadores (tokens em instituto.css / isv.css) */
+
+.usr-main {
+  flex: 1;
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 24px 32px 48px;
+}
+
+.usr-title { font-size: 20px; color: var(--title); }
+.usr-sub { font-size: 14px; color: var(--text-soft); margin: 2px 0 16px; }
+
+.btn-sec {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 44px; padding: 0 16px;
+  border: 1px solid var(--instituto-border); border-radius: 10px;
+  background: var(--instituto-surface); color: var(--title);
+  font: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
+}
+.btn-sec:hover { border-color: var(--instituto-secondary); }
+.btn-sec:disabled, .btn:disabled { opacity: .55; cursor: not-allowed; }
+.btn-sec.perigo { color: var(--c-err); }
+.btn-sec.perigo:hover { border-color: var(--c-err); }
+
+/* senha provisória */
+.cred {
+  margin-bottom: 16px; padding: 20px 24px;
+  border: 2px solid var(--c-warn);
+  background: var(--warn-bg);
+}
+.cred h3 { font-size: 16px; color: var(--alert-warn-text); margin-bottom: 6px; }
+.cred__aviso { font-size: 14px; color: var(--alert-warn-text); margin-bottom: 12px; }
+.cred__dados { display: flex; gap: 12px 32px; flex-wrap: wrap; margin-bottom: 14px; }
+.cred__dados dt { font-size: 13px; color: var(--alert-warn-text); }
+.cred__dados dd {
+  margin: 2px 0 0; padding: 6px 12px;
+  background: var(--instituto-surface); color: var(--instituto-text);
+  border: 1px solid var(--instituto-border); border-radius: 8px;
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace; font-size: 18px; font-weight: 700;
+  letter-spacing: .5px; user-select: all; overflow-wrap: anywhere;
+}
+.cred__acoes { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.cred__msg { font-size: 14px; color: var(--alert-warn-text); font-weight: 700; }
+
+/* formulário */
+.usr-form { margin-bottom: 24px; padding: 20px 24px; border: 1px solid var(--instituto-border); }
+.usr-form h3 { font-size: 16px; color: var(--title); margin-bottom: 14px; }
+.usr-form__campos { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 0 16px; }
+.field select {
+  min-height: 44px; padding: 10px 12px;
+  border: 1px solid var(--input-bd); border-radius: 10px;
+  background: var(--input-bg); color: var(--instituto-text);
+  font: inherit; font-size: 15px;
+}
+.field small { font-size: 13px; color: var(--text-soft); }
+.field input[readonly] { opacity: .7; }
+.usr-form__acoes { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* lista */
+.usr-lista-topo {
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+  margin-bottom: 12px;
+}
+.usr-lista-topo h3 { font-size: 16px; color: var(--title); }
+.usr-contagem { font-weight: 600; color: var(--text-soft); font-size: 14px; }
+.usr-busca input {
+  width: min(380px, 100%); min-height: 44px; padding: 8px 12px;
+  border: 1px solid var(--input-bd); border-radius: 10px;
+  background: var(--input-bg); color: var(--instituto-text);
+  font: inherit; font-size: 14px;
+}
+.usr-lista { list-style: none; display: grid; gap: 10px; }
+.usr-item {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px 16px; flex-wrap: wrap;
+  padding: 14px 18px;
+  background: var(--instituto-surface); border: 1px solid var(--instituto-border);
+  border-radius: var(--instituto-radius-sm);
+}
+.usr-item.inativo { opacity: .75; }
+.usr-item__nome { font-weight: 700; overflow-wrap: anywhere; }
+.usr-item__meta { font-size: 14px; color: var(--text-soft); overflow-wrap: anywhere; }
+.usr-item__sel { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+.usr-sel {
+  display: inline-block; padding: 2px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 700;
+  background: var(--tint); color: var(--title);
+}
+.usr-sel.ok { background: var(--ok-bg); color: var(--c-ok); }
+.usr-sel.aviso { background: var(--warn-bg); color: var(--alert-warn-text); }
+.usr-sel.off { background: var(--err-bg); color: var(--c-err); }
+.usr-item__acoes { display: flex; gap: 8px; flex-wrap: wrap; }
+.usr-item__acoes .btn-sec { min-height: 40px; font-size: 13px; }
+.usr-vazio { padding: 24px; text-align: center; color: var(--text-soft); }
+
+@media (max-width: 768px) {
+  .usr-main { padding: 20px 16px 40px; }
+  .usr-form__campos { grid-template-columns: 1fr; }
+  .usr-item__acoes { width: 100%; }
+  .usr-item__acoes .btn-sec { flex: 1 1 auto; }
+}

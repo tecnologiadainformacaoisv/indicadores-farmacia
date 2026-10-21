@@ -1,5 +1,16 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.4.0 – 2026-10-21
+### Adicionado
+- Tela de **Usuários** (só coordenação): cadastrar coordenadores, editar nome e unidade, redefinir senha e desativar/reativar acessos
+- A senha provisória aparece uma única vez, com botão de copiar, e não fica guardada em lugar nenhum
+- **Backup automático** diário (2h) da planilha do Sistema e das planilhas de saídas de cada unidade, na pasta "Backup", mantendo 30 dias; `backupAgora()` para rodar à mão
+
+### Segurança
+- Rotas de usuários exigem perfil de coordenação no servidor; a conta da coordenação não é alterada por essa tela (evita trancar o sistema)
+- Redefinir a senha ou desativar derruba as sessões abertas da pessoa
+- Nomes que começam com = + - @ são recusados (virariam fórmula na planilha)
+
 ## v0.3.3 – 2026-10-21
 ### Corrigido
 - Planilha de saídas: depois de salvar, a tabela se atualiza no lugar, sem a tela vazia de "Carregando…"; a confirmação com o servidor acontece em segundo plano

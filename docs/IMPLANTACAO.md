@@ -99,6 +99,9 @@ Commit + push → o GitHub Pages atualiza.
 
 ## Observações de operação
 
+- **Backup diário:** depois de publicar uma versão com o backup, rode `instalarGatilhos` no editor (instala a virada do mês e o backup das 2h). Para testar sem esperar: `backupAgora` e confira a pasta "Backup" dentro da pasta do projeto. Mantém 30 dias; a retenção só apaga arquivos com o padrão "nome — AAAA-MM-DD".
+- **Usuários:** a coordenação cadastra e gerencia coordenadores pela tela "Usuários". Contas da coordenação (perfil admin) continuam só pelo editor (`criarUsuario`, `redefinirSenha`).
+
 - **Gatilho da virada do mês e modo de teste:** com `MES_ABERTO_TESTE` preenchido, o gatilho `virarMes` só recria a coluna do mês de teste.
 - **Virada de ano:** a planilha de saídas não guarda o ano; em fevereiro de 2027 a gravação é recusada até definirmos o formato (ver "Em aberto" no BRIEFING).
 - **Depois de mudar o código:** `clasp push`, `clasp create-version "descrição"` e `clasp update-deployment <id> --versionNumber N` mantêm a mesma URL. O gatilho já instalado continua valendo; não é preciso rodar `instalarGatilhos` de novo.
