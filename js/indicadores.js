@@ -609,7 +609,7 @@ function esqueletoKpis() {
 // atalho da tela inicial da coordenação: indicadores.html?unidade=<id> abre direto uma unidade
 function unidadePedida() {
   const u = new URLSearchParams(location.search).get('unidade');
-  return u && /^[a-z0-9-]+$/.test(u) ? u : undefined;
+  return u && /^[A-Za-z0-9_.-]+$/.test(u) ? u : undefined;
 }
 
 (async function init() {
@@ -626,6 +626,15 @@ function unidadePedida() {
       history.replaceState(null, '', location.pathname); // F5 ou "voltar" não reabrem o formulário
     }
   } catch (e) {
+    // unidade pedida no endereço que não abriu: cai na visão padrão em vez de deixar a tela sem saída
+    if (unidadePedida()) {
+      history.replaceState(null, '', location.pathname);
+      try {
+        await carregarDados();
+        setStatus('Não foi possível abrir a unidade pedida (' + e.message + ') Mostrando a visão padrão.', 'warn');
+        return;
+      } catch (e2) { e = e2; }
+    }
     setStatus(e.message, 'erro');
   }
 })();

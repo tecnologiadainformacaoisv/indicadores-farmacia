@@ -172,7 +172,7 @@
 }
 
 /* ordenar pela coluna de cobertura */
-.log-filtro#btn-ordem-cob[aria-pressed="true"] { background: var(--info-bg, var(--soft)); border-color: var(--instituto-secondary); color: var(--title); }
+.log-filtro#btn-ordem-cob.ativo { background: var(--info-bg, var(--soft)); border-color: var(--instituto-secondary); color: var(--title); }
 .log-tools { gap: 8px; flex-wrap: wrap; }
 
 /* migalhas de pão: caminho de volta para o início e para o acompanhamento mensal */

@@ -8,7 +8,7 @@ const CAMPOS = ['saida', 'cmm', 'estoque'];
 let info = null;
 // atalho da tela inicial da coordenação: logistica.html?unidade=<id> abre direto a planilha de uma unidade
 const unidadeDoEndereco = new URLSearchParams(location.search).get('unidade');
-let unidadeSel = unidadeDoEndereco && /^[a-z0-9-]+$/.test(unidadeDoEndereco) ? unidadeDoEndereco : '';
+let unidadeSel = unidadeDoEndereco && /^[A-Za-z0-9_.-]+$/.test(unidadeDoEndereco) ? unidadeDoEndereco : '';
 let planilha = null;                  // resposta de logistica.ler
 let abaAtual = '';
 const alteracoes = new Map();         // "aba|linha" -> { aba, linha, produto, saida, cmm, estoque }
@@ -42,7 +42,10 @@ function salvarRascunho() {
   try {
     if (alteracoes.size) {
       sessionStorage.setItem(RASCUNHO_KEY, JSON.stringify({ login: info && info.usuario.login, unidade: unidadeSel, itens: [...alteracoes.values()] }));
-    } else sessionStorage.removeItem(RASCUNHO_KEY);
+    } else {
+      const r = lerRascunho();
+      if (!r || (r.login === (info && info.usuario.login) && r.unidade === unidadeSel)) sessionStorage.removeItem(RASCUNHO_KEY);
+    }
   } catch (e) { /* sem armazenamento: segue sem rascunho */ }
 }
 
@@ -93,6 +96,8 @@ function exibirPlanilha(r, rascunho) {
   if (!validarSessao(info)) return false;
   planilha = r.logistica;
   unidadeSel = planilha.unidade;
+  // o caminho de volta mantém a unidade que a coordenação estava vendo
+  document.getElementById('mig-acomp').href = 'indicadores.html' + (info.usuario.perfil === 'admin' && unidadeSel ? '?unidade=' + encodeURIComponent(unidadeSel) : '');
   montarSeletorUnidade();
   const ref = planilha.mesAberto;
   document.getElementById('log-sub').textContent = planilha.editavel
@@ -212,9 +217,9 @@ let ordemCob = '';   // '' | 'asc' | 'desc'
 function chaveCobertura(v) {
   const e = v.estoque === null || v.estoque === undefined || v.estoque === '' ? null : Number(v.estoque);
   const c = v.cmm === null || v.cmm === undefined || v.cmm === '' ? null : Number(v.cmm);
-  if (e === null) return null;
+  if (e === null || !isFinite(e)) return null;
   if (e === 0) return -1;
-  if (!c) return null;
+  if (!c || !isFinite(c)) return null;
   return e / c;
 }
 
@@ -234,6 +239,7 @@ function textoOrdemCob() {
 function alternarOrdemCob() {
   ordemCob = ordemCob === '' ? 'asc' : ordemCob === 'asc' ? 'desc' : '';
   render();
+  document.getElementById('ordem-live').textContent = ordemCob === 'asc' ? 'Ordenado por cobertura, pior primeiro.' : ordemCob === 'desc' ? 'Ordenado por cobertura, melhor primeiro.' : 'Ordem da planilha.';
 }
 
 function celulaCobertura(c) {
@@ -300,7 +306,7 @@ function render() {
 
   const btnOrdem = document.getElementById('btn-ordem-cob');
   btnOrdem.textContent = textoOrdemCob();
-  btnOrdem.setAttribute('aria-pressed', String(ordemCob !== ''));
+  btnOrdem.classList.toggle('ativo', ordemCob !== '');
   document.getElementById('log-body').innerHTML = ordenarPorCobertura(aba.itens, aba).map(it => {
     const v = valoresDaLinha(aba, it);
     const cob = cobertura(v.estoque, v.cmm);

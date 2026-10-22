@@ -104,9 +104,9 @@ function tarefa(href, titulo, feito, texto, acao, pct) {
 }
 
 // selo; com href vira link (só para o que já tem lançamento para ver)
-function selo(ok, texto, href, dica) {
+function selo(ok, texto, href, dica, nome) {
   if (!href) return `<span class="fech-selo${ok ? ' ok' : ''}"${dica ? ` title="${esc(dica)}"` : ''}>${esc(texto)}</span>`;
-  return `<a class="fech-selo${ok ? ' ok' : ''}" href="${esc(href)}">${esc(texto)}</a>`;
+  return `<a class="fech-selo${ok ? ' ok' : ''}" href="${esc(href)}"${nome ? ` aria-label="${esc(texto + ' — ' + nome)}"` : ''}>${esc(texto)}</a>`;
 }
 
 function montarFechamento(painel, admin) {
@@ -126,7 +126,7 @@ function montarFechamento(painel, admin) {
       const quando = ultima ? `Última atualização: ${ultima.por}, ${ultima.em}` : 'Nada lançado ainda neste mês.';
       const q = '?unidade=' + encodeURIComponent(un.id);
       return `<li class="fech-unidade"><div><b><a class="fech-link" href="indicadores.html${q}">${esc(un.nome)}</a></b><small>${esc(quando)}</small></div>
-        <div class="fech-selos">${selo(un.clinica.lancado, un.clinica.lancado ? 'Clínica lançada' : 'Clínica pendente', un.clinica.lancado ? 'indicadores.html' + q : '', 'Ainda não lançado')}${selo(sd.feito, sd.feito ? 'Saídas completas' : sd.pct ? 'Saídas ' + sd.pct + '%' : 'Saídas pendentes', sd.pct || sd.feito ? 'logistica.html' + q : '', 'Ainda não lançado')}</div></li>`;
+        <div class="fech-selos">${selo(un.clinica.lancado, un.clinica.lancado ? 'Clínica lançada' : 'Clínica pendente', un.clinica.lancado ? 'indicadores.html' + q : '', 'Ainda não lançado', un.nome)}${selo(sd.feito, sd.feito ? 'Saídas completas' : sd.pct ? 'Saídas ' + sd.pct + '%' : 'Saídas pendentes', sd.pct || sd.feito ? 'logistica.html' + q : '', 'Ainda não lançado', un.nome)}</div></li>`;
     }).join('') || '<li class="fech-unidade"><div><b>Nenhuma unidade cadastrada.</b></div></li>';
     document.getElementById('fech-rodape').textContent = 'Os coordenadores lançam; aqui você acompanha. As metas de cada unidade ficam em Acompanhamento mensal.';
   } else {

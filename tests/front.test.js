@@ -245,7 +245,7 @@ const check = (nome, c, extra) => { if (c) ok++; else { falhas++; console.log('F
   check('painel da coordenação: todas as unidades com selos', listaA.includes('UPA Centro') && listaA.includes('UPA Jurema') && listaA.includes('fech-selo') && va.els['fech-ring-txt'].textContent === '0/2', va.els['fech-ring-txt'].textContent);
   // links da coordenação: unidade e selos já lançados abrem a tela da unidade; pendentes não
   check('painel da coordenação: nome da unidade abre o acompanhamento dela', listaA.includes('href="indicadores.html?unidade=upa-centro"') && listaA.includes('href="indicadores.html?unidade=upa-jurema"'), listaA.slice(0, 300));
-  check('painel da coordenação: selos lançados viram link (clínica e saídas)', /<a class="fech-selo ok" href="indicadores.html\?unidade=upa-centro">Clínica lançada/.test(listaA) && /<a class="fech-selo" href="logistica.html\?unidade=upa-centro">Saídas/.test(listaA), listaA.slice(0, 600));
+  check('painel da coordenação: selos lançados viram link (clínica e saídas)', /<a class="fech-selo ok" href="indicadores.html\?unidade=upa-centro"[^>]*>Clínica lançada/.test(listaA) && /<a class="fech-selo" href="logistica.html\?unidade=upa-centro"[^>]*>Saídas/.test(listaA), listaA.slice(0, 600));
   check('painel da coordenação: selos pendentes ficam sem link', /<span class="fech-selo"[^>]*>Clínica pendente/.test(listaA) && /<span class="fech-selo"[^>]*>Saídas pendentes/.test(listaA) && !listaA.includes('logistica.html?unidade=upa-jurema'), listaA.slice(-500));
   {
     const vi = visita('indicadores.js', new Map([['farma_sessao', 'T']]), 'admin', { search: '?unidade=upa-jurema' });
@@ -257,6 +257,18 @@ const check = (nome, c, extra) => { if (c) ok++; else { falhas++; console.log('F
     const vx = visita('indicadores.js', new Map([['farma_sessao', 'T']]), 'admin', { search: '?unidade=../x;drop' });
     await pausa(80);
     check('indicadores: ?unidade= com texto estranho é ignorado', vx.corpos.every(c => c.unidade === undefined), vx.corpos);
+  }
+  check('painel da coordenação: selos-link dizem a unidade no nome acessível', /aria-label="Clínica lançada — UPA Centro"/.test(listaA) && /aria-label="Saídas [0-9]+% — UPA Centro"/.test(listaA), listaA.slice(0, 500));
+  // rascunho de outra unidade sobrevive a abrir uma unidade diferente
+  {
+    const ss = new Map([['farma_rascunho', JSON.stringify({ login: 'coord.centro', unidade: 'upa-jurema', itens: [{ aba: 'MEDICAMENTOS', linha: 6, produto: 'DIPIRONA', saida: 5 }] })]]);
+    const vr = visita('logistica.js', new Map([['farma_sessao', 'T']]), 'coordenador', { ss });
+    await pausa(150);
+    check('rascunho: de outra unidade não é apagado ao abrir esta', ss.has('farma_rascunho'), [...ss.keys()]);
+    check('migalhas: link de volta sem unidade para coordenador', vr.els['mig-acomp'].href === 'indicadores.html', vr.els['mig-acomp'].href);
+    const va2 = visita('logistica.js', new Map([['farma_sessao', 'T']]), 'admin', { search: '?unidade=upa-jurema' });
+    await pausa(150);
+    check('migalhas: coordenação volta ao acompanhamento da mesma unidade', va2.els['mig-acomp'].href === 'indicadores.html?unidade=upa-jurema', va2.els['mig-acomp'].href);
   }
   // saídas só concluem com as duas abas lançadas (aba nunca salva tem total 0)
   const soMed = vm.runInContext("saidasResumo({ saidas: { med: { preenchidos: 10, total: 10 }, mat: { preenchidos: 0, total: 0 }, por: 'a', em: 'b' } })", vc.ctx);

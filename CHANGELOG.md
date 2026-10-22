@@ -1,5 +1,11 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.5.6 – 2026-10-22
+### Corrigido
+- Planilha de saídas: abrir outra unidade (atalho da tela inicial ou seletor) não apaga mais o rascunho não salvo da unidade anterior
+- `?unidade=` que não abre (unidade de outro coordenador ou inexistente): a tela cai na visão padrão com aviso, em vez de ficar só com o erro
+- Migalhas da planilha mantêm a unidade que a coordenação estava vendo; o botão de ordenar a cobertura anuncia o estado para leitor de tela; selos-link do início dizem a unidade no nome acessível; área de toque maior no nome da unidade; ordenação tolera estoque ou CMM não numérico; ids de unidade com maiúscula, "_" ou "." também funcionam no endereço
+
 ## v0.5.5 – 2026-10-22
 ### Adicionado
 - Tela inicial da coordenação: o nome da unidade abre o acompanhamento mensal já nela, e os selos "Clínica lançada" e "Saídas" (quando há lançamento) abrem o formulário da Clínica e a planilha de saídas daquela unidade. Selos pendentes continuam sem link
