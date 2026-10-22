@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="340" viewBox="0 0 520 340" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- cartão de indicador -->
+  <rect x="16" y="16" width="156" height="86" rx="12"/>
+  <path d="M32 36h46"/>
+  <path d="M32 66h58" stroke-width="5"/>
+  <rect x="32" y="80" width="54" height="12" rx="6"/>
+  <path d="M120 78l10-10 10 6 16-18" />
+  <!-- gráfico de barras -->
+  <path d="M206 24v92h132"/>
+  <rect x="220" y="82" width="14" height="34" rx="3"/>
+  <rect x="244" y="62" width="14" height="54" rx="3"/>
+  <rect x="268" y="72" width="14" height="44" rx="3"/>
+  <rect x="292" y="44" width="14" height="72" rx="3"/>
+  <rect x="316" y="56" width="14" height="60" rx="3"/>
+  <path d="M206 54h132" stroke-dasharray="5 6"/>
+  <!-- gráfico de linha com pontos -->
+  <path d="M372 28v88h132"/>
+  <path d="M380 100l26-26 24 14 30-40 28 10 12-22"/>
+  <circle cx="406" cy="74" r="3.5"/><circle cx="430" cy="88" r="3.5"/><circle cx="460" cy="48" r="3.5"/><circle cx="488" cy="58" r="3.5"/>
+  <!-- rosca -->
+  <circle cx="72" cy="196" r="40"/>
+  <circle cx="72" cy="196" r="22"/>
+  <path d="M72 156a40 40 0 0 1 34 60" stroke-width="7"/>
+  <!-- tabela -->
+  <rect x="150" y="146" width="200" height="112" rx="10"/>
+  <path d="M150 174h200M150 198h200M150 222h200M226 146v112"/>
+  <path d="M164 160h38M240 160h60M164 186h30M240 186h40M164 210h34M240 210h52M164 238h28M240 238h46" stroke-width="3"/>
+  <!-- mapa de calor -->
+  <rect x="380" y="150" width="22" height="22" rx="5"/><rect x="408" y="150" width="22" height="22" rx="5" stroke-opacity=".5"/><rect x="436" y="150" width="22" height="22" rx="5"/><rect x="464" y="150" width="22" height="22" rx="5" stroke-opacity=".5"/>
+  <rect x="380" y="178" width="22" height="22" rx="5" stroke-opacity=".5"/><rect x="408" y="178" width="22" height="22" rx="5"/><rect x="436" y="178" width="22" height="22" rx="5" stroke-opacity=".5"/><rect x="464" y="178" width="22" height="22" rx="5"/>
+  <rect x="380" y="206" width="22" height="22" rx="5"/><rect x="408" y="206" width="22" height="22" rx="5" stroke-opacity=".5"/><rect x="436" y="206" width="22" height="22" rx="5"/><rect x="464" y="206" width="22" height="22" rx="5" stroke-opacity=".5"/>
+  <rect x="380" y="234" width="22" height="22" rx="5" stroke-opacity=".5"/><rect x="408" y="234" width="22" height="22" rx="5"/><rect x="436" y="234" width="22" height="22" rx="5" stroke-opacity=".5"/><rect x="464" y="234" width="22" height="22" rx="5"/>
+  <!-- onda de tendência -->
+  <path d="M16 312c40-26 70 12 112-6s64-32 106-14 70 26 116 6 76-28 118-8 60 12 36 10" />
+  <circle cx="234" cy="292" r="3.5"/><circle cx="350" cy="298" r="3.5"/>
+</svg>

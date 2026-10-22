@@ -238,3 +238,19 @@ html[data-fonte="grande"] body { zoom: 1.12; }
   .kpi-card, .card-panel, canvas { break-inside: avoid; }
 }
 @media (max-width: 640px) { html[data-fonte="grande"] body { zoom: 1; } }
+
+/* fundo "painel de dados": contornos fantasmas de indicadores, gráficos e tabelas (assets/fundo-dados.svg),
+   atrás do conteúdo, e o logo do Instituto pequeno no canto. Para desligar, remova este bloco. */
+body::after {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  -webkit-mask: url("../assets/fundo-dados.svg") 0 0 / 520px 340px repeat;
+  mask: url("../assets/fundo-dados.svg") 0 0 / 520px 340px repeat;
+  background: var(--title); opacity: .065;
+}
+:root[data-theme="dark"] body::after { background: #9fc3e6; opacity: .07; }
+body::before {
+  content: ""; position: fixed; right: 18px; bottom: 56px; width: 64px; height: 64px; z-index: -1; pointer-events: none;
+  background: url("../assets/logo-isv.png") center / contain no-repeat; filter: grayscale(1); opacity: .16;
+}
+:root[data-theme="dark"] body::before { filter: grayscale(1) invert(1); opacity: .14; }
+@media print { body::before, body::after { display: none; } }

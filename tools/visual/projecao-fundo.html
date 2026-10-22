@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Projeções de fundo (temporário)</title>
+<style>
+  body { margin: 0; font: 15px/1.4 "Segoe UI", system-ui, sans-serif; background: #e8edf2; color: #1a2733; }
+  .barra { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 14px; background: #082c47; color: #fff; }
+  .barra b { margin-right: 6px; }
+  .barra button { font: inherit; font-weight: 700; padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,.5); background: transparent; color: #fff; cursor: pointer; }
+  .barra button[aria-pressed="true"] { background: #27ae60; border-color: #27ae60; }
+  .barra .sep { width: 1px; height: 24px; background: rgba(255,255,255,.35); margin: 0 6px; }
+  .nota { padding: 8px 14px; font-size: 13px; background: #fff7e0; border-bottom: 1px solid #ecd9a0; }
+  iframe { display: block; width: 100%; height: calc(100vh - 110px); border: 0; background: #fff; }
+</style>
+</head>
+<body>
+<div class="barra" role="toolbar" aria-label="Opções">
+  <b>Fundo:</b>
+  <button data-v="E" aria-pressed="false">Sem fundo (v0.5.8)</button>
+  <button data-v="D" aria-pressed="false">Logo (v0.5.9)</button>
+  <button data-v="P1" aria-pressed="true">1 · Painel de dados no fundo</button>
+  <button data-v="P2" aria-pressed="false">2 · Fundo + faixa de gráficos na entrada</button>
+  <button data-v="P3" aria-pressed="false">3 · Só a faixa de gráficos na entrada</button>
+  <span class="sep"></span>
+  <b>Tela:</b>
+  <button data-p="index.html" aria-pressed="true">Início</button>
+  <button data-p="indicadores.html" aria-pressed="false">Acompanhamento</button>
+  <button data-p="logistica.html" aria-pressed="false">Planilha</button>
+  <span class="sep"></span>
+  <b>Tema:</b>
+  <button data-t="light" aria-pressed="true">Claro</button>
+  <button data-t="dark" aria-pressed="false">Escuro</button>
+</div>
+<div class="nota" id="nota"></div>
+<iframe id="quadro" title="Prévia"></iframe>
+
+<script>
+const NOTAS = {
+  E: 'Como está publicado hoje (v0.5.8): fundo liso.',
+  D: 'Marca d\'água do logo no canto (v0.5.9, commitada, não publicada).',
+  P1: '1: fundo com contornos fantasmas de um painel de indicadores (cartão de KPI, barras, linha, rosca, tabela, mapa de calor e onda de tendência), a 6% de opacidade. Em todas as telas.',
+  P2: '2: o mesmo fundo e, no topo da tela inicial, uma faixa azul-marinho com gráficos de área, barras e linha de meta, com a saudação por cima.',
+  P3: '3: fundo liso e só a faixa de gráficos no topo da tela inicial. Mais limpo nas telas de trabalho.',
+};
+const PADRAO = `
+  body::before { display: none !important; }
+  body::after { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    -webkit-mask: url("/assets/fundo-dados.svg") 0 0 / 520px 340px repeat; mask: url("/assets/fundo-dados.svg") 0 0 / 520px 340px repeat;
+    background: var(--title, #0a3d62); opacity: .065; }
+  :root[data-theme="dark"] body::after { background: #9fc3e6; opacity: .07; }
+`;
+const LOGO_PEQUENO = `
+  .marca-canto { position: fixed; right: 18px; bottom: 56px; width: 64px; height: 64px; z-index: -1; opacity: .16; filter: grayscale(1); pointer-events: none; }
+  :root[data-theme="dark"] .marca-canto { filter: grayscale(1) invert(1); opacity: .14; }
+`;
+const HERO = `
+  .home-hello { background: url("/assets/hero-dados.svg") center / cover no-repeat; border-radius: 16px; padding: 28px 30px 30px; margin-bottom: 4px;
+    box-shadow: 0 18px 40px -28px rgba(8,44,71,.7); }
+  .home-hello h2 { color: #fff !important; }
+  .home-hello p { color: #c5dbed !important; }
+`;
+
+const q = { v: 'P1', p: 'index.html', t: 'light' };
+const quadro = document.getElementById('quadro');
+
+function aplicar() {
+  document.getElementById('nota').textContent = NOTAS[q.v];
+  document.querySelectorAll('[data-v]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === q.v)));
+  document.querySelectorAll('[data-p]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.p === q.p)));
+  document.querySelectorAll('[data-t]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.t === q.t)));
+}
+
+function injetar() {
+  const d = quadro.contentDocument;
+  if (!d || !d.head) return;
+  const velho = d.getElementById('proj-css'); if (velho) velho.remove();
+  d.querySelectorAll('.marca-canto').forEach(e => e.remove());
+  d.documentElement.dataset.theme = q.t;
+  let css = '';
+  if (q.v === 'E' || q.v === 'P3') css = 'body::before { display: none !important; }';
+  if (q.v === 'P1' || q.v === 'P2') {
+    css = PADRAO + LOGO_PEQUENO;
+    const img = d.createElement('img'); img.src = '/assets/logo-isv.png'; img.alt = ''; img.className = 'marca-canto'; d.body.appendChild(img);
+  }
+  if (q.v === 'P2' || q.v === 'P3') css += HERO;
+  const st = d.createElement('style'); st.id = 'proj-css'; st.textContent = css; d.head.appendChild(st);
+}
+
+function carregar() { aplicar(); quadro.src = '/' + q.p; }
+quadro.addEventListener('load', () => { injetar(); setTimeout(injetar, 700); });
+
+document.querySelector('.barra').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.v) { q.v = b.dataset.v; aplicar(); injetar(); }
+  if (b.dataset.t) { q.t = b.dataset.t; try { localStorage.setItem('farma_theme', q.t); } catch (x) {} aplicar(); injetar(); }
+  if (b.dataset.p) { q.p = b.dataset.p; carregar(); }
+});
+try { localStorage.setItem('farma_sessao', 'admin'); localStorage.setItem('farma_theme', 'light'); } catch (x) {}
+carregar();
+</script>
+</body>
+</html>
