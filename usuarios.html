@@ -50,6 +50,7 @@
     </dl>
     <div class="cred__acoes">
       <button type="button" class="btn btn--primary" id="cred-copiar">Copiar usuário e senha</button>
+      <button type="button" class="btn-sec" id="cred-whats">Enviar pelo WhatsApp</button>
       <button type="button" class="btn-sec" id="cred-fechar">Entendi, já anotei</button>
       <span class="cred__msg" id="cred-msg" role="status" aria-live="polite"></span>
     </div>
@@ -81,9 +82,25 @@
   </form>
 
   <!-- lista -->
+  <!-- situação dos acessos: também serve de filtro -->
+  <section class="saude" aria-labelledby="saude-titulo">
+    <h3 id="saude-titulo" class="sr-only">Situação dos acessos</h3>
+    <div class="saude-itens" id="saude-itens" role="group" aria-label="Filtrar por situação">
+      <button type="button" class="saude-item" data-filtro="todos" aria-pressed="true"><b id="s-todos">0</b><span>Coordenadores</span></button>
+      <button type="button" class="saude-item ok" data-filtro="ativos" aria-pressed="false"><b id="s-ativos">0</b><span>Acesso em uso</span></button>
+      <button type="button" class="saude-item aviso" data-filtro="semsenha" aria-pressed="false"><b id="s-semsenha">0</b><span>Ainda não criaram a senha</span></button>
+      <button type="button" class="saude-item off" data-filtro="desativados" aria-pressed="false"><b id="s-desativados">0</b><span>Desativados</span></button>
+    </div>
+    <p class="saude-aviso" id="saude-aviso" hidden></p>
+  </section>
+
   <section class="usr-lista-bloco">
     <div class="usr-lista-topo">
       <h3>Usuários cadastrados <span class="usr-contagem" id="contagem"></span></h3>
+      <div class="usr-filtro">
+        <label class="sr-only" for="filtro-unidade">Filtrar por unidade</label>
+        <select id="filtro-unidade"></select>
+      </div>
       <div class="usr-busca">
         <label class="sr-only" for="busca">Buscar usuário</label>
         <input type="search" id="busca" placeholder="Buscar por nome, usuário ou unidade…" autocomplete="off">

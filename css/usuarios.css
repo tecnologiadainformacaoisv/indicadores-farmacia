@@ -3,7 +3,7 @@
 .usr-main {
   flex: 1;
   width: 100%;
-  max-width: 980px;
+  max-width: 1500px;
   margin: 0 auto;
   padding: 24px 32px 48px;
 }
@@ -57,6 +57,30 @@
 .field input[readonly] { background: var(--soft); cursor: not-allowed; }
 .usr-form__acoes { display: flex; gap: 10px; flex-wrap: wrap; }
 
+/* situação dos acessos (também filtro) */
+.saude { margin-bottom: 20px; }
+.saude-itens { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.saude-item {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left;
+  padding: 14px 16px; min-height: 76px;
+  background: var(--instituto-surface); color: var(--instituto-text);
+  border: 1px solid var(--instituto-border); border-left: 4px solid var(--text-soft); border-radius: 12px;
+  font: inherit; cursor: pointer;
+  transition: border-color .2s ease, background .2s ease;
+}
+.saude-item b { font-family: var(--font-title); font-size: 26px; line-height: 1.1; color: var(--title); font-variant-numeric: tabular-nums; }
+.saude-item span { font-size: 13px; color: var(--text-soft); }
+.saude-item.ok { border-left-color: var(--c-ok); }
+.saude-item.aviso { border-left-color: var(--c-warn); }
+.saude-item.off { border-left-color: var(--c-err); }
+.saude-item:hover { border-color: var(--instituto-secondary); }
+.saude-item[aria-pressed="true"] { background: var(--tint); border-color: var(--title); box-shadow: 0 0 0 1px var(--title); }
+.saude-aviso { margin-top: 10px; padding: 10px 14px; border-radius: 10px; font-size: 14px; font-weight: 600; background: var(--warn-bg); color: var(--alert-warn-text); }
+.usr-filtro select {
+  min-height: 44px; padding: 8px 12px; border: 1px solid var(--input-bd); border-radius: 10px;
+  background: var(--input-bg); color: var(--instituto-text); font: inherit; font-size: 14px;
+}
+
 /* lista */
 .usr-lista-topo {
   display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
@@ -97,8 +121,26 @@
 .usr-vazio { padding: 24px; text-align: center; color: var(--text-soft); }
 
 @media (max-width: 768px) {
+  .saude-itens { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .usr-main { padding: 20px 16px 40px; }
   .usr-form__campos { grid-template-columns: 1fr; }
   .usr-item__acoes { width: 100%; }
   .usr-item__acoes .btn-sec { flex: 1 1 auto; min-height: 44px; font-size: 14px; }
 }
+
+/* telas largas: lista de usuários em duas colunas */
+@media (min-width: 1200px) {
+  .usr-lista { grid-template-columns: 1fr 1fr; }
+}
+
+/* telas largas: título, campos e botão na mesma faixa, sem sobra de espaço */
+@media (min-width: 1000px) {
+  .usr-form { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 0 20px; padding: 16px 24px; }
+  .usr-form h3 { flex: 0 0 100%; margin-bottom: 10px; }
+  .usr-form__campos { flex: 1 1 0; min-width: 0; }
+  .usr-form__acoes { flex: none; margin-top: 26px; }
+  .usr-form .form-msg { flex: 0 0 100%; order: 3; }
+  .usr-form .form-msg:empty { display: none; }
+}
+
+.btn-sec.desfazer { min-height: 32px; padding: 0 12px; margin-left: 8px; }

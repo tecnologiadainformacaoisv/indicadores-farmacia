@@ -50,6 +50,8 @@
     <div class="log-tabs" role="tablist" id="log-tabs"></div>
     <div class="log-tools">
       <button type="button" class="log-filtro" id="btn-criticos" aria-pressed="false">Só os críticos <span class="count" id="n-criticos"></span></button>
+      <button type="button" class="log-filtro" id="btn-parados" aria-pressed="false" title="Têm estoque e nenhuma saída nos últimos meses">Sem saída <span class="count" id="n-parados"></span></button>
+      <button type="button" class="log-filtro" id="btn-ordenar" aria-pressed="false" title="Menor cobertura de estoque primeiro">Ordenar por criticidade</button>
     </div>
     <div class="log-search">
       <label class="sr-only" for="busca">Buscar produto</label>
@@ -57,7 +59,7 @@
     </div>
   </div>
 
-  <p class="log-dica" id="log-dica" hidden>Só o que você alterar é gravado. Apagar um número deixa a célula vazia na planilha. No computador, Enter passa para o próximo item.</p>
+  <p class="log-dica" id="log-dica" hidden>Só o que você alterar é gravado. Apagar um número deixa a célula vazia na planilha. No computador, Enter passa para o próximo item e dá para colar várias células do Excel de uma vez (Ctrl+V).</p>
 
   <div class="log-table-wrap card-panel" id="log-wrap" hidden>
     <table class="log-table">
@@ -70,6 +72,14 @@
 </main>
 
 <div class="save-bar" id="save-bar" hidden>
+  <div class="rev" id="rev" role="group" aria-labelledby="rev-resumo" hidden>
+    <p class="rev-resumo" id="rev-resumo"></p>
+    <ul class="rev-lista" id="rev-lista"></ul>
+    <div class="rev-acoes">
+      <button type="button" class="btn-sec" id="rev-voltar">Voltar</button>
+      <button type="button" class="btn btn--primary" id="rev-ok">Confirmar e salvar</button>
+    </div>
+  </div>
   <span id="save-info" role="status">Nenhuma alteração.</span>
   <button class="btn btn--primary" id="btnSalvar" type="button" disabled>Salvar alterações</button>
 </div>

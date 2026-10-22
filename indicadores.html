@@ -74,6 +74,7 @@
         <option value="10">Novembro</option><option value="11">Dezembro</option>
       </select>
       <button class="btn btn-ghost" onclick="openMetas()">⚙ Metas</button>
+      <button class="btn btn-ghost" onclick="window.print()" title="Imprimir ou salvar em PDF">🖨 Imprimir</button>
       <button class="btn btn-primary" id="btnAdd" onclick="openEntry()" hidden>+ Lançar dados</button>
     </div>
   </div>
@@ -82,7 +83,15 @@
 
   <!-- PAGE: CLÍNICA -->
   <div class="page active" id="page-clinica">
+    <section class="card mapa" id="mapa-calor" aria-labelledby="mapa-titulo" hidden>
+      <div class="card-header">
+        <div><div class="card-title" id="mapa-titulo">Mapa de calor das unidades</div><div class="card-sub" id="mapa-sub"></div></div>
+        <ul class="mapa-legenda" aria-label="Legenda"><li class="ok">Dentro da meta</li><li class="warn">Atenção</li><li class="err">Fora da meta</li><li class="na">Sem lançamento</li></ul>
+      </div>
+      <div class="mapa-rolagem"><table class="mapa-tabela" id="mapa-tabela"></table></div>
+    </section>
     <div class="alerts-bar" id="alerts-clinica"></div>
+    <p class="resumo" id="resumo-clinica" aria-live="polite"></p>
     <div class="kpi-row" id="kpi-clinica"></div>
     <div class="grid2" id="charts-clinica"></div>
     <div class="card">
@@ -98,6 +107,7 @@
       <span class="btn btn-ghost">Abrir planilha →</span>
     </a>
     <div class="alerts-bar" id="alerts-logistica"></div>
+    <p class="resumo" id="resumo-logistica" aria-live="polite"></p>
     <div class="kpi-row" id="kpi-logistica"></div>
     <div class="grid2" id="charts-logistica"></div>
     <div class="card">
@@ -126,28 +136,32 @@
 
     <div class="form-section">Indicadores Clínicos</div>
     <div class="form-grid">
-      <div class="form-group"><label for="f-admissoes">Admissões totais</label><input type="number" id="f-admissoes" inputmode="numeric" step="1" placeholder="ex: 120" min="0"></div>
-      <div class="form-group"><label for="f-conciliacoes">Conciliações realizadas</label><input type="number" id="f-conciliacoes" inputmode="numeric" step="1" placeholder="ex: 95" min="0"></div>
-      <div class="form-group"><label for="f-presc-atend">Prescrições atendidas</label><input type="number" id="f-presc-atend" inputmode="numeric" step="1" placeholder="ex: 300" min="0"></div>
-      <div class="form-group"><label for="f-presc-anal">Prescrições analisadas</label><input type="number" id="f-presc-anal" inputmode="numeric" step="1" placeholder="ex: 270" min="0"></div>
-      <div class="form-group"><label for="f-prm">PRM identificados</label><input type="number" id="f-prm" inputmode="numeric" step="1" placeholder="ex: 12" min="0"></div>
-      <div class="form-group"><label for="f-interv-total">Intervenções realizadas</label><input type="number" id="f-interv-total" inputmode="numeric" step="1" placeholder="ex: 20" min="0"></div>
-      <div class="form-group"><label for="f-interv-aceitas">Intervenções aceitas</label><input type="number" id="f-interv-aceitas" inputmode="numeric" step="1" placeholder="ex: 18" min="0"></div>
-      <div class="form-group"><label for="f-altas-total">Altas totais</label><input type="number" id="f-altas-total" inputmode="numeric" step="1" placeholder="ex: 40" min="0"></div>
-      <div class="form-group"><label for="f-altas-real">Altas realizadas (farm.)</label><input type="number" id="f-altas-real" inputmode="numeric" step="1" placeholder="ex: 35" min="0"></div>
+      <div class="form-group"><label for="f-admissoes">Admissões totais</label><input type="number" id="f-admissoes" inputmode="numeric" step="1" placeholder="ex: 120" min="0" aria-describedby="d-admissoes"><small class="dica" id="d-admissoes"></small></div>
+      <div class="form-group"><label for="f-conciliacoes">Conciliações realizadas</label><input type="number" id="f-conciliacoes" inputmode="numeric" step="1" placeholder="ex: 95" min="0" aria-describedby="d-conciliacoes"><small class="dica" id="d-conciliacoes"></small></div>
+      <div class="form-group"><label for="f-presc-atend">Prescrições atendidas</label><input type="number" id="f-presc-atend" inputmode="numeric" step="1" placeholder="ex: 300" min="0" aria-describedby="d-presc-atend"><small class="dica" id="d-presc-atend"></small></div>
+      <div class="form-group"><label for="f-presc-anal">Prescrições analisadas</label><input type="number" id="f-presc-anal" inputmode="numeric" step="1" placeholder="ex: 270" min="0" aria-describedby="d-presc-anal"><small class="dica" id="d-presc-anal"></small></div>
+      <div class="form-group"><label for="f-prm">PRM identificados</label><input type="number" id="f-prm" inputmode="numeric" step="1" placeholder="ex: 12" min="0" aria-describedby="d-prm"><small class="dica" id="d-prm"></small></div>
+      <div class="form-group"><label for="f-interv-total">Intervenções realizadas</label><input type="number" id="f-interv-total" inputmode="numeric" step="1" placeholder="ex: 20" min="0" aria-describedby="d-interv-total"><small class="dica" id="d-interv-total"></small></div>
+      <div class="form-group"><label for="f-interv-aceitas">Intervenções aceitas</label><input type="number" id="f-interv-aceitas" inputmode="numeric" step="1" placeholder="ex: 18" min="0" aria-describedby="d-interv-aceitas"><small class="dica" id="d-interv-aceitas"></small></div>
+      <div class="form-group"><label for="f-altas-total">Altas totais</label><input type="number" id="f-altas-total" inputmode="numeric" step="1" placeholder="ex: 40" min="0" aria-describedby="d-altas-total"><small class="dica" id="d-altas-total"></small></div>
+      <div class="form-group"><label for="f-altas-real">Altas realizadas (farm.)</label><input type="number" id="f-altas-real" inputmode="numeric" step="1" placeholder="ex: 35" min="0" aria-describedby="d-altas-real"><small class="dica" id="d-altas-real"></small></div>
     </div>
 
     <div class="form-section">Indicadores Logísticos</div>
     <div class="form-grid">
-      <div class="form-group"><label for="f-itens-pad">Itens padronizados</label><input type="number" id="f-itens-pad" inputmode="numeric" step="1" placeholder="ex: 334" min="0"></div>
-      <div class="form-group"><label for="f-itens-falta">Itens em falta</label><input type="number" id="f-itens-falta" inputmode="numeric" step="1" placeholder="ex: 2" min="0"></div>
-      <div class="form-group"><label for="f-itens-venc">Itens vencidos</label><input type="number" id="f-itens-venc" inputmode="numeric" step="1" placeholder="ex: 5" min="0"></div>
-      <div class="form-group"><label for="f-entregas">Total de entregas</label><input type="number" id="f-entregas" inputmode="numeric" step="1" placeholder="ex: 30" min="0"></div>
-      <div class="form-group"><label for="f-nc">Não conformidades entrega</label><input type="number" id="f-nc" inputmode="numeric" step="1" placeholder="ex: 3" min="0"></div>
-      <div class="form-group"><label for="f-auditados">Itens auditados estoque</label><input type="number" id="f-auditados" inputmode="numeric" step="1" placeholder="ex: 360" min="0"></div>
-      <div class="form-group"><label for="f-conformes">Itens em conformidade</label><input type="number" id="f-conformes" inputmode="numeric" step="1" placeholder="ex: 355" min="0"></div>
-      <div class="form-group"><label for="f-emergenciais">Pedidos emergenciais</label><input type="number" id="f-emergenciais" inputmode="numeric" step="1" placeholder="ex: 2" min="0"></div>
+      <div class="form-group"><label for="f-itens-pad">Itens padronizados</label><input type="number" id="f-itens-pad" inputmode="numeric" step="1" placeholder="ex: 334" min="0" aria-describedby="d-itens-pad"><small class="dica" id="d-itens-pad"></small></div>
+      <div class="form-group"><label for="f-itens-falta">Itens em falta</label><input type="number" id="f-itens-falta" inputmode="numeric" step="1" placeholder="ex: 2" min="0" aria-describedby="d-itens-falta"><small class="dica" id="d-itens-falta"></small></div>
+      <div class="form-group"><label for="f-itens-venc">Itens vencidos</label><input type="number" id="f-itens-venc" inputmode="numeric" step="1" placeholder="ex: 5" min="0" aria-describedby="d-itens-venc"><small class="dica" id="d-itens-venc"></small></div>
+      <div class="form-group"><label for="f-entregas">Total de entregas</label><input type="number" id="f-entregas" inputmode="numeric" step="1" placeholder="ex: 30" min="0" aria-describedby="d-entregas"><small class="dica" id="d-entregas"></small></div>
+      <div class="form-group"><label for="f-nc">Não conformidades entrega</label><input type="number" id="f-nc" inputmode="numeric" step="1" placeholder="ex: 3" min="0" aria-describedby="d-nc"><small class="dica" id="d-nc"></small></div>
+      <div class="form-group"><label for="f-auditados">Itens auditados estoque</label><input type="number" id="f-auditados" inputmode="numeric" step="1" placeholder="ex: 360" min="0" aria-describedby="d-auditados"><small class="dica" id="d-auditados"></small></div>
+      <div class="form-group"><label for="f-conformes">Itens em conformidade</label><input type="number" id="f-conformes" inputmode="numeric" step="1" placeholder="ex: 355" min="0" aria-describedby="d-conformes"><small class="dica" id="d-conformes"></small></div>
+      <div class="form-group"><label for="f-emergenciais">Pedidos emergenciais</label><input type="number" id="f-emergenciais" inputmode="numeric" step="1" placeholder="ex: 2" min="0" aria-describedby="d-emergenciais"><small class="dica" id="d-emergenciais"></small></div>
     </div>
+
+    <div class="form-section">Resultado com estes números</div>
+    <p class="modal-intro" id="ao-vivo-intro">Calculado enquanto você digita, frente à meta da unidade e ao mês anterior.</p>
+    <ul class="ao-vivo" id="ao-vivo"></ul>
   </div>
   <div class="modal-footer">
     <p class="form-msg" id="entry-msg" role="alert"></p>

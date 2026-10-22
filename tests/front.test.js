@@ -57,7 +57,7 @@ function elemento() {
       if (typeof p === 'symbol') return undefined;
       if (['querySelectorAll'].includes(p)) return () => [];
       if (p === 'addEventListener') return (tipo, fn) => { ouvintes[tipo] = fn; };
-      if (['reset', 'setAttribute', 'removeAttribute', 'scrollIntoView', 'focus', 'select', 'prepend', 'after', 'appendChild', 'remove', 'scrollTo'].includes(p)) return () => {};
+      if (['reset', 'setAttribute', 'removeAttribute', 'scrollIntoView', 'focus', 'select', 'prepend', 'after', 'appendChild', 'remove', 'scrollTo', 'append'].includes(p)) return () => {};
       if (['querySelector', 'closest'].includes(p)) return () => elemento();
       return undefined;
     },
@@ -73,7 +73,7 @@ function visita(script, armazenamento, perfil, opcoes = {}) {
     console, setTimeout: (fn) => { try { fn(); } catch (e) { erros.push('timeout: ' + e.message); } }, clearTimeout() {}, Promise, JSON, Date, Math, Object, Array, Number, String, Map, Set, Error, isFinite, parseInt,
     localStorage: { getItem: k => armazenamento.has(k) ? armazenamento.get(k) : null, setItem: (k, v) => armazenamento.set(k, String(v)), removeItem: k => armazenamento.delete(k), get length() { return armazenamento.size; } },
     sessionStorage: { getItem: k => (opcoes.ss || semSS).has(k) ? (opcoes.ss || semSS).get(k) : null, setItem: (k, v) => (opcoes.ss || semSS).set(k, String(v)), removeItem: k => (opcoes.ss || semSS).delete(k) },
-    location: { href: '', search: '' }, URLSearchParams,
+    location: { href: '', search: '', origin: 'https://exemplo.test', pathname: '/usuarios.html' }, URLSearchParams,
     confirm: () => true,
     matchMedia: () => ({ matches: true }),
     themeVar: () => '#888888',
@@ -229,5 +229,100 @@ const check = (nome, c, extra) => { if (c) ok++; else { falhas++; console.log('F
   const ambas = vm.runInContext("saidasResumo({ saidas: { med: { preenchidos: 10, total: 10 }, mat: { preenchidos: 4, total: 4 }, por: 'a', em: 'b' } })", vc.ctx);
   check('saídas: as duas abas completas concluem', ambas.feito === true && ambas.pct === 100, ambas);
   check('painel: sem erro de execução', vc.erros.length === 0 && va.erros.length === 0, [vc.erros, va.erros]);
+  // ── lote visual: planilha de saídas (cobertura, parados, colar, revisão) ──
+  {
+    const v = visita('logistica.js', new Map([['farma_sessao', 'TOKEN1']]), 'coordenador');
+    await pausa(80);
+    const R = c => vm.runInContext(c, v.ctx);
+    check('mesesCobertura: sem estoque vem primeiro, sem dado por último', R("mesesCobertura({estoque:0,cmm:10})") === -1 && R("mesesCobertura({estoque:null,cmm:10})") === Infinity && R("mesesCobertura({estoque:5,cmm:0})") === Infinity && R("mesesCobertura({estoque:5,cmm:10})") === 0.5);
+    check('mesesCobertura: ordenação por criticidade', R("[{estoque:30,cmm:10},{estoque:0,cmm:10},{estoque:5,cmm:10},{estoque:null,cmm:1}].sort((a,b)=>mesesCobertura(a)-mesesCobertura(b)).map(x=>x.estoque).join(',')") === '0,5,30,');
+    // parado: item sem saída nos meses fechados e no atual, mas com estoque
+    R("planilha.abas[0].itens.push({linha:7,produto:'PARADO',valores:[0,null],cmm:10,estoque:30},{linha:8,produto:'SEMESTOQUE',valores:[0,null],cmm:10,estoque:0},{linha:9,produto:'COMSAIDA',valores:[0,null],cmm:10,estoque:30})");
+    check('parado: tem estoque e nenhuma saída', R("parado(planilha.abas[0], planilha.abas[0].itens[1])") === true);
+    check('parado: sem estoque não é parado', R("parado(planilha.abas[0], planilha.abas[0].itens[2])") === false);
+    check('parado: item com saída anterior não é parado', R("parado(planilha.abas[0], planilha.abas[0].itens[0])") === false);
+    R("alteracoes.set('MEDICAMENTOS|9', {aba:'MEDICAMENTOS',linha:9,produto:'COMSAIDA',saida:5})");
+    check('parado: saída digitada tira da lista', R("parado(planilha.abas[0], planilha.abas[0].itens[3])") === false);
+    R("alteracoes.clear()");
+    // desvio da média (DIPIRONA: abril 40, mês aberto maio)
+    check('desvioMedia: +400% quando digita 200 sobre média 40', Math.round(R("desvioMedia(planilha.abas[0], planilha.abas[0].itens[0], 200)")) === 400);
+    check('desvioMedia: sem valor ou sem média devolve null', R("desvioMedia(planilha.abas[0], planilha.abas[0].itens[0], null)") === null && R("desvioMedia(planilha.abas[0], planilha.abas[0].itens[1], 5)") === null);
+    // colar do Excel
+    check('colar: números brasileiros', R("JSON.stringify(['1.234','12,5','1.234,5','abc','','-3','7'].map(x => numeroColado(x)))") === '["1234",null,null,null,null,null,"7"]');
+    const entradas = {};
+    const tr = v.ctx.document.getElementById('tr-fake');
+    ['saida', 'cmm', 'estoque'].forEach(c => { const i = v.ctx.document.getElementById('in-' + c); i.dataset = { linha: '6', campo: c }; i.value = ''; i.classList.add('num-input'); i.closest = () => tr; entradas[c] = i; });
+    tr.hidden = false; tr.nextElementSibling = null;
+    tr.querySelector = sel => { const m = /data-campo="(\w+)"/.exec(sel); return m ? entradas[m[1]] : v.ctx.document.getElementById('x-' + sel); };
+    const colar = texto => v.els['log-body'].__ouvintes.paste({ target: entradas.saida, clipboardData: { getData: () => texto }, preventDefault() { v.prevenido = true; } });
+    v.prevenido = false;
+    colar('55');
+    check('colar: uma célula só segue o comportamento normal do navegador', v.prevenido === false && R('alteracoes.size') === 0);
+    colar('55\t31\t12\n');
+    check('colar: várias células preenchem saída, CMM e estoque', v.prevenido === true && entradas.saida.value === '55' && entradas.cmm.value === '31' && entradas.estoque.value === '12', [entradas.saida.value, entradas.cmm.value, entradas.estoque.value]);
+    const alt = JSON.parse(R("JSON.stringify([...alteracoes.values()])"));
+    check('colar: alterações registradas na linha do item', alt.length === 1 && alt[0].saida === 55 && alt[0].cmm === 31 && alt[0].estoque === 12, alt);
+    check('colar: aviso de quantos valores foram colados', /3 valores colados/.test(v.els['log-status'].textContent), v.els['log-status'].textContent);
+    // célula vazia e decimal não apagam nem alteram nada
+    R("alteracoes.clear()"); entradas.cmm.value = '31'; entradas.estoque.value = '12';
+    colar('\t\t\n');
+    check('colar: células vazias não apagam dados', R('alteracoes.size') === 0 && entradas.cmm.value === '31' && entradas.estoque.value === '12', [R('alteracoes.size'), entradas.cmm.value]);
+    colar('7,5\t9\n');
+    check('colar: decimal é ignorado, inteiro entra', /1 ignorado/.test(v.els['log-status'].textContent) && entradas.cmm.value === '9', [v.els['log-status'].textContent, entradas.cmm.value]);
+    colar('x\t30\n');
+    check('colar: texto que não é número é ignorado e avisado', /1 ignorado/.test(v.els['log-status'].textContent), v.els['log-status'].textContent);
+    // revisão antes de salvar
+    R("alteracoes.clear(); alteracoes.set('MEDICAMENTOS|6', {aba:'MEDICAMENTOS',linha:6,produto:'DIPIRONA',saida:200,cmm:30}); mostrarRevisao();");
+    check('revisão: painel aparece e botão de salvar some', v.els['rev'].hidden === false && v.els['btnSalvar'].hidden === true);
+    check('revisão: mostra de → para e destaca fora do padrão', /Saídas [0-9]+ → 200/.test(v.els['rev-lista'].innerHTML) && /\+300% vs média|\+400% vs média/.test(v.els['rev-lista'].innerHTML) && /1 fora do padrão/.test(v.els['rev-resumo'].textContent), [v.els['rev-lista'].innerHTML, v.els['rev-resumo'].textContent]);
+    v.chamadas.length = 0;
+    R("esconderRevisao()");
+    check('revisão: voltar não grava nada', v.els['rev'].hidden === true && v.els['btnSalvar'].hidden === false && v.chamadas.length === 0);
+    R("mostrarRevisao()");
+    v.chamadas.length = 0;
+    v.els['rev-ok'].__ouvintes.click();
+    await pausa(200);
+    check('revisão: confirmar grava na planilha', v.chamadas[0] === 'logistica.salvar', v.chamadas);
+    check('lote logística: sem erro de execução', v.erros.length === 0, v.erros);
+  }
+  // ── lote visual: indicadores (variação, resumo, metas com valor atual) ──
+  {
+    const v = visita('indicadores.js', new Map([['farma_sessao', 'TOKEN1']]), 'coordenador');
+    await pausa(80);
+    const R = c => vm.runInContext(c, v.ctx);
+    R("data = [{unidade:'upa-centro',mes:3,admissoes:10,conciliacoes:5},{unidade:'upa-centro',mes:4,admissoes:10,conciliacoes:8}]");
+    const d1 = R("deltaKpi('conciliacoes', 4, 80)");
+    check('deltaKpi: subida em indicador de mínimo é melhora (verde)', /kpi-delta up/.test(d1) && /30,0 p\.p\./.test(d1), d1);
+    check('deltaKpi: janeiro e mês sem anterior não mostram nada', R("deltaKpi('conciliacoes', 0, 50)") === '' && R("deltaKpi('conciliacoes', 2, 50)") === '');
+    check('deltaKpi: sem valor não mostra nada', R("deltaKpi('conciliacoes', 4, null)") === '');
+    check('deltaKpi: igual ao mês anterior', /= mês anterior/.test(R("deltaKpi('conciliacoes', 4, 50)")));
+    R("data.push({unidade:'upa-centro',mes:5,admissoes:10,conciliacoes:5})");
+    check('deltaKpi: queda em indicador de mínimo é piora (vermelho)', /kpi-delta down/.test(R("deltaKpi('conciliacoes', 5, 50)")) && /30,0 p\.p\./.test(R("deltaKpi('conciliacoes', 5, 50)")), R("deltaKpi('conciliacoes', 5, 50)"));
+    R("resumoMes('resumo-clinica', [{key:'conciliacoes',label:'Conciliações'}], [calcRow(data[1])])");
+    check('resumoMes: frase com contagem e classe', /1 de 1 indicadores dentro da meta/.test(v.els['resumo-clinica'].textContent) && /resumo (ok|warn|err)/.test(v.els['resumo-clinica'].className), [v.els['resumo-clinica'].textContent, v.els['resumo-clinica'].className]);
+    R("resumoMes('resumo-clinica', [{key:'conciliacoes',label:'Conciliações'}], [])");
+    check('resumoMes: sem lançamentos', /Sem lançamentos/.test(v.els['resumo-clinica'].textContent));
+    check('indicadores lote: sem erro de execução', v.erros.length === 0, v.erros);
+  }
+  // ── lote visual: usuários (situação) e anel do painel ──
+  {
+    const v = visita('usuarios.js', new Map([['farma_sessao', 'TOKEN1']]), 'admin');
+    await pausa(80);
+    const R = c => vm.runInContext(c, v.ctx);
+    check('situacaoDe: classifica admin, desativado, sem senha e em uso', R("[{perfil:'admin',ativo:true},{perfil:'coordenador',ativo:false},{perfil:'coordenador',ativo:true,trocarSenha:true},{perfil:'coordenador',ativo:true,trocarSenha:false}].map(situacaoDe).join(',')") === 'admin,desativados,semsenha,ativos');
+    v.ctx.document.getElementById('cred-login').textContent = 'ana.c'; v.ctx.document.getElementById('cred-senha').textContent = 'abc123';
+    check('usuarios: texto de boas-vindas traz login e senha', R('textoBoasVindas()').includes('Usuário: ana.c') && R('textoBoasVindas()').includes('Senha provisória: abc123'));
+    const clique = (acao, login) => v.els['lista'].__ouvintes.click({ target: { closest: () => ({ dataset: { acao, login }, disabled: false }) } });
+    await clique('ativar', 'ana.c'); await pausa(80);
+    check('usuarios: reativar mostra aviso sem erro', !/erro/.test(v.els['usr-status'].className), [v.els['usr-status'].className, v.els['usr-status'].textContent]);
+    check('usuarios lote: sem erro de execução', v.erros.length === 0, v.erros);
+  }
+  // anel completo no painel
+  {
+    const v = visita('index.js', new Map([['farma_sessao', 'T']]), 'coordenador');
+    await pausa(80);
+    check('index lote: anel não está completo com 1/2 concluídos', v.els['fech-ring'].classList.contains('completo') === false);
+    check('index lote: carrega sem erro', v.erros.length === 0, v.erros);
+  }
   console.log(`${ok} ok, ${falhas} falha(s)`);
 })();

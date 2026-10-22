@@ -143,7 +143,8 @@ function montarFechamento(painel, admin) {
   const pct = total ? Math.round(feitos / total * 100) : 0;
   const ring = document.getElementById('fech-ring');
   ring.style.setProperty('--p', pct);
-  ring.setAttribute('aria-label', `${feitos} de ${total} concluídos`);
+  ring.classList.toggle('completo', total > 0 && feitos === total);
+  ring.setAttribute('aria-label', `${feitos} de ${total} concluídos` + (total > 0 && feitos === total ? ' (tudo concluído)' : ''));
   document.getElementById('fech-ring-txt').textContent = `${feitos}/${total}`;
 }
 

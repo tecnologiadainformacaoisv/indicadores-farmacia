@@ -94,6 +94,18 @@ const baseOpts = (yMax) => ({
 function goalPlugin(metaKey, color) {
   return {
     id: 'goalLine_' + metaKey,
+    // faixa suave do lado "bom" da meta, atrás dos dados
+    beforeDatasetsDraw(chart) {
+      const meta = metas[metaKey];
+      if (!meta || !chart.scales.y || !isFinite(meta.val)) return;
+      const { ctx, chartArea: { left, right, top, bottom }, scales: { y } } = chart;
+      const yPos = Math.min(Math.max(y.getPixelForValue(meta.val), top), bottom);
+      ctx.save();
+      ctx.fillStyle = 'rgba(39, 174, 96, .08)';
+      if (meta.dir === 'min') ctx.fillRect(left, top, right - left, yPos - top);
+      else ctx.fillRect(left, yPos, right - left, bottom - yPos);
+      ctx.restore();
+    },
     afterDraw(chart) {
       const meta = metas[metaKey];
       if (!meta) return;
@@ -160,6 +172,43 @@ function renderAll() {
   ['kpi-clinica', 'kpi-logistica'].forEach(id => document.getElementById(id).removeAttribute('aria-busy'));
   renderClinica();
   renderLogistica();
+  renderMapaCalor();
+}
+
+// ── Mapa de calor (só coordenação, com "Todas as unidades") ────
+// Cada célula é o resultado do mês escolhido frente à meta; as metas usadas são as padrão
+// (as metas por unidade só são carregadas quando uma unidade é escolhida).
+const MAPA_COLUNAS = {
+  Clínica: [['conciliacoes', 'Conciliações'], ['prescricoes', 'Prescrições'], ['prm', 'PRM'], ['intervencoes', 'Interv.'], ['altas', 'Altas']],
+  Logística: [['desabastecimento', 'Desabast.'], ['perdas', 'Perdas'], ['nconformidades', 'Não conf.'], ['estoque', 'Estoque'], ['emergenciais', 'Emerg.']],
+};
+const MAPA_GLIFO = { ok: '✓', warn: '!', err: '✕', na: '—' };
+const MAPA_TEXTO = { ok: 'dentro da meta', warn: 'atenção', err: 'fora da meta', na: 'sem lançamento' };
+
+function renderMapaCalor() {
+  const sec = document.getElementById('mapa-calor');
+  const mostrar = info.usuario.perfil === 'admin' && unidadeSel === '' && info.unidades.length > 0;
+  sec.hidden = !mostrar;
+  if (!mostrar) return;
+  const mes = +document.getElementById('monthSel').value;
+  document.getElementById('mapa-sub').textContent = `${MONTHS_FULL[mes]} · resultado do mês frente à meta padrão de cada indicador`;
+  const grupos = Object.entries(MAPA_COLUNAS);
+  const topo = '<thead><tr><th rowspan="2" scope="col" class="mc-un">Unidade</th>' +
+    grupos.map(([g, cols]) => `<th colspan="${cols.length}" scope="colgroup" class="mc-grupo">${g}</th>`).join('') + '</tr><tr>' +
+    grupos.map(([, cols]) => cols.map(([, rot]) => `<th scope="col" class="mc-col">${esc(rot)}</th>`).join('')).join('') + '</tr></thead>';
+  const linhas = info.unidades.map(un => {
+    const reg = data.find(r => r.unidade === un.id && r.mes === mes);
+    const calc = reg ? calcRow(reg) : null;
+    const celulas = grupos.map(([, cols]) => cols.map(([key]) => {
+      const val = calc ? calc[key] : null;
+      const st = status(key, val);
+      const meta = metas[key];
+      const rotulo = `${un.nome}, ${metas[key].label}: ${val === null ? 'sem lançamento' : fmtVal(val) + ', ' + MAPA_TEXTO[st]}`;
+      return `<td class="mc mc-${st}" title="${esc(meta ? 'Meta ' + meta.val + '%' : '')}" aria-label="${esc(rotulo)}"><b>${val === null ? '—' : fmtVal(val)}</b><span aria-hidden="true">${MAPA_GLIFO[st]}</span></td>`;
+    }).join('')).join('');
+    return `<tr><th scope="row" class="mc-un">${esc(un.nome)}</th>${celulas}</tr>`;
+  }).join('');
+  document.getElementById('mapa-tabela').innerHTML = topo + '<tbody>' + linhas + '</tbody>';
 }
 
 function nomeUnidade(id) {
@@ -181,6 +230,32 @@ function byMonth(key) {
 }
 
 // ── CLÍNICA ────────────────────────────────────────────────────
+// variação do KPI frente ao mês anterior (média das unidades visíveis); "melhora" depende da direção da meta
+function deltaKpi(key, mes, val) {
+  if (val === null || mes < 1) return '';
+  const vals = data.filter(r => r.mes === mes - 1).map(r => calcRow(r)[key]).filter(v => v !== null);
+  if (!vals.length) return '';
+  const d = val - avg(vals);
+  if (Math.abs(d) < 0.05) return '<span class="kpi-delta">= mês anterior</span>';
+  const melhora = metas[key].dir === 'min' ? d > 0 : d < 0;
+  return '<span class="kpi-delta ' + (melhora ? 'up' : 'down') + '">' + (d > 0 ? '↑ ' : '↓ ') + Math.abs(d).toFixed(1).replace('.', ',') + ' p.p. vs mês anterior</span>';
+}
+
+// frase de resumo acima dos cartões: quantos indicadores do mês estão dentro da meta
+function resumoMes(id, kpiKeys, calcs) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const sts = kpiKeys.map(k => {
+    const vals = calcs.map(c => c[k.key]).filter(v => v !== null);
+    return vals.length ? { k, st: status(k.key, avg(vals)) } : null;
+  }).filter(Boolean);
+  if (!sts.length) { el.textContent = 'Sem lançamentos neste mês.'; el.className = 'resumo'; return; }
+  const ok = sts.filter(x => x.st === 'ok').length;
+  const fora = sts.filter(x => x.st === 'err').map(x => x.k.label);
+  el.className = 'resumo ' + (fora.length ? 'err' : ok === sts.length ? 'ok' : 'warn');
+  el.textContent = ok + ' de ' + sts.length + ' indicadores dentro da meta' + (fora.length ? ' · fora: ' + fora.join(', ') : '') + '.';
+}
+
 function renderClinica() {
   const month = +document.getElementById('monthSel').value;
   const rows = data.filter(r => r.mes === month);
@@ -207,9 +282,12 @@ function renderClinica() {
         <div class="kpi-label">${k.label}</div>
         <div class="kpi-val">${fmtVal(val)}</div>
         <div class="kpi-sub">Meta: ${m.val}% · ${m.dir === 'min' ? '↑ mínimo' : '↓ máximo'}</div>
+        ${deltaKpi(k.key, month, val)}
         ${val !== null ? `<span class="kpi-badge ${st}">${st === 'ok' ? '✓ Meta atingida' : st === 'warn' ? '⚠ Atenção' : '✗ Abaixo da meta'}</span>` : '<span class="kpi-badge warn">Sem dados</span>'}
       </div>`;
   });
+
+  resumoMes('resumo-clinica', kpiKeys, calcs);
 
   // Alerts
   const alertsDiv = document.getElementById('alerts-clinica');
@@ -297,9 +375,12 @@ function renderLogistica() {
         <div class="kpi-label">${k.label}</div>
         <div class="kpi-val">${fmtVal(val)}</div>
         <div class="kpi-sub">Meta: ${m.val}% · ${m.dir === 'min' ? '↑ mínimo' : '↓ máximo'}</div>
+        ${deltaKpi(k.key, month, val)}
         ${val !== null ? `<span class="kpi-badge ${st}">${st === 'ok' ? '✓ OK' : st === 'warn' ? '⚠ Atenção' : '✗ Fora da meta'}</span>` : '<span class="kpi-badge warn">Sem dados</span>'}
       </div>`;
   });
+
+  resumoMes('resumo-logistica', kpiKeys, calcs);
 
   const alertsDiv = document.getElementById('alerts-logistica');
   alertsDiv.innerHTML = '';
@@ -360,6 +441,84 @@ function goPage(page, el) {
 
 // ── Entry modal ────────────────────────────────────────────────
 // Só o coordenador da unidade lança, e sempre no mês aberto (definido pelo servidor).
+// ── Formulário de lançamento: contexto do mês anterior e resultado ao vivo ──
+const ENTRADA_INDICADORES = ['conciliacoes', 'prescricoes', 'prm', 'intervencoes', 'altas', 'desabastecimento', 'perdas', 'nconformidades', 'estoque', 'emergenciais'];
+// numerador que não pode passar do total (o servidor confere de novo)
+const ENTRADA_PARES = [
+  ['conciliacoes', 'admissoes'], ['presc-anal', 'presc-atend'], ['interv-aceitas', 'interv-total'], ['altas-real', 'altas-total'],
+  ['itens-falta', 'itens-pad'], ['itens-venc', 'itens-pad'], ['nc', 'entregas'], ['conformes', 'auditados'], ['emergenciais', 'entregas'],
+];
+
+function lancamentoAnterior() {
+  const ref = info.mesAberto;
+  const mes = ref.mes === 0 ? 11 : ref.mes - 1;
+  const ano = ref.mes === 0 ? ref.ano - 1 : ref.ano;
+  return todosLanc.find(r => r.unidade === info.usuario.unidade && r.ano === ano && r.mes === mes) || null;
+}
+
+function lerEntrada() {
+  const row = {};
+  FIELDS.forEach(f => { const v = document.getElementById('f-' + f).value.trim(); row[f] = v === '' ? null : Number(v); });
+  return row;
+}
+
+// campo numerador -> indicador que ele alimenta (o resultado aparece ao lado do campo e na lista final)
+const ENTRADA_NUM_INDICADOR = {
+  conciliacoes: 'conciliacoes', 'presc-anal': 'prescricoes', prm: 'prm', 'interv-aceitas': 'intervencoes', 'altas-real': 'altas',
+  'itens-falta': 'desabastecimento', 'itens-venc': 'perdas', nc: 'nconformidades', conformes: 'estoque', emergenciais: 'emergenciais',
+};
+
+function atualizarEntradaAoVivo() {
+  const row = lerEntrada();
+  const prev = lancamentoAnterior();
+  const calc = calcRow(row);
+  const calcPrev = prev ? calcRow(prev) : null;
+
+  // pares inválidos (numerador maior que o total): o resultado desses indicadores não vale
+  const invalidos = new Set();
+  ENTRADA_PARES.forEach(([num, den]) => {
+    if (row[num] !== null && row[den] !== null && row[num] > row[den]) invalidos.add(num);
+  });
+
+  // dica de cada campo: mês anterior; no numerador, também o resultado de agora frente à meta
+  FIELDS.forEach(f => {
+    const el = document.getElementById('f-' + f);
+    const dica = document.getElementById('d-' + f);
+    if (!dica) return;
+    const ant = prev && prev[f] !== null && prev[f] !== undefined ? prev[f] : '—';
+    const erro = invalidos.has(f);
+    el.setAttribute('aria-invalid', String(erro));
+    dica.className = 'dica';
+    if (erro) {
+      const den = ENTRADA_PARES.find(p => p[0] === f)[1];
+      dica.textContent = 'Maior que o total informado (' + row[den] + ')';
+      return;
+    }
+    let texto = 'Mês anterior: ' + ant;
+    const key = ENTRADA_NUM_INDICADOR[f];
+    if (key && calc[key] !== null) {
+      const st = status(key, calc[key]);
+      texto += ' · resultado ' + fmtVal(calc[key]);
+      dica.className = 'dica st-' + st;
+    }
+    dica.textContent = texto;
+  });
+
+  document.getElementById('ao-vivo').innerHTML = ENTRADA_INDICADORES.map(key => {
+    const numero = Object.keys(ENTRADA_NUM_INDICADOR).find(k => ENTRADA_NUM_INDICADOR[k] === key);
+    const invalido = invalidos.has(numero);
+    const val = invalido ? null : calc[key];
+    const st = invalido ? 'err' : status(key, val);
+    const m = metas[key];
+    const ant = calcPrev ? calcPrev[key] : null;
+    const delta = invalido ? 'Confira os números digitados.' : val !== null && ant !== null
+      ? (val >= ant ? '↑ ' : '↓ ') + Math.abs(val - ant).toFixed(1).replace('.', ',') + ' p.p. vs mês anterior'
+      : (ant !== null ? 'mês anterior ' + fmtVal(ant) : '');
+    const rotulo = invalido ? 'Números inválidos' : st === 'ok' ? 'Dentro da meta' : st === 'warn' ? 'Atenção' : st === 'err' ? 'Fora da meta' : 'Sem dados';
+    return `<li><span class="av-nome">${esc(m.label.replace(' (%)', ''))}<small>Meta ${m.val}% · ${m.dir === 'min' ? 'mínimo' : 'máximo'}</small></span><b class="av-val">${val === null ? '—' : fmtVal(val)}</b><span class="badge ${st === 'na' ? 'warn' : st}">${rotulo}</span><small class="av-delta">${esc(delta)}</small></li>`;
+  }).join('');
+}
+
 function openEntry() {
   const ref = info.mesAberto;
   const unidade = info.usuario.unidade;
@@ -373,6 +532,7 @@ function openEntry() {
   });
   entradaInicial = valoresEntrada();
   setMsg('entry-msg', '');
+  atualizarEntradaAoVivo();
   abrirModal('overlay-entry', 'f-admissoes');
 }
 
@@ -401,6 +561,8 @@ function fecharModal(id) {
   if (focoAntes && focoAntes.focus) focoAntes.focus();
   focoAntes = null;
 }
+
+document.getElementById('overlay-entry').addEventListener('input', atualizarEntradaAoVivo);
 
 document.addEventListener('keydown', e => {
   const ov = document.querySelector('.overlay.open');
@@ -473,12 +635,17 @@ function openMetas() {
       ? `Metas de ${nomeUnidade(unidadeSel)}. O sistema alerta quando o valor fica abaixo (ou acima) da meta.`
       : 'Metas de referência. Para alterar, escolha uma unidade no topo da página.';
   document.getElementById('metas-intro').textContent = intro;
+  // valor atual de cada indicador (mês selecionado), para comparar com a meta enquanto edita
+  const mesSel = +document.getElementById('monthSel').value;
+  const calcsMes = data.filter(r => r.mes === mesSel).map(r => calcRow(r));
+  const atual = key => { const v = calcsMes.map(c => c[key]).filter(x => x !== null); return v.length ? avg(v) : null; };
   document.getElementById('metas-list').innerHTML = Object.entries(metas).map(([key, m]) => `
     <div class="meta-row">
       <label class="meta-label" for="meta-${key}">${esc(m.label)}</label>
       <input class="meta-input" id="meta-${key}" type="number" value="${m.val}" min="0" max="100" step="0.5" ${editavel ? '' : 'disabled'}>
       <span class="meta-unit">%</span>
       <span class="meta-dir">${m.dir === 'min' ? '↑ mínimo' : '↓ máximo'}</span>
+      <span class="meta-atual st-${status(key, atual(key))}">atual ${fmtVal(atual(key))}</span>
     </div>`).join('');
   document.getElementById('btnSaveMetas').hidden = !editavel;
   setMsg('metas-msg', '');

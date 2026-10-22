@@ -163,3 +163,17 @@ function nomeMes(ref) {
 function esc(s) {
   return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
+
+// Atalho de busca: Ctrl+K (ou "/" fora de um campo) leva ao campo de busca da página.
+document.addEventListener('keydown', e => {
+  const alvo = e.target;
+  const digitando = alvo && /^(INPUT|TEXTAREA|SELECT)$/.test(alvo.tagName);
+  const atalhoK = e.key.toLowerCase() === 'k' && (e.ctrlKey || e.metaKey);
+  const atalhoBarra = e.key === '/' && !digitando && !e.ctrlKey && !e.altKey && !e.metaKey && !(alvo && alvo.isContentEditable);
+  if (!(atalhoK || atalhoBarra) || document.querySelector('.overlay.open')) return;
+  const busca = document.querySelector('input[type="search"]');
+  if (!busca || busca.offsetParent === null) return;
+  e.preventDefault();
+  busca.focus();
+  busca.select();
+});

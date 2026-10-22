@@ -50,7 +50,36 @@ function applyTheme(theme) {
   document.documentElement.dataset.theme = saved === 'dark' ? 'dark' : 'light';
 })();
 
+// Letra maior: guarda a escolha e liga um botão "A+" ao lado do tema.
+const FONTE_KEY = 'farma_fonte';
+(function initFonte() {
+  let v = null;
+  try { v = localStorage.getItem(FONTE_KEY); } catch (e) { /* sem armazenamento */ }
+  if (v === 'grande') document.documentElement.dataset.fonte = 'grande';
+})();
+
+function montarBotaoFonte() {
+  const tema = document.querySelector('[data-theme-toggle]');
+  if (!tema || document.querySelector('.fonte-toggle')) return;
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'header-btn fonte-toggle';
+  b.textContent = 'A+';
+  b.title = 'Letra maior (clique de novo para voltar)';
+  const atual = () => document.documentElement.dataset.fonte === 'grande';
+  b.setAttribute('aria-pressed', String(atual()));
+  b.setAttribute('aria-label', 'Letra maior');
+  b.addEventListener('click', () => {
+    const grande = !atual();
+    if (grande) document.documentElement.dataset.fonte = 'grande'; else delete document.documentElement.dataset.fonte;
+    b.setAttribute('aria-pressed', String(grande));
+    try { localStorage.setItem(FONTE_KEY, grande ? 'grande' : 'normal'); } catch (e) { /* ignora */ }
+  });
+  tema.parentNode.insertBefore(b, tema);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  montarBotaoFonte();
   applyTheme(currentTheme());
   document.querySelectorAll('[data-theme-toggle]').forEach(btn => {
     btn.addEventListener('click', () => {

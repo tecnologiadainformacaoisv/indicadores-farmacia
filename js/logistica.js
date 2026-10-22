@@ -186,6 +186,52 @@ function montarAbas() {
     </button>`).join('');
 }
 
+// ── Tendência das saídas ───────────────────────────────────────
+// Mini linha dos meses anteriores + variação contra a média: dá para ver, enquanto digita,
+// se o valor está fora do padrão do próprio item.
+const MESES_TENDENCIA = 6;
+const LIMITE_FORA_PADRAO = 40; // % de diferença para a média que merece atenção
+
+function linhaSpark(serie, temAtual) {
+  const W = 76, H = 24, P = 3;
+  const min = Math.min(...serie), max = Math.max(...serie);
+  const x = i => P + (serie.length === 1 ? 0 : i * (W - 2 * P) / (serie.length - 1));
+  const y = v => max === min ? H / 2 : H - P - (v - min) * (H - 2 * P) / (max - min);
+  const pontos = serie.map((v, i) => x(i).toFixed(1) + ',' + y(v).toFixed(1)).join(' ');
+  const ult = serie.length - 1;
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" aria-hidden="true"><polyline points="${pontos}"/><circle cx="${x(ult).toFixed(1)}" cy="${y(serie[ult]).toFixed(1)}" r="3" class="${temAtual ? 'atual' : 'ultimo'}"/></svg>`;
+}
+
+function tendencia(aba, it, atual) {
+  const ref = planilha.mesAberto;
+  const prev = aba.meses
+    .map((m, i) => ({ mes: m.mes, v: it.valores[i] }))
+    .filter(m => m.mes < ref.mes && m.v !== null && m.v !== undefined)
+    .slice(-MESES_TENDENCIA).map(m => m.v);
+  const cur = atual === null || atual === undefined || atual === '' ? null : Number(atual);
+  if (prev.length < 2 && cur === null) return '<span class="tend-txt na">sem histórico</span>';
+  const serie = cur === null ? prev : prev.concat([cur]);
+  const media = prev.length ? prev.reduce((a, b) => a + b, 0) / prev.length : null;
+  let texto, cls = '';
+  if (cur === null) {
+    texto = 'média ' + fmt(Math.round(media));
+  } else if (!media) {
+    texto = 'sem média anterior'; cls = 'na';
+  } else {
+    const d = (cur - media) / media * 100;
+    const fora = Math.abs(d) >= LIMITE_FORA_PADRAO;
+    texto = (d >= 0 ? '↑ ' : '↓ ') + Math.abs(Math.round(d)) + '% vs média' + (fora ? ' · fora do padrão' : '');
+    cls = fora ? 'fora' : '';
+  }
+  return `<span class="tend">${linhaSpark(serie, cur !== null)}<span class="tend-txt ${cls}">${esc(texto)}</span></span>`;
+}
+
+function saidaAtualDaLinha(aba, it) {
+  const alt = alteracoes.get(aba.nome + '|' + it.linha) || {};
+  if (alt.saida !== undefined) return alt.saida;
+  return valorOriginal(aba, it, 'saida');
+}
+
 // ── Cobertura de estoque ───────────────────────────────────────
 // Quantos meses o estoque dura no ritmo do CMM. Sem estoque e abaixo de 1 mês são os casos críticos.
 const COBERTURA_MAX = 3; // a barra enche com 3 meses ou mais
@@ -208,12 +254,57 @@ function celulaCobertura(c) {
 }
 
 let soCriticos = false;
+let soParados = false;      // itens com estoque e sem nenhuma saída nos últimos meses
+let ordenarCrit = false;    // menor cobertura primeiro
 const CRIT_SR = '<span class="sr-only">Estoque crítico: </span>'; // o ponto vermelho não pode ser só cor
 
 // valores exibidos no momento (o que foi digitado vale mais que o que veio da planilha)
 function valoresDaLinha(aba, it) {
   const alt = alteracoes.get(aba.nome + '|' + it.linha) || {};
   return { cmm: alt.cmm !== undefined ? alt.cmm : it.cmm, estoque: alt.estoque !== undefined ? alt.estoque : it.estoque };
+}
+
+// meses que o estoque dura (para ordenar): sem estoque primeiro, sem dado por último
+function mesesCobertura(v) {
+  const e = v.estoque === null || v.estoque === undefined || v.estoque === '' ? null : Number(v.estoque);
+  const c = v.cmm === null || v.cmm === undefined || v.cmm === '' ? null : Number(v.cmm);
+  if (e === null) return Infinity;
+  if (e === 0) return -1;
+  if (!c) return Infinity;
+  return e / c;
+}
+
+function cmpCobertura(x, y) { return x < y ? -1 : x > y ? 1 : 0; }
+
+// "parado": tem estoque, mas nenhuma saída nos meses fechados mostrados nem no mês aberto
+function parado(aba, it) {
+  const ref = planilha.mesAberto;
+  const prev = aba.meses.map((m, i) => ({ mes: m.mes, v: it.valores[i] })).filter(m => m.mes < ref.mes).slice(-MESES_ANTERIORES);
+  if (!prev.length) return false;
+  const atual = saidaAtualDaLinha(aba, it);
+  const semSaida = v => v === null || v === undefined || v === '' || Number(v) === 0;
+  const est = valoresDaLinha(aba, it).estoque;
+  return prev.every(m => semSaida(m.v)) && semSaida(atual) && est !== null && est !== undefined && est !== '' && Number(est) > 0;
+}
+
+// variação (%) da saída frente à média dos meses anteriores; null se não dá para comparar
+function desvioMedia(aba, it, cur) {
+  const ref = planilha.mesAberto;
+  const prev = aba.meses.map((m, i) => ({ mes: m.mes, v: it.valores[i] }))
+    .filter(m => m.mes < ref.mes && m.v !== null && m.v !== undefined).slice(-MESES_TENDENCIA).map(m => m.v);
+  const media = prev.length ? prev.reduce((a, b) => a + b, 0) / prev.length : 0;
+  if (!media || cur === null || cur === undefined || cur === '') return null;
+  return (Number(cur) - media) / media * 100;
+}
+
+function atualizarParados() {
+  const aba = planilha.abas.find(a => a.nome === abaAtual);
+  const n = aba.itens.filter(it => parado(aba, it)).length;
+  document.getElementById('n-parados').textContent = n ? '(' + n + ')' : '';
+  const btn = document.getElementById('btn-parados');
+  btn.disabled = n === 0 && !soParados;
+  btn.title = btn.disabled ? 'Nenhum item com estoque e sem saída nos meses anteriores' : 'Têm estoque e nenhuma saída nos últimos meses';
+  btn.setAttribute('aria-pressed', String(soParados));
 }
 
 function atualizarCriticos() {
@@ -235,6 +326,7 @@ function esqueletoTabela() {
 
 // ── Tabela ─────────────────────────────────────────────────────
 function render() {
+  esconderRevisao();
   const aba = planilha.abas.find(a => a.nome === abaAtual);
   const ref = planilha.mesAberto;
   const idxAberto = aba.meses.findIndex(m => m.mes === ref.mes);
@@ -251,6 +343,7 @@ function render() {
     <th scope="col" class="col-aberto">CMM</th>
     <th scope="col" class="col-aberto">Estoque disp.</th>
     <th scope="col" class="col-cob">Cobertura</th>
+    <th scope="col" class="col-tend">Tendência das saídas</th>
   </tr>`;
 
   const ed = planilha.editavel;
@@ -265,21 +358,24 @@ function render() {
       aria-label="${campo === 'saida' ? 'Saídas' : campo === 'cmm' ? 'CMM' : 'Estoque disponível'} de ${esc(it.produto)}"></td>`;
   };
 
-  document.getElementById('log-body').innerHTML = aba.itens.map(it => {
+  const itens = ordenarCrit ? [...aba.itens].sort((a, b) => cmpCobertura(mesesCobertura(valoresDaLinha(aba, a)), mesesCobertura(valoresDaLinha(aba, b)))) : aba.itens;
+  document.getElementById('log-body').innerHTML = itens.map(it => {
     const v = valoresDaLinha(aba, it);
     const cob = cobertura(v.estoque, v.cmm);
     return `
-    <tr data-busca="${esc(normalizar(it.produto))}" data-linha="${it.linha}" data-critico="${cob.critico ? 1 : 0}"${alteracoes.has(abaAtual + '|' + it.linha) ? ' class="alterado"' : ''}>
+    <tr data-busca="${esc(normalizar(it.produto))}" data-linha="${it.linha}" data-critico="${cob.critico ? 1 : 0}" data-parado="${parado(aba, it) ? 1 : 0}"${alteracoes.has(abaAtual + '|' + it.linha) ? ' class="alterado"' : ''}>
       <td class="produto">${cob.critico ? CRIT_SR : ''}${esc(it.produto)}</td>
       ${anteriores.map(m => `<td class="mes-anterior">${fmt(it.valores[m.i])}</td>`).join('')}
       ${cel(it, 'saida', idxAberto >= 0 ? it.valores[idxAberto] : null)}
       ${cel(it, 'cmm', it.cmm)}
       ${cel(it, 'estoque', it.estoque)}
       <td class="col-cob cob ${cob.cls}" data-label="Cobertura">${celulaCobertura(cob)}</td>
+      <td class="col-tend" data-label="Tendência das saídas">${tendencia(aba, it, saidaAtualDaLinha(aba, it))}</td>
     </tr>`;
   }).join('');
   filtrar();
   atualizarCriticos();
+  atualizarParados();
   atualizarBarra();
 }
 
@@ -287,7 +383,7 @@ function filtrar() {
   const q = normalizar(document.getElementById('busca').value.trim());
   let visiveis = 0;
   document.querySelectorAll('#log-body tr').forEach(tr => {
-    const ok = (!q || tr.dataset.busca.includes(q)) && (!soCriticos || tr.dataset.critico === '1');
+    const ok = (!q || tr.dataset.busca.includes(q)) && (!soCriticos || tr.dataset.critico === '1') && (!soParados || tr.dataset.parado === '1');
     tr.hidden = !ok;
     if (ok) visiveis++;
   });
@@ -309,7 +405,7 @@ function valorOriginal(aba, it, campo) {
   return idx >= 0 ? it.valores[idx] : null;
 }
 
-function aoEditar(input) {
+function aoEditar(input, adiar) {
   const aba = planilha.abas.find(a => a.nome === abaAtual);
   const linha = +input.dataset.linha;
   const campo = input.dataset.campo;
@@ -335,6 +431,8 @@ function aoEditar(input) {
   const v = valoresDaLinha(aba, it);
   const cob = cobertura(v.estoque, v.cmm);
   tr.dataset.critico = cob.critico ? '1' : '0';
+  tr.dataset.parado = parado(aba, it) ? '1' : '0';
+  esconderRevisao();
   const tdProd = tr.querySelector('.produto');
   const sr = tdProd.querySelector('.sr-only');
   if (cob.critico && !sr) tdProd.insertAdjacentHTML('afterbegin', CRIT_SR);
@@ -342,7 +440,10 @@ function aoEditar(input) {
   const tdCob = tr.querySelector('.cob');
   tdCob.className = 'col-cob cob ' + cob.cls;
   tdCob.innerHTML = celulaCobertura(cob);
+  tr.querySelector('.col-tend').innerHTML = tendencia(aba, it, saidaAtualDaLinha(aba, it));
+  if (adiar) return;
   atualizarCriticos();
+  atualizarParados();
   atualizarBarra();
 }
 
@@ -464,7 +565,108 @@ document.getElementById('btn-criticos').addEventListener('click', () => {
   filtrar();
   atualizarCriticos();
 });
-document.getElementById('btnSalvar').addEventListener('click', salvar);
+// ── Revisão antes de salvar ────────────────────────────────────
+// O botão não grava na hora: mostra o que vai mudar (de → para) e só então confirma.
+const ROTULO_CAMPO = { saida: 'Saídas', cmm: 'CMM', estoque: 'Estoque' };
+const REVISAO_LINHAS = 6;
+
+function esconderRevisao(voltarFoco) {
+  const rev = document.getElementById('rev');
+  if (!rev.hidden) {
+    rev.hidden = true;
+    document.getElementById('save-info').hidden = false;
+    document.getElementById('btnSalvar').hidden = false;
+    if (voltarFoco) document.getElementById('btnSalvar').focus();
+  }
+}
+
+function mostrarRevisao() {
+  const itens = [];
+  let fora = 0;
+  alteracoes.forEach(alt => {
+    const aba = planilha.abas.find(a => a.nome === alt.aba);
+    const it = aba.itens.find(x => x.linha === alt.linha);
+    const partes = [];
+    let aviso = '';
+    CAMPOS.forEach(c => {
+      if (alt[c] === undefined) return;
+      partes.push(ROTULO_CAMPO[c] + ' ' + fmt(valorOriginal(aba, it, c)) + ' → ' + fmt(alt[c]));
+      if (c === 'saida') {
+        const d = desvioMedia(aba, it, alt[c]);
+        if (d !== null && Math.abs(d) >= LIMITE_FORA_PADRAO) aviso = ' (' + (d > 0 ? '+' : '') + Math.round(d) + '% vs média)';
+      }
+    });
+    if (aviso) fora++;
+    itens.push({ produto: alt.produto, texto: partes.join(' · '), aviso });
+  });
+  // quem está fora do padrão aparece primeiro
+  itens.sort((x, y) => (y.aviso ? 1 : 0) - (x.aviso ? 1 : 0));
+  const n = itens.length;
+  document.getElementById('rev-resumo').textContent = 'Revisar ' + n + (n === 1 ? ' item' : ' itens') + ' antes de gravar' + (fora ? ' · ' + fora + ' fora do padrão' : '');
+  document.getElementById('rev-lista').innerHTML = itens.slice(0, REVISAO_LINHAS).map(l =>
+    '<li' + (l.aviso ? ' class="aviso"' : '') + '><b>' + esc(l.produto) + '</b> <span>' + esc(l.texto + l.aviso) + '</span></li>').join('') +
+    (n > REVISAO_LINHAS ? '<li class="mais">+ ' + (n - REVISAO_LINHAS) + ' itens</li>' : '');
+  document.getElementById('rev').hidden = false;
+  document.getElementById('save-info').hidden = true;
+  document.getElementById('btnSalvar').hidden = true;
+  document.getElementById('rev-ok').focus();
+}
+
+document.getElementById('btnSalvar').addEventListener('click', mostrarRevisao);
+document.getElementById('rev-voltar').addEventListener('click', () => esconderRevisao(true));
+document.addEventListener('keydown', e => { if (e.key === 'Escape') esconderRevisao(true); });
+document.getElementById('rev-ok').addEventListener('click', () => { esconderRevisao(true); salvar(); });
+
+// ── Colar do Excel ─────────────────────────────────────────────
+// Colar várias células (linhas e colunas) a partir do campo em foco: preenche para baixo, nos itens visíveis.
+function numeroColado(txt) {
+  let t = String(txt).trim().replace(/\s/g, '');
+  if (t === '') return null;
+  if (t.includes(',')) t = t.replace(/\./g, '').replace(',', '.');
+  else if (/^\d{1,3}(\.\d{3})+$/.test(t)) t = t.replace(/\./g, '');
+  const n = Number(t);
+  return isFinite(n) && n >= 0 && Number.isInteger(n) ? String(n) : null; // vazio, decimal e texto não entram
+}
+
+document.getElementById('log-body').addEventListener('paste', e => {
+  const alvo = e.target;
+  if (!alvo.classList || !alvo.classList.contains('num-input')) return;
+  const texto = (e.clipboardData || window.clipboardData).getData('text');
+  if (!/[\t\n]/.test(texto.replace(/[\t\n\r]+$/, ''))) return; // uma célula só: cola normal
+  e.preventDefault();
+  const grade = texto.replace(/\r/g, '').replace(/\n+$/, '').split('\n').map(l => l.split('\t'));
+  const c0 = CAMPOS.indexOf(alvo.dataset.campo);
+  let tr = alvo.closest('tr');
+  let colados = 0, ignorados = 0;
+  grade.forEach(linha => {
+    while (tr && tr.hidden) tr = tr.nextElementSibling;
+    if (!tr) return;
+    linha.forEach((cel, j) => {
+      const campo = CAMPOS[c0 + j];
+      const input = campo && tr.querySelector('.num-input[data-campo="' + campo + '"]');
+      if (!input) return;
+      const v = numeroColado(cel);
+      if (v === null) { ignorados++; return; }
+      input.value = v;
+      aoEditar(input, true);
+      colados++;
+    });
+    tr = tr.nextElementSibling;
+  });
+  if (colados) { atualizarCriticos(); atualizarParados(); atualizarBarra(); }
+  setStatus(colados + (colados === 1 ? ' valor colado' : ' valores colados') + (ignorados ? ' · ' + ignorados + ' ignorado(s): célula vazia, decimal ou texto' : '') + '. Revise e salve.', ignorados ? 'warn' : '');
+});
+
+document.getElementById('btn-ordenar').addEventListener('click', () => {
+  ordenarCrit = !ordenarCrit;
+  document.getElementById('btn-ordenar').setAttribute('aria-pressed', String(ordenarCrit));
+  render();
+});
+document.getElementById('btn-parados').addEventListener('click', () => {
+  soParados = !soParados;
+  filtrar();
+  atualizarParados();
+});
 
 window.addEventListener('beforeunload', e => {
   if (alteracoes.size && !saindoDaSessao) { e.preventDefault(); e.returnValue = ''; }

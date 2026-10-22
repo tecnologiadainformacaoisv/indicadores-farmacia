@@ -5,6 +5,29 @@ let info = null;
 let usuarios = [];
 let editando = null;          // login em edição (null = cadastrando)
 let loginTocado = false;      // se a pessoa já digitou o usuário, para de sugerir
+let filtroSit = 'todos';      // todos | ativos | semsenha | desativados
+let filtroUn = '';            // id da unidade ('' = todas)
+
+function situacaoDe(u) {
+  if (u.perfil === 'admin') return 'admin';
+  if (!u.ativo) return 'desativados';
+  return u.trocarSenha ? 'semsenha' : 'ativos';
+}
+
+// Painel de situação: números por categoria (também são os filtros) e aviso de unidade sem coordenador.
+function renderSaude() {
+  const coords = usuarios.filter(u => u.perfil === 'coordenador');
+  const conta = s => coords.filter(u => situacaoDe(u) === s).length;
+  $('s-todos').textContent = coords.length;
+  $('s-ativos').textContent = conta('ativos');
+  $('s-semsenha').textContent = conta('semsenha');
+  $('s-desativados').textContent = conta('desativados');
+  document.querySelectorAll('#saude-itens [data-filtro]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.filtro === filtroSit)));
+  const sem = info.unidades.filter(un => !coords.some(c => c.ativo && c.unidade === un.id));
+  const aviso = $('saude-aviso');
+  aviso.hidden = !sem.length;
+  aviso.textContent = sem.length ? 'Sem coordenador ativo: ' + sem.map(un => un.nome).join(', ') + '.' : '';
+}
 
 const $ = id => document.getElementById(id);
 
@@ -45,11 +68,15 @@ function render() {
   const ordem = [...usuarios].sort((a, b) =>
     (a.perfil === 'admin') - (b.perfil === 'admin') ||
     nomeUnidade(a.unidade).localeCompare(nomeUnidade(b.unidade)) || a.nome.localeCompare(b.nome));
-  const visiveis = ordem.filter(u => !q || normalizar([u.nome, u.login, nomeUnidade(u.unidade)].join(' ')).includes(q));
+  renderSaude();
+  const visiveis = ordem.filter(u =>
+    (!q || normalizar([u.nome, u.login, nomeUnidade(u.unidade)].join(' ')).includes(q)) &&
+    (u.perfil === 'admin' ? filtroSit === 'todos' && !filtroUn : (filtroSit === 'todos' || situacaoDe(u) === filtroSit) && (!filtroUn || u.unidade === filtroUn)));
 
-  $('contagem').textContent = `(${usuarios.length})`;
-  $('vazio').textContent = q
-    ? 'Nenhum resultado para a busca.'
+  const filtrando = !!q || filtroSit !== 'todos' || !!filtroUn;
+  $('contagem').textContent = filtrando ? `(${visiveis.length} de ${usuarios.length})` : `(${usuarios.length})`;
+  $('vazio').textContent = filtrando
+    ? 'Nenhum resultado com a busca e os filtros atuais.'
     : 'Nenhum usuário cadastrado ainda. Use o formulário acima para cadastrar o primeiro coordenador.';
   $('lista').innerHTML = visiveis.map(u => {
     const admin = u.perfil === 'admin';
@@ -90,13 +117,17 @@ async function carregar() {
   if (!validarSessao(info)) return false;
   usuarios = r.usuarios;
   if (!$('f-unidade').options.length) montarSelectUnidades();
+  if (!$('filtro-unidade').options.length) {
+    $('filtro-unidade').innerHTML = '<option value="">Todas as unidades</option>' + info.unidades.map(u => `<option value="${esc(u.id)}">${esc(u.nome)}</option>`).join('');
+  }
   setStatus('');
   render();
   return true;
 }
 
 // ── Senha provisória (mostrada uma única vez) ──────────────────
-function mostrarCredencial(titulo, login, senha) {
+function mostrarCredencial(titulo, login, senha, nome) {
+  $('cred').dataset.nome = nome || '';
   $('cred-titulo').textContent = titulo;
   $('cred-login').textContent = login;
   $('cred-senha').textContent = senha;
@@ -112,13 +143,25 @@ function fecharCredencial() {
   $('cred').hidden = true;
   $('cred-login').textContent = '';
   $('cred-senha').textContent = ''; // não deixa a senha na tela nem na página
+  delete $('cred').dataset.nome;
 }
 
 function avisarSaida(e) { e.preventDefault(); e.returnValue = ''; }
 
-async function copiarCredencial() {
+function textoBoasVindas() {
   const endereco = location.origin + location.pathname.replace(/usuarios\.html$/, 'index.html');
-  const texto = `Acesso ao sistema Indicadores da Farmácia\nEndereço: ${endereco}\nUsuário: ${$('cred-login').textContent}\nSenha provisória: ${$('cred-senha').textContent}\nAo entrar, crie a sua própria senha.`;
+  const nome = $('cred').dataset.nome;
+  return (nome ? `Olá, ${nome.split(' ')[0]}! ` : '') +
+    `Seu acesso ao sistema Indicadores da Farmácia (ISV):\nEndereço: ${endereco}\nUsuário: ${$('cred-login').textContent}\nSenha provisória: ${$('cred-senha').textContent}\nAo entrar, crie a sua própria senha.`;
+}
+
+// abre o WhatsApp com a mensagem pronta; a pessoa escolhe o contato
+function enviarWhats() {
+  window.open('https://wa.me/?text=' + encodeURIComponent(textoBoasVindas()), '_blank', 'noopener');
+}
+
+async function copiarCredencial() {
+  const texto = textoBoasVindas();
   try {
     await navigator.clipboard.writeText(texto);
     $('cred-msg').textContent = 'Copiado!';
@@ -143,6 +186,8 @@ function montarSelectUnidades(extra) {
 
 function modoCadastro() {
   editando = null;
+  filtroSit = 'todos'; filtroUn = '';
+  if ($('filtro-unidade')) $('filtro-unidade').value = '';
   if (info) montarSelectUnidades();
   loginTocado = false;
   $('form-usuario').reset();
@@ -179,6 +224,14 @@ $('f-nome').addEventListener('input', () => {
 $('f-login').addEventListener('input', () => { loginTocado = true; });
 $('btn-cancelar').addEventListener('click', modoCadastro);
 $('cred-copiar').addEventListener('click', copiarCredencial);
+$('cred-whats').addEventListener('click', enviarWhats);
+$('saude-itens').addEventListener('click', e => {
+  const b = e.target.closest('[data-filtro]');
+  if (!b) return;
+  filtroSit = b.dataset.filtro;
+  render();
+});
+$('filtro-unidade').addEventListener('change', e => { filtroUn = e.target.value; render(); });
 $('cred-fechar').addEventListener('click', fecharCredencial);
 $('busca').addEventListener('input', render);
 
@@ -205,7 +258,7 @@ $('form-usuario').addEventListener('submit', async ev => {
     } else {
       const r = await api('usuarios.criar', { login, nome, unidade });
       modoCadastro();
-      mostrarCredencial('Coordenador cadastrado: ' + r.nome, r.login, r.senhaProvisoria);
+      mostrarCredencial('Coordenador cadastrado: ' + r.nome, r.login, r.senhaProvisoria, r.nome);
       await carregar();
     }
   } catch (e) {
@@ -216,6 +269,24 @@ $('form-usuario').addEventListener('submit', async ev => {
 });
 
 // ── Ações da lista ─────────────────────────────────────────────
+// depois de desativar/reativar, um botão no aviso desfaz sem pedir confirmação de novo
+function oferecerDesfazer(u, eraAtivar) {
+  const el = $('usr-status');
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'btn-sec desfazer';
+  b.textContent = 'Desfazer';
+  b.addEventListener('click', async () => {
+    b.disabled = true;
+    try {
+      await api('usuarios.definirAtivo', { login: u.login, ativo: !eraAtivar });
+      await carregar();
+      setStatus('Acesso de ' + u.nome + ' ' + (eraAtivar ? 'desativado' : 'reativado') + ' de novo.', 'ok');
+    } catch (e) { setStatus(e.message, 'erro'); oferecerDesfazer(u, eraAtivar); }
+  });
+  el.append(' ', b);
+}
+
 $('lista').addEventListener('click', async ev => {
   const b = ev.target.closest('button[data-acao]');
   if (!b) return;
@@ -236,12 +307,13 @@ $('lista').addEventListener('click', async ev => {
   try {
     if (acao === 'senha') {
       const r = await api('usuarios.redefinirSenha', { login: u.login });
-      mostrarCredencial('Nova senha provisória de ' + r.nome, r.login, r.senhaProvisoria);
+      mostrarCredencial('Nova senha provisória de ' + r.nome, r.login, r.senhaProvisoria, r.nome);
       await carregar();
     } else {
       await api('usuarios.definirAtivo', { login: u.login, ativo: acao === 'ativar' });
       await carregar();
       setStatus(`Acesso de ${u.nome} ${acao === 'ativar' ? 'reativado' : 'desativado'}.`, 'ok');
+      oferecerDesfazer(u, acao === 'ativar');
     }
   } catch (e) {
     setStatus(e.message, 'erro');

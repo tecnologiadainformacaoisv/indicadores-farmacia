@@ -223,3 +223,18 @@ button.header-btn { background: none; font-family: inherit; cursor: pointer; }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
+
+/* letra maior (botão A+ no cabeçalho) */
+html[data-fonte="grande"] body { zoom: 1.12; }
+.fonte-toggle { font-weight: 800; }
+
+/* impressão / PDF: sempre em cores claras, só a aba aberta */
+@media print {
+  html[data-fonte="grande"] body { zoom: 1; }
+  html[data-theme="dark"] { color-scheme: light; --txt: #1a2733; --title: #0a3d62; --text-soft: #4a5a68; --instituto-text: #1a2733; --instituto-surface: #fff; --s1: #fff; --s2: #f4f6f8; --s3: #eef1f4; --bd: #d5dbe1; --instituto-border: #d5dbe1; --c-ok: #1e8449; --c-warn: #b9770e; --c-err: #b03a2e; --chart-text: #333; --chart-grid: #ddd; --chart-border: #bbb; }
+  .page-header, .sidebar, .save-bar, .app-footer, .topbar-right, .page-status, .notice, .log-toolbar, .overlay, .btn, button { display: none !important; }
+  body { background: #fff; color: var(--txt); }
+  .page.active { display: block !important; padding: 0; }
+  .kpi-card, .card-panel, canvas { break-inside: avoid; }
+}
+@media (max-width: 640px) { html[data-fonte="grande"] body { zoom: 1; } }
