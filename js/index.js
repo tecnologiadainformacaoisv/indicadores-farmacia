@@ -81,10 +81,13 @@ function saidasResumo(unidade) {
   if (!sd) return { feito: false, parcial: false, pct: 0, texto: 'Nenhum item lançado ainda.' };
   const pre = sd.med.preenchidos + sd.mat.preenchidos;
   const tot = sd.med.total + sd.mat.total;
-  const feito = tot > 0 && pre >= tot;
-  const detalhe = `Medicamentos ${sd.med.preenchidos} de ${sd.med.total} · Materiais ${sd.mat.preenchidos} de ${sd.mat.total}`;
+  // aba ainda não salva nenhuma vez tem total 0: não pode contar como lançada
+  const duasAbas = sd.med.total > 0 && sd.mat.total > 0;
+  const feito = duasAbas && pre >= tot;
+  const parte = (nome, a) => a.total ? `${nome} ${a.preenchidos} de ${a.total}` : `${nome}: nenhum item lançado`;
+  const detalhe = parte('Medicamentos', sd.med) + ' · ' + parte('Materiais', sd.mat);
   return {
-    feito, parcial: pre > 0 && !feito, pct: tot ? Math.round(pre / tot * 100) : 0,
+    feito, parcial: pre > 0 && !feito, pct: tot ? Math.min(duasAbas ? 100 : 99, Math.round(pre / tot * 100)) : 0,
     texto: detalhe + (sd.em ? `. Atualizada por ${sd.por} em ${sd.em}.` : '.'),
   };
 }
@@ -118,7 +121,7 @@ function montarFechamento(painel, admin) {
       const ultima = [un.clinica.lancado ? { por: un.clinica.por, em: un.clinica.em } : null, un.saidas ? { por: un.saidas.por, em: un.saidas.em } : null].filter(Boolean).pop();
       const quando = ultima ? `Última atualização: ${ultima.por}, ${ultima.em}` : 'Nada lançado ainda neste mês.';
       return `<li class="fech-unidade"><div><b>${esc(un.nome)}</b><small>${esc(quando)}</small></div>
-        <div class="fech-selos">${selo(un.clinica.lancado, 'Clínica')}${selo(sd.feito, 'Saídas' + (sd.pct && !sd.feito ? ' ' + sd.pct + '%' : ''))}</div></li>`;
+        <div class="fech-selos">${selo(un.clinica.lancado, un.clinica.lancado ? 'Clínica lançada' : 'Clínica pendente')}${selo(sd.feito, sd.feito ? 'Saídas completas' : sd.pct ? 'Saídas ' + sd.pct + '%' : 'Saídas pendentes')}</div></li>`;
     }).join('') || '<li class="fech-unidade"><div><b>Nenhuma unidade cadastrada.</b></div></li>';
     document.getElementById('fech-rodape').textContent = 'Os coordenadores lançam; aqui você acompanha. As metas de cada unidade ficam em Acompanhamento mensal.';
   } else {

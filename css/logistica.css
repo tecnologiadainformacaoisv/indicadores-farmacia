@@ -93,7 +93,7 @@
 .cob-txt { display: block; font-size: 13px; font-weight: 700; color: var(--instituto-text); }
 .cob-barra { display: block; height: 5px; margin-top: 5px; border-radius: 5px; overflow: hidden; background: var(--instituto-border); }
 .cob-barra i { display: block; height: 100%; width: calc(var(--w, 0) * 1%); border-radius: inherit; background: var(--c-ok); }
-.cob.warn .cob-txt { color: var(--c-warn); }
+.cob.warn .cob-txt { color: var(--alert-warn-text); }
 .cob.warn .cob-barra i { background: var(--c-warn); }
 .cob.bad .cob-txt { color: var(--c-err); }
 .cob.bad .cob-barra i { background: var(--c-err); }
@@ -132,6 +132,7 @@
 
 /* celular: cada item vira um bloco (nome em cima, três campos lado a lado), sem rolagem lateral */
 @media (max-width: 700px) {
+  .log-toolbar { position: sticky; top: 0; z-index: 20; padding: 8px 0; background: var(--instituto-bg); }
   .log-table-wrap { overflow: visible; border: 0; background: transparent; box-shadow: none; }
   .log-table, .log-table tbody { display: block; }
   .log-table thead { display: none; }

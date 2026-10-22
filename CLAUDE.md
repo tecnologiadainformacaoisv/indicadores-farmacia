@@ -114,8 +114,9 @@ Tudo na pasta **"Indicadores Farmácia"** do Drive da **conta da TI** (ID na pro
 
 ## Estado atual do desenvolvimento
 
-> Última atualização: 2026-10-21
+> Última atualização: 2026-10-22
 
+- **Painel de fechamento:** tela inicial mostra o andamento do mês (rota `painel.carregar`, aba `Fechamento`); depois de publicar versões com ele, rode `recalcularFechamento` no editor.
 - **Versão:** v0.5.0 (`js/version.js`), em teste com a Tereza. **Regra: toda mudança sobe a versão** (PATCH para correções e ajustes, MINOR para nova etapa do fluxo), alterando `js/version.js` e o `CHANGELOG.md` no mesmo commit, com tag `vX.Y.Z`.
 - **Implantado e em teste:** API (Web App na conta da TI), planilha "Sistema", usuário `tereza` e usuários de teste de coordenador, login, Clínica Geral na nuvem, metas por unidade e planilha de saídas item por item. `API_URL` já está em `js/api.js`.
 - Os testes usam a planilha com dados até **maio/2026** (`MES_ABERTO_TESTE = 2026-05` na aba `Config`). A versão atualizada só entra depois da validação da Tereza; antes de uso real, seguir o checklist de `docs/IMPLANTACAO.md`.

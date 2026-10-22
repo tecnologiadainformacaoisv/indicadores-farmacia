@@ -640,7 +640,7 @@ function salvarLogistica_(req, u) {
 function contarPreenchidos_(sh, est, colMes) {
   const col = sh.getRange(1, colMes + 1, sh.getLastRow(), 1).getValues();
   let preenchidos = 0;
-  est.itens.forEach(r => { if (col[r][0] !== '' && !isNaN(Number(col[r][0]))) preenchidos++; });
+  est.itens.forEach(r => { const v = col[r][0]; if (v !== '' && String(v).trim() !== '' && !isNaN(Number(v))) preenchidos++; });
   return { preenchidos: preenchidos, total: est.itens.length };
 }
 
@@ -782,9 +782,14 @@ function abaSistema_(nome) {
   const ss = sistema_();
   let sh = ss.getSheetByName(nome);
   if (!sh && CABECALHOS[nome]) {
-    sh = ss.insertSheet(nome);
-    sh.getRange(1, 1, 1, CABECALHOS[nome].length).setValues([CABECALHOS[nome]]).setFontWeight('bold');
-    sh.setFrozenRows(1);
+    try {
+      sh = ss.insertSheet(nome);
+      sh.getRange(1, 1, 1, CABECALHOS[nome].length).setValues([CABECALHOS[nome]]).setFontWeight('bold');
+      sh.setFrozenRows(1);
+    } catch (e) {
+      sh = ss.getSheetByName(nome); // outra requisição criou a aba ao mesmo tempo
+      if (!sh) throw e;
+    }
   }
   return sh;
 }

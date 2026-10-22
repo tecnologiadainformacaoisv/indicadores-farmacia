@@ -226,14 +226,14 @@ canvas { width: 100% !important; }
 
 
 @media (max-width: 900px) {
+  .kpi-row .kpi-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
   .app { flex-direction: column; }
   .sidebar {
-    width: auto; min-width: 0; flex-direction: row; padding: 0;
+    width: auto; min-width: 0; flex-direction: row; flex-wrap: wrap; padding: 0;
     border-right: none; border-bottom: 1px solid var(--bd);
-    overflow-x: auto;
   }
   .sidebar-section { display: none; }
-  .nav-item { width: auto; white-space: nowrap; border-left: none; border-bottom: 3px solid transparent; padding: 9px 16px; }
+  .nav-item { width: auto; flex: 1 1 auto; justify-content: center; border-left: none; border-bottom: 3px solid transparent; padding: 9px 12px; }
   .nav-item.active { border-bottom-color: var(--title); }
   .topbar, .page { padding-left: 16px; padding-right: 16px; }
   .grid2 { grid-template-columns: 1fr; }
@@ -242,3 +242,7 @@ canvas { width: 100% !important; }
   .form-grid { grid-template-columns: 1fr; }
 }
 .tbl td.vazio { text-align: center; padding: 20px; }
+
+@media (max-width: 640px) {
+  .month-select, .btn { min-height: 44px; }
+}

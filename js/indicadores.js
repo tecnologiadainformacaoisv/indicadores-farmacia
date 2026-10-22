@@ -31,6 +31,11 @@ function calcRow(r) {
   };
 }
 
+// cor da faixa do cartão = status da meta (a cor da série fica só no gráfico)
+function corStatus(st) {
+  return st === 'ok' ? '--c-ok' : st === 'warn' ? '--c-warn' : st === 'err' ? '--c-err' : '--bd';
+}
+
 function status(key, val) {
   const m = metas[key];
   if (val === null || !m) return 'na';
@@ -152,6 +157,7 @@ function mkOrUpdate(id, type, cfg) {
 
 // ── Render ─────────────────────────────────────────────────────
 function renderAll() {
+  ['kpi-clinica', 'kpi-logistica'].forEach(id => document.getElementById(id).removeAttribute('aria-busy'));
   renderClinica();
   renderLogistica();
 }
@@ -197,7 +203,7 @@ function renderClinica() {
     const st = status(k.key, val);
     const m = metas[k.key];
     kpiDiv.innerHTML += `
-      <div class="kpi-card" style="--c:var(${k.color})">
+      <div class="kpi-card" style="--c:var(${corStatus(st)})">
         <div class="kpi-label">${k.label}</div>
         <div class="kpi-val">${fmtVal(val)}</div>
         <div class="kpi-sub">Meta: ${m.val}% · ${m.dir === 'min' ? '↑ mínimo' : '↓ máximo'}</div>
@@ -220,10 +226,10 @@ function renderClinica() {
   const labels = MONTHS;
   const cg = document.getElementById('charts-clinica');
   cg.innerHTML = `
-    <div class="card"><div class="card-header"><div><div class="card-title">Conciliações Medicamentosas</div><div class="card-sub">% sobre admissões · linha de meta</div></div><span class="badge ${status('conciliacoes', avg(byMonth('conciliacoes').filter(v=>v!==null)))}">${fmtVal(avg(byMonth('conciliacoes').filter(v=>v!==null)))}</span></div><canvas id="c-conc" height="190"></canvas></div>
-    <div class="card"><div class="card-header"><div><div class="card-title">Prescrições Analisadas</div><div class="card-sub">% sobre prescrições atendidas</div></div><span class="badge ${status('prescricoes', avg(byMonth('prescricoes').filter(v=>v!==null)))}">${fmtVal(avg(byMonth('prescricoes').filter(v=>v!==null)))}</span></div><canvas id="c-presc" height="190"></canvas></div>
-    <div class="card"><div class="card-header"><div><div class="card-title">PRM Identificados</div><div class="card-sub">% sobre prescrições analisadas</div></div><span class="badge ${status('prm', avg(byMonth('prm').filter(v=>v!==null)))}">${fmtVal(avg(byMonth('prm').filter(v=>v!==null)))}</span></div><canvas id="c-prm" height="190"></canvas></div>
-    <div class="card"><div class="card-header"><div><div class="card-title">Intervenções Farmacêuticas Aceitas</div><div class="card-sub">% sobre intervenções realizadas</div></div><span class="badge ${status('intervencoes', avg(byMonth('intervencoes').filter(v=>v!==null)))}">${fmtVal(avg(byMonth('intervencoes').filter(v=>v!==null)))}</span></div><canvas id="c-interv" height="190"></canvas></div>
+    <div class="card"><div class="card-header"><div><div class="card-title">Conciliações Medicamentosas</div><div class="card-sub">% sobre admissões · linha de meta</div></div><span class="badge ${status('conciliacoes', avg(byMonth('conciliacoes').filter(v=>v!==null)))}">Média do ano ${fmtVal(avg(byMonth('conciliacoes').filter(v=>v!==null)))}</span></div><canvas id="c-conc" height="190"></canvas></div>
+    <div class="card"><div class="card-header"><div><div class="card-title">Prescrições Analisadas</div><div class="card-sub">% sobre prescrições atendidas</div></div><span class="badge ${status('prescricoes', avg(byMonth('prescricoes').filter(v=>v!==null)))}">Média do ano ${fmtVal(avg(byMonth('prescricoes').filter(v=>v!==null)))}</span></div><canvas id="c-presc" height="190"></canvas></div>
+    <div class="card"><div class="card-header"><div><div class="card-title">PRM Identificados</div><div class="card-sub">% sobre prescrições analisadas</div></div><span class="badge ${status('prm', avg(byMonth('prm').filter(v=>v!==null)))}">Média do ano ${fmtVal(avg(byMonth('prm').filter(v=>v!==null)))}</span></div><canvas id="c-prm" height="190"></canvas></div>
+    <div class="card"><div class="card-header"><div><div class="card-title">Intervenções Farmacêuticas Aceitas</div><div class="card-sub">% sobre intervenções realizadas</div></div><span class="badge ${status('intervencoes', avg(byMonth('intervencoes').filter(v=>v!==null)))}">Média do ano ${fmtVal(avg(byMonth('intervencoes').filter(v=>v!==null)))}</span></div><canvas id="c-interv" height="190"></canvas></div>
     <div class="card span2"><div class="card-header"><div><div class="card-title">Altas Hospitalares com Orientação Farmacêutica</div><div class="card-sub">% do total de altas · todos os meses</div></div></div><canvas id="c-altas" height="110"></canvas></div>
   `;
 
@@ -287,7 +293,7 @@ function renderLogistica() {
     const st = status(k.key, val);
     const m = metas[k.key];
     kpiDiv.innerHTML += `
-      <div class="kpi-card" style="--c:var(${k.color})">
+      <div class="kpi-card" style="--c:var(${corStatus(st)})">
         <div class="kpi-label">${k.label}</div>
         <div class="kpi-val">${fmtVal(val)}</div>
         <div class="kpi-sub">Meta: ${m.val}% · ${m.dir === 'min' ? '↑ mínimo' : '↓ máximo'}</div>
@@ -593,8 +599,11 @@ function montarUnidades() {
 // esqueleto dos indicadores enquanto a primeira carga não chega
 function esqueletoKpis() {
   const html = Array.from({ length: 5 }, () => '<div class="kpi-card"><span class="skeleton" style="height:14px;width:60%"></span><span class="skeleton" style="height:28px;width:45%;margin-top:12px"></span><span class="skeleton" style="height:14px;width:75%;margin-top:12px"></span></div>').join('');
-  document.getElementById('kpi-clinica').innerHTML = html;
-  document.getElementById('kpi-logistica').innerHTML = html;
+  ['kpi-clinica', 'kpi-logistica'].forEach(id => {
+    const el = document.getElementById(id);
+    el.innerHTML = html;
+    el.setAttribute('aria-busy', 'true');
+  });
 }
 
 (async function init() {
@@ -606,7 +615,10 @@ function esqueletoKpis() {
     if (info.usuario.perfil === 'admin') avisos.push('Os coordenadores de cada unidade fazem os lançamentos; aqui você acompanha e define as metas.');
     setStatus(avisos.join(' '), info.mesAberto.teste ? 'warn' : '');
     // atalho da tela inicial ("Lançar indicadores"): abre o formulário do mês aberto
-    if (info.usuario.perfil !== 'admin' && new URLSearchParams(location.search).has('lancar')) openEntry();
+    if (info.usuario.perfil !== 'admin' && new URLSearchParams(location.search).has('lancar')) {
+      openEntry();
+      history.replaceState(null, '', location.pathname); // F5 ou "voltar" não reabrem o formulário
+    }
   } catch (e) {
     setStatus(e.message, 'erro');
   }

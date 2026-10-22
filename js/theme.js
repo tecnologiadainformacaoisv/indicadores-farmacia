@@ -39,9 +39,8 @@ function applyTheme(theme) {
   document.documentElement.dataset.theme = theme;
   document.querySelectorAll('[data-theme-toggle]').forEach(btn => {
     btn.setAttribute('aria-pressed', String(theme === 'dark'));
-    const label = btn.querySelector('[data-theme-label]');
-    if (label) label.textContent = theme === 'dark' ? 'Tema claro' : 'Tema escuro';
-    btn.title = label ? label.textContent : '';
+    // o nome acessível fica fixo ("Tema escuro") e o estado vai em aria-pressed; a dica visual diz a ação
+    btn.title = theme === 'dark' ? 'Voltar ao tema claro' : 'Usar o tema escuro';
   });
 }
 

@@ -105,11 +105,7 @@ main {
   width: 4px;
 }
 
-.kpi.teal::before { background: var(--accent-teal); }
-.kpi.blue::before { background: var(--accent-blue); }
-.kpi.amber::before { background: var(--accent-amber); }
-.kpi.rose::before { background: var(--accent-rose); }
-.kpi.purple::before { background: var(--accent-purple); }
+.kpi::before { background: var(--title); } /* faixa neutra: cor de série não é cor de status */
 
 .kpi-label {
   font-size: 13px;

@@ -1,5 +1,19 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.5.1 – 2026-10-22
+### Corrigido
+- Fechamento: "Saídas" só conta como concluída com medicamentos **e** materiais lançados (antes bastava salvar só os medicamentos)
+- Planilha de saídas: se a primeira carga falhar, o esqueleto some e fica só a mensagem de erro
+- `?lancar=1` não reabre o formulário a cada recarregamento
+- Faixa dos cartões de KPI segue o status da meta (verde, âmbar, vermelho), nunca a cor da série; no dashboard ela é neutra
+- Selo dos gráficos diz "Média do ano" (o KPI mostra o mês escolhido)
+- Cobertura baixa: texto âmbar legível, com a palavra "baixo"; estoque crítico anunciado para leitor de tela
+- Menu do acompanhamento no celular quebra em duas linhas em vez de cortar "Planilha de saídas"; botões e seletores com 44 px no celular
+- Planilha de saídas no celular: busca e abas fixas no topo ao rolar; rótulo "Saídas de maio" por extenso
+- Painel da coordenação: selos dizem o estado em palavras ("Clínica pendente", "Saídas 97%"); anel de progresso ao lado do título no celular
+- Contagem do andamento ignora célula só com espaços; aba `Fechamento` criada ao mesmo tempo por duas requisições não gera erro
+- Foco por teclado visível dentro do painel escuro; botão de tema com nome fixo e estado em `aria-pressed`; esqueletos anunciados como "ocupado" para leitor de tela
+
 ## v0.5.0 – 2026-10-22
 ### Adicionado
 - **Fechamento do mês** na tela inicial: painel que mostra o que falta lançar. O coordenador vê as tarefas (indicadores da Clínica Geral e planilha de saídas) com o andamento e o botão para continuar; a coordenação vê cada unidade com selos de Clínica e Saídas e o andamento em %

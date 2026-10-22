@@ -211,6 +211,8 @@ button.header-btn { background: none; font-family: inherit; cursor: pointer; }
 
 @media (max-width: 560px) {
   .page-header__actions { width: 100%; justify-content: flex-end; }
+  .header-btn { min-height: 44px; }
+  .theme-toggle { width: 44px; }
   .hide-xs { display: none; }
   .brand__logo { width: 36px; height: 36px; }
   .page-header__title { font-size: 16px; }

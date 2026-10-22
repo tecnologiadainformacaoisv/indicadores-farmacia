@@ -27,6 +27,7 @@
 .fech-ring::before { content: ""; position: absolute; inset: 7px; border-radius: 50%; background: #0c3555; }
 .fech-ring b { position: relative; font: 800 17px var(--font-title); color: #fff; }
 
+.fechamento a:focus-visible { outline: 3px solid #fff; outline-offset: -5px; }
 .fech-lista { list-style: none; border-top: 1px solid rgba(255, 255, 255, .1); }
 .fech-lista > li { border-bottom: 1px solid rgba(255, 255, 255, .08); }
 .fech-lista > li:last-child { border-bottom: 0; }
@@ -90,7 +91,10 @@
 
 @media (max-width: 720px) {
   .home-main { padding: 20px 14px 40px; }
-  .fech-top { padding: 20px 18px 16px; }
+  .fech-top { padding: 20px 18px 16px; flex-wrap: nowrap; }
+  .fech-ring { width: 56px; height: 56px; }
+  .fech-ring::before { inset: 6px; }
+  .fech-ring b { font-size: 15px; }
   .fech-tarefa { grid-template-columns: 30px minmax(0, 1fr); padding: 16px 18px; }
   .fech-acao { grid-column: 1 / -1; width: 100%; margin-top: 6px; }
   .fech-barra { grid-column: 2; }

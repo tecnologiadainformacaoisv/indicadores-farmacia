@@ -223,6 +223,11 @@ const check = (nome, c, extra) => { if (c) ok++; else { falhas++; console.log('F
   await pausa(80);
   const listaA = va.els['fech-lista'].innerHTML;
   check('painel da coordenação: todas as unidades com selos', listaA.includes('UPA Centro') && listaA.includes('UPA Jurema') && listaA.includes('fech-selo') && va.els['fech-ring-txt'].textContent === '0/2', va.els['fech-ring-txt'].textContent);
+  // saídas só concluem com as duas abas lançadas (aba nunca salva tem total 0)
+  const soMed = vm.runInContext("saidasResumo({ saidas: { med: { preenchidos: 10, total: 10 }, mat: { preenchidos: 0, total: 0 }, por: 'a', em: 'b' } })", vc.ctx);
+  check('saídas: só medicamentos lançados NÃO conclui', soMed.feito === false && soMed.pct <= 99 && soMed.texto.includes('Materiais: nenhum item lançado'), soMed);
+  const ambas = vm.runInContext("saidasResumo({ saidas: { med: { preenchidos: 10, total: 10 }, mat: { preenchidos: 4, total: 4 }, por: 'a', em: 'b' } })", vc.ctx);
+  check('saídas: as duas abas completas concluem', ambas.feito === true && ambas.pct === 100, ambas);
   check('painel: sem erro de execução', vc.erros.length === 0 && va.erros.length === 0, [vc.erros, va.erros]);
   console.log(`${ok} ok, ${falhas} falha(s)`);
 })();

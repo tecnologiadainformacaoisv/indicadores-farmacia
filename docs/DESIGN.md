@@ -53,6 +53,8 @@ Regra: **cor de série de gráfico nunca vira cor de status**. O número do KPI 
 
 **Tipografia.** Manrope 800 em títulos e números grandes; Segoe UI no texto; sentença normal em rótulos (sem caixa alta).
 
+**Exceção documentada: painel navy.** O painel "Fechamento do mês" é navy nos dois temas, então `css/home.css` usa valores fixos sobre navy (verde claro, âmbar claro, azul-acinzentado) em vez de tokens que mudam com o tema. Valores dinâmicos em `style="--w:..."` (largura de barra) e alturas de esqueleto também ficam inline por serem calculados em tempo de execução.
+
 **Cartões.** Os de **conteúdo** (gráficos, tabelas) são planos, com borda fina; só os KPIs têm leve elevação; atalhos secundários não têm sombra. Hierarquia por peso, não por enfeite.
 
 **Movimento.** Só o que responde a uma ação (foco, hover, barra de progresso). Esqueleto de carregamento no lugar de "Carregando…". Nada de entrada animada por seção.

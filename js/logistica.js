@@ -119,6 +119,7 @@ function exibirPlanilha(r, rascunho) {
   if (!planilha.abas.length) { setStatus('A planilha da unidade não tem as abas MEDICAMENTOS e MATERIAIS.', 'erro'); return false; }
   if (!planilha.abas.some(a => a.nome === abaAtual)) abaAtual = planilha.abas[0].nome;
   const wrap = document.getElementById('log-wrap');
+  wrap.removeAttribute('aria-busy');
   const rolagem = wrap.scrollTop;
   montarAbas();
   render();
@@ -156,7 +157,12 @@ async function carregarPlanilha(restaurar) {
   try {
     r = await api('logistica.carregar', unidadeSel ? { unidade: unidadeSel } : {});
   } catch (e) {
-    if (!mostrouCache) document.getElementById('log-sub').textContent = '';
+    if (!mostrouCache) {
+      document.getElementById('log-sub').textContent = '';
+      document.getElementById('log-body').innerHTML = '';   // tira o esqueleto: o erro já explica
+      document.getElementById('log-wrap').hidden = true;
+      document.getElementById('log-wrap').removeAttribute('aria-busy');
+    }
     setStatus(e.message + (mostrouCache ? ' Mostrando os dados da última visita.' : ''), 'erro');
     return mostrouCache;
   }
@@ -192,8 +198,8 @@ function cobertura(estoque, cmm) {
   if (!c) return { cls: 'na', texto: 'Sem CMM', pct: 0, critico: false };
   const meses = e / c;
   const pct = Math.min(100, Math.round(meses / COBERTURA_MAX * 100));
-  const texto = (meses < 10 ? meses.toFixed(1) : Math.round(meses)).toString().replace('.', ',') + (meses >= 1.95 && meses < 2.05 ? ' meses' : meses === 1 ? ' mês' : ' meses');
-  if (meses < 1) return { cls: 'warn', texto, pct, critico: true };
+  const texto = (meses < 10 ? meses.toFixed(1) : Math.round(meses)).toString().replace('.', ',') + (Math.abs(meses - 1) < 0.05 ? ' mês' : ' meses');
+  if (meses < 1) return { cls: 'warn', texto: texto + ' · baixo', pct, critico: true };
   return { cls: 'ok', texto, pct, critico: false };
 }
 
@@ -202,6 +208,7 @@ function celulaCobertura(c) {
 }
 
 let soCriticos = false;
+const CRIT_SR = '<span class="sr-only">Estoque crítico: </span>'; // o ponto vermelho não pode ser só cor
 
 // valores exibidos no momento (o que foi digitado vale mais que o que veio da planilha)
 function valoresDaLinha(aba, it) {
@@ -219,6 +226,7 @@ function atualizarCriticos() {
 }
 
 function esqueletoTabela() {
+  document.getElementById('log-wrap').setAttribute('aria-busy', 'true');
   document.getElementById('log-head').innerHTML = '';
   document.getElementById('log-body').innerHTML = Array.from({ length: 9 }, () =>
     '<tr class="esqueleto"><td colspan="7"><span class="skeleton" style="height:20px"></span></td></tr>').join('');
@@ -249,7 +257,7 @@ function render() {
   const cel = (it, campo, valor) => {
     const alt = alteracoes.get(abaAtual + '|' + it.linha);
     const v = alt && alt[campo] !== undefined ? alt[campo] : valor;
-    const rotulo = campo === 'saida' ? 'Saídas ' + MESES_CURTO[planilha.mesAberto.mes] : campo === 'cmm' ? 'CMM' : 'Estoque';
+    const rotulo = campo === 'saida' ? 'Saídas de ' + MESES_NOME[planilha.mesAberto.mes].toLowerCase() : campo === 'cmm' ? 'CMM' : 'Estoque';
     if (!ed) return `<td class="col-aberto" data-label="${rotulo}">${fmt(v)}</td>`;
     const mudou = alt && alt[campo] !== undefined;
     return `<td class="col-aberto" data-label="${rotulo}"><input class="num-input${mudou ? ' ' + classeMudanca(valor, alt[campo]) : ''}" type="number" min="0" step="1" inputmode="numeric" enterkeyhint="next"
@@ -262,7 +270,7 @@ function render() {
     const cob = cobertura(v.estoque, v.cmm);
     return `
     <tr data-busca="${esc(normalizar(it.produto))}" data-linha="${it.linha}" data-critico="${cob.critico ? 1 : 0}"${alteracoes.has(abaAtual + '|' + it.linha) ? ' class="alterado"' : ''}>
-      <td class="produto">${esc(it.produto)}</td>
+      <td class="produto">${cob.critico ? CRIT_SR : ''}${esc(it.produto)}</td>
       ${anteriores.map(m => `<td class="mes-anterior">${fmt(it.valores[m.i])}</td>`).join('')}
       ${cel(it, 'saida', idxAberto >= 0 ? it.valores[idxAberto] : null)}
       ${cel(it, 'cmm', it.cmm)}
@@ -327,6 +335,10 @@ function aoEditar(input) {
   const v = valoresDaLinha(aba, it);
   const cob = cobertura(v.estoque, v.cmm);
   tr.dataset.critico = cob.critico ? '1' : '0';
+  const tdProd = tr.querySelector('.produto');
+  const sr = tdProd.querySelector('.sr-only');
+  if (cob.critico && !sr) tdProd.insertAdjacentHTML('afterbegin', CRIT_SR);
+  else if (!cob.critico && sr) sr.remove();
   const tdCob = tr.querySelector('.cob');
   tdCob.className = 'col-cob cob ' + cob.cls;
   tdCob.innerHTML = celulaCobertura(cob);
