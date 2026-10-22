@@ -234,7 +234,7 @@ const check = (nome, c, extra) => { if (c) ok++; else { falhas++; console.log('F
     await pausa(80);
     const R = c => vm.runInContext(c, v.ctx);
     const url = R("linkRelatar()");
-    check('rodapé: link de relato é um mailto com assunto e versão', /^mailto:\?subject=/.test(url) && decodeURIComponent(url).includes('Versão:'), url);
+    check('rodapé: link de relato é um mailto com assunto e versão', url.startsWith('mailto:tecnologiadainformacao@institutosaovicente.com.br?subject=') && decodeURIComponent(url).includes('Versão:'), url);
     check('aviso lento: nenhuma chamada pendente depois de terminar', R('chamadasPendentes') === 0 && R('avisoLentoEl') === null);
     R("chamadasPendentes = 1; mostrarAvisoLento();");
     check('aviso lento: aparece com chamada pendente', R('avisoLentoEl') !== null);

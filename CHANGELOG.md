@@ -1,5 +1,9 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.5.8 – 2026-10-22
+### Adicionado
+- Rodapé: "Relatar problema ou sugestão" ligado ao e-mail da TI do Instituto
+
 ## v0.5.7 – 2026-10-22
 ### Adicionado
 - Página "Como usar" (`ajuda.html`): passo a passo curto para o coordenador e para a coordenação, com problemas comuns; link no rodapé de todas as telas

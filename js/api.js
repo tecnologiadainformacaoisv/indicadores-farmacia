@@ -198,7 +198,7 @@ function esc(s) {
 
 // ── Rodapé: "Como usar" e "Relatar problema" ────────────────────
 // E-mail da TI que recebe os relatos. Vazio = o link de relato não aparece.
-const CONTATO_SUPORTE = '';
+const CONTATO_SUPORTE = 'tecnologiadainformacao@institutosaovicente.com.br';
 
 function linkRelatar() {
   const versao = typeof APP_VERSION !== 'undefined' ? APP_VERSION : '';
