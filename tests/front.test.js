@@ -208,6 +208,24 @@ const check = (nome, c, extra) => { if (c) ok++; else { falhas++; console.log('F
     check('rascunho: sair do sistema apaga', !ss.has('farma_rascunho'));
     check('cache: sair do sistema apaga', ![...arm.keys()].some(k => k.startsWith('farma_cache_')), [...arm.keys()]);
   }
+  // ordenar a cobertura com um clique: pior → melhor → melhor → pior → ordem da planilha
+  {
+    const v = visita('logistica.js', new Map([['farma_sessao', 'TOKEN1']]), 'coordenador');
+    await pausa(80);
+    const R = c => vm.runInContext(c, v.ctx);
+    const aba = "({nome:'MEDICAMENTOS'})";
+    const itens = "[{linha:1,produto:'A',cmm:10,estoque:30},{linha:2,produto:'B',cmm:10,estoque:0},{linha:3,produto:'C',cmm:10,estoque:5},{linha:4,produto:'D',cmm:0,estoque:9},{linha:5,produto:'E',cmm:10,estoque:null},{linha:6,produto:'F',cmm:10,estoque:100}]";
+    const ordem = () => R("ordenarPorCobertura(" + itens + ", " + aba + ").map(x => x.produto).join('')");
+    check('cobertura: sem clique mantém a ordem da planilha', ordem() === 'ABCDEF', ordem());
+    R("alternarOrdemCob()");
+    check('cobertura: 1º clique = pior primeiro (sem estoque), sem dado no fim', ordem() === 'BCAFDE', ordem());
+    R("alternarOrdemCob()");
+    check('cobertura: 2º clique = melhor primeiro, sem dado continua no fim', ordem() === 'FACBDE', ordem());
+    R("alternarOrdemCob()");
+    check('cobertura: 3º clique volta à ordem da planilha', ordem() === 'ABCDEF' && R('ordemCob') === '', ordem());
+    check('cobertura: botão da barra ganha o texto do estado', v.els['btn-ordem-cob'].textContent === 'Ordenar por cobertura');
+    check('cobertura: sem erro de execução', v.erros.length === 0, v.erros);
+  }
   // início: cache da sessão
   const arm = new Map([['farma_sessao', 'T']]);
   let v = visita('index.js', arm, 'coordenador'); // index.js precisa de elementos; só confere que carrega

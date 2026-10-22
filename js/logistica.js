@@ -203,6 +203,37 @@ function cobertura(estoque, cmm) {
   return { cls: 'ok', texto, pct, critico: false };
 }
 
+// Ordenação por cobertura, num clique: pior primeiro (sem estoque) → melhor; de novo: melhor → pior; de novo: ordem da planilha.
+let ordemCob = '';   // '' | 'asc' | 'desc'
+
+// meses de estoque para ordenar: sem estoque = -1; sem dado (estoque vazio ou sem CMM) fica sempre no fim
+function chaveCobertura(v) {
+  const e = v.estoque === null || v.estoque === undefined || v.estoque === '' ? null : Number(v.estoque);
+  const c = v.cmm === null || v.cmm === undefined || v.cmm === '' ? null : Number(v.cmm);
+  if (e === null) return null;
+  if (e === 0) return -1;
+  if (!c) return null;
+  return e / c;
+}
+
+function ordenarPorCobertura(itens, aba) {
+  if (!ordemCob) return itens;
+  const dir = ordemCob === 'asc' ? 1 : -1;
+  return itens
+    .map((it, i) => ({ it, i, k: chaveCobertura(valoresDaLinha(aba, it)) }))
+    .sort((a, b) => (a.k === null) - (b.k === null) || (a.k === null ? 0 : (a.k - b.k) * dir) || a.i - b.i)
+    .map(x => x.it);
+}
+
+function textoOrdemCob() {
+  return ordemCob === 'asc' ? 'Cobertura: pior primeiro ↑' : ordemCob === 'desc' ? 'Cobertura: melhor primeiro ↓' : 'Ordenar por cobertura';
+}
+
+function alternarOrdemCob() {
+  ordemCob = ordemCob === '' ? 'asc' : ordemCob === 'asc' ? 'desc' : '';
+  render();
+}
+
 function celulaCobertura(c) {
   return `<span class="cob-txt">${esc(c.texto)}</span><span class="cob-barra"><i style="--w:${c.pct}"></i></span>`;
 }
@@ -250,7 +281,7 @@ function render() {
     <th scope="col" class="col-aberto">Saídas ${MESES_CURTO[ref.mes]}</th>
     <th scope="col" class="col-aberto">CMM</th>
     <th scope="col" class="col-aberto">Estoque disp.</th>
-    <th scope="col" class="col-cob">Cobertura</th>
+    <th scope="col" class="col-cob" aria-sort="${ordemCob === 'asc' ? 'ascending' : ordemCob === 'desc' ? 'descending' : 'none'}"><button type="button" class="th-ordem" id="th-cobertura" title="Clique para ordenar a cobertura">Cobertura <span aria-hidden="true">${ordemCob === 'asc' ? '↑' : ordemCob === 'desc' ? '↓' : '↕'}</span></button></th>
   </tr>`;
 
   const ed = planilha.editavel;
@@ -265,7 +296,10 @@ function render() {
       aria-label="${campo === 'saida' ? 'Saídas' : campo === 'cmm' ? 'CMM' : 'Estoque disponível'} de ${esc(it.produto)}"></td>`;
   };
 
-  document.getElementById('log-body').innerHTML = aba.itens.map(it => {
+  const btnOrdem = document.getElementById('btn-ordem-cob');
+  btnOrdem.textContent = textoOrdemCob();
+  btnOrdem.setAttribute('aria-pressed', String(ordemCob !== ''));
+  document.getElementById('log-body').innerHTML = ordenarPorCobertura(aba.itens, aba).map(it => {
     const v = valoresDaLinha(aba, it);
     const cob = cobertura(v.estoque, v.cmm);
     return `
@@ -449,6 +483,9 @@ document.getElementById('log-body').addEventListener('keydown', e => {
   const prox = tr && tr.querySelector(`.num-input[data-campo="${e.target.dataset.campo}"]`);
   if (prox) { prox.focus(); prox.select(); }
 });
+
+document.getElementById('btn-ordem-cob').addEventListener('click', alternarOrdemCob);
+document.getElementById('log-head').addEventListener('click', e => { if (e.target.closest('#th-cobertura')) alternarOrdemCob(); });
 
 document.getElementById('log-tabs').addEventListener('click', e => {
   const b = e.target.closest('.log-tab');
