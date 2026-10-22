@@ -228,6 +228,20 @@ const check = (nome, c, extra) => { if (c) ok++; else { falhas++; console.log('F
     check('cobertura: botão da barra ganha o texto do estado', v.els['btn-ordem-cob'].textContent === 'Ordenar por cobertura');
     check('cobertura: sem erro de execução', v.erros.length === 0, v.erros);
   }
+  // rodapé, aviso de servidor lento e mensagens
+  {
+    const v = visita('logistica.js', new Map([['farma_sessao', 'TOKEN1']]), 'coordenador');
+    await pausa(80);
+    const R = c => vm.runInContext(c, v.ctx);
+    const url = R("linkRelatar()");
+    check('rodapé: link de relato é um mailto com assunto e versão', /^mailto:\?subject=/.test(url) && decodeURIComponent(url).includes('Versão:'), url);
+    check('aviso lento: nenhuma chamada pendente depois de terminar', R('chamadasPendentes') === 0 && R('avisoLentoEl') === null);
+    R("chamadasPendentes = 1; mostrarAvisoLento();");
+    check('aviso lento: aparece com chamada pendente', R('avisoLentoEl') !== null);
+    R("chamadasPendentes = 0; esconderAvisoLento();");
+    check('aviso lento: some quando não há chamada pendente', R('avisoLentoEl') === null);
+    check('lote ajuda: sem erro de execução', v.erros.length === 0, v.erros);
+  }
   // início: cache da sessão
   const arm = new Map([['farma_sessao', 'T']]);
   let v = visita('index.js', arm, 'coordenador'); // index.js precisa de elementos; só confere que carrega

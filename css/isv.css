@@ -223,3 +223,14 @@ button.header-btn { background: none; font-family: inherit; cursor: pointer; }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
+
+/* rodapé: links de ajuda e aviso de servidor lento */
+.app-footer { flex-wrap: wrap; gap: 4px 16px; }
+.rodape-links a { color: inherit; font-weight: 600; text-underline-offset: 3px; }
+.rodape-links a:hover { color: var(--title); }
+.aviso-lento {
+  position: fixed; left: 50%; bottom: 72px; transform: translateX(-50%); z-index: 300;
+  max-width: calc(100vw - 32px); padding: 10px 18px; border-radius: 999px;
+  background: var(--warn-bg); color: var(--alert-warn-text); border: 1px solid var(--c-warn);
+  font-size: 14px; font-weight: 600; box-shadow: 0 6px 20px rgba(0, 0, 0, .18);
+}

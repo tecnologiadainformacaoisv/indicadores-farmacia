@@ -1,5 +1,14 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.5.7 – 2026-10-22
+### Adicionado
+- Página "Como usar" (`ajuda.html`): passo a passo curto para o coordenador e para a coordenação, com problemas comuns; link no rodapé de todas as telas
+- Rodapé: link "Relatar problema ou sugestão" (abre o e-mail da TI já com página e versão; só aparece quando `CONTATO_SUPORTE` em `js/api.js` está preenchido)
+- Aviso "O servidor está demorando mais que o normal" quando uma chamada passa de 8 s
+### Alterado
+- Planilha de saídas: mensagens de lista vazia por situação (busca sem resultado, nenhum item crítico)
+- Mensagem de falta de conexão mais clara
+
 ## v0.5.6 – 2026-10-22
 ### Corrigido
 - Planilha de saídas: abrir outra unidade (atalho da tela inicial ou seletor) não apaga mais o rascunho não salvo da unidade anterior

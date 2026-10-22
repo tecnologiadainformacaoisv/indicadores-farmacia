@@ -24,6 +24,7 @@ projeto-indicadores-farmacia/
 ├── indicadores.html        ← acompanhamento mensal (lançamento + metas + gráficos)
 ├── logistica.html          ← planilha de saídas: lançamento item por item
 ├── usuarios.html           ← cadastro de coordenadores (só admin)
+├── ajuda.html              ← "Como usar": passo a passo curto (sem login)
 ├── dashboard.html          ← dashboard (só admin; dados de EXEMPLO fixos, ainda não ligado à base)
 ├── .clasp.json             ← ID do projeto Apps Script (a conta logada no clasp precisa ser a da TI)
 ├── appscript/

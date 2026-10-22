@@ -333,7 +333,12 @@ function filtrar() {
     tr.hidden = !ok;
     if (ok) visiveis++;
   });
-  document.getElementById('log-empty').hidden = visiveis > 0;
+  const vazio = document.getElementById('log-empty');
+  const busca = document.getElementById('busca').value.trim();
+  vazio.textContent = busca ? 'Nenhum produto encontrado para "' + busca + '".'
+    : soCriticos ? 'Nenhum item crítico nesta aba. Estoque sem alertas.'
+    : 'Nenhum produto encontrado.';
+  vazio.hidden = visiveis > 0;
 }
 
 // ── Edição ─────────────────────────────────────────────────────
