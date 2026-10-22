@@ -1,5 +1,10 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.5.9 – 2026-10-22
+### Corrigido
+- Aviso de servidor lento com fundo opaco no tema escuro
+- Página "Como usar" também recebe o link de relato no rodapé; itens da ajuda mostram "+" e "–" para indicar que abrem e fecham
+
 ## v0.5.8 – 2026-10-22
 ### Adicionado
 - Rodapé: "Relatar problema ou sugestão" ligado ao e-mail da TI do Instituto

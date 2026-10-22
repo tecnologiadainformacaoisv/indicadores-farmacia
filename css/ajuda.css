@@ -31,3 +31,9 @@
 .ajuda-item b { color: var(--title); }
 
 @media (max-width: 768px) { .ajuda-main { padding: 16px 16px 40px; } }
+
+/* indicador de abrir/fechar nos itens */
+.ajuda-item summary { list-style: none; justify-content: space-between; gap: 12px; }
+.ajuda-item summary::-webkit-details-marker { display: none; }
+.ajuda-item summary::after { content: "+"; font-size: 20px; font-weight: 700; color: var(--instituto-secondary); }
+.ajuda-item[open] summary::after { content: "–"; }

@@ -212,7 +212,12 @@ function montarRodape() {
   if (!rodape || rodape.querySelector('.rodape-links')) return;
   const nav = document.createElement('span');
   nav.className = 'rodape-links';
-  nav.innerHTML = '<a href="ajuda.html">Como usar</a>' + (CONTATO_SUPORTE ? ' · <a href="' + esc(linkRelatar()) + '">Relatar problema ou sugestão</a>' : '');
+  const naAjuda = /ajuda\.html$/.test(location.pathname);
+  const partes = [];
+  if (!naAjuda) partes.push('<a href="ajuda.html">Como usar</a>');
+  if (CONTATO_SUPORTE) partes.push('<a href="' + esc(linkRelatar()) + '">Relatar problema ou sugestão</a>');
+  if (!partes.length) return;
+  nav.innerHTML = partes.join(' · ');
   rodape.insertBefore(nav, rodape.lastElementChild);
 }
 document.addEventListener('DOMContentLoaded', montarRodape);
