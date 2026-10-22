@@ -1,5 +1,9 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.5.3 – 2026-10-22
+### Alterado
+- Planilha de saídas: a ordenação da cobertura fica só no botão da barra; o cabeçalho "Cobertura" voltou a ser texto simples
+
 ## v0.5.2 – 2026-10-22
 ### Adicionado
 - Planilha de saídas: ordenar pela cobertura de estoque com um clique (botão na barra ou cabeçalho "Cobertura"): pior primeiro (sem estoque) → melhor primeiro → ordem da planilha. Itens sem dado de estoque ou CMM ficam sempre no fim.

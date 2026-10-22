@@ -172,8 +172,5 @@
 }
 
 /* ordenar pela coluna de cobertura */
-.th-ordem { all: unset; cursor: pointer; font: inherit; font-weight: 700; color: inherit; border-radius: 6px; padding: 2px 4px; margin: -2px -4px; }
-.th-ordem:hover { color: var(--title); }
-.th-ordem:focus-visible { outline: 2px solid var(--instituto-secondary); outline-offset: 1px; }
 .log-filtro#btn-ordem-cob[aria-pressed="true"] { background: var(--info-bg, var(--soft)); border-color: var(--instituto-secondary); color: var(--title); }
 .log-tools { gap: 8px; flex-wrap: wrap; }

@@ -281,7 +281,7 @@ function render() {
     <th scope="col" class="col-aberto">Saídas ${MESES_CURTO[ref.mes]}</th>
     <th scope="col" class="col-aberto">CMM</th>
     <th scope="col" class="col-aberto">Estoque disp.</th>
-    <th scope="col" class="col-cob" aria-sort="${ordemCob === 'asc' ? 'ascending' : ordemCob === 'desc' ? 'descending' : 'none'}"><button type="button" class="th-ordem" id="th-cobertura" title="Clique para ordenar a cobertura">Cobertura <span aria-hidden="true">${ordemCob === 'asc' ? '↑' : ordemCob === 'desc' ? '↓' : '↕'}</span></button></th>
+    <th scope="col" class="col-cob"${ordemCob ? ' aria-sort="' + (ordemCob === 'asc' ? 'ascending' : 'descending') + '"' : ''}>Cobertura</th>
   </tr>`;
 
   const ed = planilha.editavel;
@@ -485,7 +485,6 @@ document.getElementById('log-body').addEventListener('keydown', e => {
 });
 
 document.getElementById('btn-ordem-cob').addEventListener('click', alternarOrdemCob);
-document.getElementById('log-head').addEventListener('click', e => { if (e.target.closest('#th-cobertura')) alternarOrdemCob(); });
 
 document.getElementById('log-tabs').addEventListener('click', e => {
   const b = e.target.closest('.log-tab');
