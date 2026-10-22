@@ -1,5 +1,10 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.5.5 – 2026-10-22
+### Adicionado
+- Tela inicial da coordenação: o nome da unidade abre o acompanhamento mensal já nela, e os selos "Clínica lançada" e "Saídas" (quando há lançamento) abrem o formulário da Clínica e a planilha de saídas daquela unidade. Selos pendentes continuam sem link
+- Acompanhamento mensal e planilha de saídas aceitam `?unidade=<id>` no endereço
+
 ## v0.5.4 – 2026-10-22
 ### Adicionado
 - Planilha de saídas: migalhas de pão (Início › Acompanhamento mensal › Planilha de saídas) para voltar ao menu lateral do acompanhamento

@@ -6,7 +6,9 @@ const MESES_ANTERIORES = 3;           // quantos meses fechados mostrar ao lado 
 const CAMPOS = ['saida', 'cmm', 'estoque'];
 
 let info = null;
-let unidadeSel = '';
+// atalho da tela inicial da coordenação: logistica.html?unidade=<id> abre direto a planilha de uma unidade
+const unidadeDoEndereco = new URLSearchParams(location.search).get('unidade');
+let unidadeSel = unidadeDoEndereco && /^[a-z0-9-]+$/.test(unidadeDoEndereco) ? unidadeDoEndereco : '';
 let planilha = null;                  // resposta de logistica.ler
 let abaAtual = '';
 const alteracoes = new Map();         // "aba|linha" -> { aba, linha, produto, saida, cmm, estoque }

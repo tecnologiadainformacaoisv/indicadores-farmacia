@@ -69,17 +69,19 @@ const semSS = new Map();
 function visita(script, armazenamento, perfil, opcoes = {}) {
   const els = {};
   const chamadas = [];
+  const corpos = [];
   const ctx = {
     console, setTimeout: (fn) => { try { fn(); } catch (e) { erros.push('timeout: ' + e.message); } }, clearTimeout() {}, Promise, JSON, Date, Math, Object, Array, Number, String, Map, Set, Error, isFinite, parseInt,
     localStorage: { getItem: k => armazenamento.has(k) ? armazenamento.get(k) : null, setItem: (k, v) => armazenamento.set(k, String(v)), removeItem: k => armazenamento.delete(k), get length() { return armazenamento.size; } },
     sessionStorage: { getItem: k => (opcoes.ss || semSS).has(k) ? (opcoes.ss || semSS).get(k) : null, setItem: (k, v) => (opcoes.ss || semSS).set(k, String(v)), removeItem: k => (opcoes.ss || semSS).delete(k) },
-    location: { href: '', search: '' }, URLSearchParams,
+    location: { href: '', search: opcoes.search || '' }, URLSearchParams,
     confirm: () => true,
     matchMedia: () => ({ matches: true }),
     themeVar: () => '#888888',
     Chart: class { constructor(el, cfg) { this.canvas = el; this.data = cfg.data; this.options = cfg.options; } destroy() {} update() {} },
     fetch: async (url, init) => {
       chamadas.push(JSON.parse(init.body).action);
+      corpos.push(JSON.parse(init.body));
       if (opcoes.falhaRede) throw new TypeError('Failed to fetch');
       const dados = respostaServidor(init.body, perfil);
       return { json: async () => ({ ok: true, dados }) };
@@ -97,7 +99,7 @@ function visita(script, armazenamento, perfil, opcoes = {}) {
   const erros = [];
   const codigo = ['api.js', script].map(f => fs.readFileSync(root + f, 'utf8')).join('\n');
   try { vm.runInContext(codigo, ctx); } catch (e) { erros.push('carga: ' + e.stack.split('\n').slice(0, 3).join(' | ')); }
-  return { ctx, els, chamadas, erros };
+  return { ctx, els, chamadas, corpos, erros };
 }
 
 const pausa = ms => new Promise(r => setTimeout(r, ms));
@@ -241,6 +243,21 @@ const check = (nome, c, extra) => { if (c) ok++; else { falhas++; console.log('F
   await pausa(80);
   const listaA = va.els['fech-lista'].innerHTML;
   check('painel da coordenação: todas as unidades com selos', listaA.includes('UPA Centro') && listaA.includes('UPA Jurema') && listaA.includes('fech-selo') && va.els['fech-ring-txt'].textContent === '0/2', va.els['fech-ring-txt'].textContent);
+  // links da coordenação: unidade e selos já lançados abrem a tela da unidade; pendentes não
+  check('painel da coordenação: nome da unidade abre o acompanhamento dela', listaA.includes('href="indicadores.html?unidade=upa-centro"') && listaA.includes('href="indicadores.html?unidade=upa-jurema"'), listaA.slice(0, 300));
+  check('painel da coordenação: selos lançados viram link (clínica e saídas)', /<a class="fech-selo ok" href="indicadores.html\?unidade=upa-centro">Clínica lançada/.test(listaA) && /<a class="fech-selo" href="logistica.html\?unidade=upa-centro">Saídas/.test(listaA), listaA.slice(0, 600));
+  check('painel da coordenação: selos pendentes ficam sem link', /<span class="fech-selo"[^>]*>Clínica pendente/.test(listaA) && /<span class="fech-selo"[^>]*>Saídas pendentes/.test(listaA) && !listaA.includes('logistica.html?unidade=upa-jurema'), listaA.slice(-500));
+  {
+    const vi = visita('indicadores.js', new Map([['farma_sessao', 'T']]), 'admin', { search: '?unidade=upa-jurema' });
+    await pausa(80);
+    check('indicadores: ?unidade= pede essa unidade ao servidor', vi.corpos.some(c => c.action === 'indicadores.carregar' && c.unidade === 'upa-jurema'), vi.corpos);
+    const vl = visita('logistica.js', new Map([['farma_sessao', 'T']]), 'admin', { search: '?unidade=upa-jurema' });
+    await pausa(80);
+    check('planilha: ?unidade= pede essa unidade ao servidor', vl.corpos.some(c => c.action === 'logistica.carregar' && c.unidade === 'upa-jurema'), vl.corpos);
+    const vx = visita('indicadores.js', new Map([['farma_sessao', 'T']]), 'admin', { search: '?unidade=../x;drop' });
+    await pausa(80);
+    check('indicadores: ?unidade= com texto estranho é ignorado', vx.corpos.every(c => c.unidade === undefined), vx.corpos);
+  }
   // saídas só concluem com as duas abas lançadas (aba nunca salva tem total 0)
   const soMed = vm.runInContext("saidasResumo({ saidas: { med: { preenchidos: 10, total: 10 }, mat: { preenchidos: 0, total: 0 }, por: 'a', em: 'b' } })", vc.ctx);
   check('saídas: só medicamentos lançados NÃO conclui', soMed.feito === false && soMed.pct <= 99 && soMed.texto.includes('Materiais: nenhum item lançado'), soMed);

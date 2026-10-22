@@ -606,10 +606,16 @@ function esqueletoKpis() {
   });
 }
 
+// atalho da tela inicial da coordenação: indicadores.html?unidade=<id> abre direto uma unidade
+function unidadePedida() {
+  const u = new URLSearchParams(location.search).get('unidade');
+  return u && /^[a-z0-9-]+$/.test(u) ? u : undefined;
+}
+
 (async function init() {
   if (!cacheLer('ind:inicial')) esqueletoKpis();
   try {
-    await carregarDados();
+    await carregarDados(unidadePedida());
     const avisos = [];
     if (info.mesAberto.teste) avisos.push(`Ambiente de teste: o mês aberto para lançamento está fixo em ${nomeMes(info.mesAberto)}.`);
     if (info.usuario.perfil === 'admin') avisos.push('Os coordenadores de cada unidade fazem os lançamentos; aqui você acompanha e define as metas.');
