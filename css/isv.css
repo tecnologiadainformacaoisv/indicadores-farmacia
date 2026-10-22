@@ -241,11 +241,13 @@ html[data-fonte="grande"] body { zoom: 1.12; }
 
 /* fundo "painel de dados": contornos fantasmas de indicadores, gráficos e tabelas (assets/fundo-dados.svg),
    atrás do conteúdo, e o logo do Instituto pequeno no canto. Para desligar, remova este bloco. */
-body::after {
-  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
-  -webkit-mask: url("../assets/fundo-dados.svg") 0 0 / 520px 340px repeat;
-  mask: url("../assets/fundo-dados.svg") 0 0 / 520px 340px repeat;
-  background: var(--title); opacity: .065;
+@supports (mask: url(x)) or (-webkit-mask: url(x)) {
+  body::after {
+    content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    -webkit-mask: url("../assets/fundo-dados.svg") 0 0 / 520px 340px repeat;
+    mask: url("../assets/fundo-dados.svg") 0 0 / 520px 340px repeat;
+    background: var(--title); opacity: .065;
+  }
 }
 :root[data-theme="dark"] body::after { background: #9fc3e6; opacity: .07; }
 body::before {

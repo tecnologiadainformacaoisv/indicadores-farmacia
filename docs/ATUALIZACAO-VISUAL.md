@@ -52,3 +52,5 @@ Observações: o logo tem 256 px (um SVG ficaria mais nítido); a faixa soma ~70
 ## Fora desta atualização (já publicado no main)
 
 v0.5.2 a v0.5.8: ordenar cobertura com um clique, migalhas de pão na planilha, links da unidade e dos selos na tela inicial da coordenação (`?unidade=<id>`), correções da revisão, página "Como usar", link "Relatar problema ou sugestão" (e-mail da TI), aviso de servidor lento e mensagens de lista vazia. Ao juntar este branch ao main haverá conflito na ordenação da planilha ("Ordenar por criticidade" do branch x "Ordenar por cobertura" do main): ficar com a do main.
+
+Observações da revisão: a máscara do fundo só é aplicada onde o navegador a suporta (`@supports`); `tools/visual/projecao-fundo.html` grava a sessão simulada no `localStorage` do domínio onde for servida, então só use no preview local; ao juntar ao main, subir `js/version.js` e o `CHANGELOG.md`. O rodapé da página de ajuda e o aviso de servidor lento (v0.5.9 do main) já estão no main.

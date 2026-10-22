@@ -115,7 +115,7 @@
 
 /* faixa de gráficos na entrada (assets/hero-dados.svg) com a saudação por cima */
 .home-hello {
-  background: url("../assets/hero-dados.svg") center / cover no-repeat;
+  background: #0e3d60 url("../assets/hero-dados.svg") center / cover no-repeat; /* cor de reserva se a imagem falhar */
   border-radius: 16px; padding: 28px 30px 30px; margin-bottom: 4px;
   box-shadow: 0 18px 40px -28px rgba(8, 44, 71, .7);
 }
