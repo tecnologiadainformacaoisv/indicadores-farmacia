@@ -174,3 +174,12 @@
 /* ordenar pela coluna de cobertura */
 .log-filtro#btn-ordem-cob[aria-pressed="true"] { background: var(--info-bg, var(--soft)); border-color: var(--instituto-secondary); color: var(--title); }
 .log-tools { gap: 8px; flex-wrap: wrap; }
+
+/* migalhas de pão: caminho de volta para o início e para o acompanhamento mensal */
+.migalhas { margin-bottom: 8px; font-size: 13px; }
+.migalhas ol { list-style: none; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 0; }
+.migalhas li + li::before { content: "›"; margin: 0 8px; color: var(--text-soft); }
+.migalhas a { color: var(--instituto-secondary); font-weight: 600; text-decoration: none; padding: 4px 2px; border-radius: 4px; }
+.migalhas a:hover { text-decoration: underline; }
+.migalhas a:focus-visible { outline: 2px solid var(--instituto-secondary); outline-offset: 1px; }
+.migalhas [aria-current="page"] { color: var(--text-soft); font-weight: 700; }

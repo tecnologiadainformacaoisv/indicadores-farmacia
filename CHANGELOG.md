@@ -1,5 +1,9 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.5.4 – 2026-10-22
+### Adicionado
+- Planilha de saídas: migalhas de pão (Início › Acompanhamento mensal › Planilha de saídas) para voltar ao menu lateral do acompanhamento
+
 ## v0.5.3 – 2026-10-22
 ### Alterado
 - Planilha de saídas: a ordenação da cobertura fica só no botão da barra; o cabeçalho "Cobertura" voltou a ser texto simples
