@@ -41,6 +41,7 @@ function applyTheme(theme) {
     btn.setAttribute('aria-pressed', String(theme === 'dark'));
     const label = btn.querySelector('[data-theme-label]');
     if (label) label.textContent = theme === 'dark' ? 'Tema claro' : 'Tema escuro';
+    btn.title = label ? label.textContent : '';
   });
 }
 

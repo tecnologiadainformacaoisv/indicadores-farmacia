@@ -1,0 +1,99 @@
+/* Tela inicial: o fechamento do mês é o elemento principal; o resto fica quieto. */
+
+.home-main {
+  flex: 1; width: 100%; max-width: 1040px; margin: 0 auto;
+  padding: 28px 28px 56px;
+}
+
+.home-hello h2 { font-size: clamp(1.5rem, 3.2vw, 2rem); font-weight: 800; letter-spacing: -.02em; color: var(--title); }
+.home-hello p { color: var(--text-soft); margin-top: 2px; max-width: 60ch; }
+
+/* ── fechamento do mês ── */
+.fechamento {
+  margin: 22px 0 32px;
+  border-radius: 20px; overflow: hidden;
+  background: linear-gradient(165deg, #0e3d60 0%, var(--navy-deep) 100%);
+  color: #e6f0f8;
+  box-shadow: 0 18px 40px -26px rgba(8, 44, 71, .7);
+}
+.fech-top { display: flex; align-items: center; justify-content: space-between; gap: 16px 24px; flex-wrap: wrap; padding: 24px 28px 20px; }
+.fech-top h3 { font-size: clamp(1.25rem, 2.6vw, 1.6rem); font-weight: 800; letter-spacing: -.01em; color: #fff; }
+.fech-top p { color: #a8c4da; font-size: 14px; margin-top: 2px; }
+.fech-ring {
+  --p: 0; position: relative; flex: none; display: grid; place-items: center;
+  width: 68px; height: 68px; border-radius: 50%;
+  background: conic-gradient(#46e08a calc(var(--p) * 1%), rgba(255, 255, 255, .16) 0);
+}
+.fech-ring::before { content: ""; position: absolute; inset: 7px; border-radius: 50%; background: #0c3555; }
+.fech-ring b { position: relative; font: 800 17px var(--font-title); color: #fff; }
+
+.fech-lista { list-style: none; border-top: 1px solid rgba(255, 255, 255, .1); }
+.fech-lista > li { border-bottom: 1px solid rgba(255, 255, 255, .08); }
+.fech-lista > li:last-child { border-bottom: 0; }
+
+/* tarefa (coordenador): uma linha por coisa a lançar */
+.fech-tarefa {
+  display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 4px 16px; align-items: center;
+  padding: 18px 28px; color: inherit; text-decoration: none;
+  transition: background .2s ease;
+}
+.fech-tarefa:hover { background: rgba(255, 255, 255, .05); }
+.fech-marca {
+  width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; flex: none;
+  border: 2px solid #f0b44f;
+}
+.fech-marca svg { width: 14px; height: 14px; stroke: #062a1a; stroke-width: 3; fill: none; stroke-linecap: round; stroke-linejoin: round; display: none; }
+.ok .fech-marca { background: #46e08a; border-color: #46e08a; }
+.ok .fech-marca svg { display: block; }
+.fech-tarefa b { display: block; font-size: 17px; color: #fff; }
+.fech-tarefa small { display: block; color: #a8c4da; font-size: 14px; margin-top: 1px; overflow-wrap: anywhere; }
+.fech-barra { grid-column: 2; height: 6px; border-radius: 6px; background: rgba(255, 255, 255, .15); overflow: hidden; margin-top: 8px; max-width: 420px; }
+.fech-barra i { display: block; height: 100%; width: calc(var(--w, 0) * 1%); background: #f0b44f; border-radius: inherit; }
+.ok .fech-barra i { background: #46e08a; }
+.fech-acao {
+  display: inline-flex; align-items: center; justify-content: center; min-height: 42px; padding: 0 18px;
+  border-radius: 10px; font-weight: 800; font-size: 14px; white-space: nowrap;
+  border: 1px solid rgba(255, 255, 255, .38); color: #fff;
+}
+.pend .fech-acao { background: #f0b44f; border-color: #f0b44f; color: #231700; }
+
+/* unidade (coordenação): status lado a lado */
+.fech-unidade { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 20px; align-items: center; padding: 16px 28px; }
+.fech-unidade b { display: block; font-size: 16px; color: #fff; }
+.fech-unidade small { color: #a8c4da; font-size: 13px; overflow-wrap: anywhere; }
+.fech-selos { display: flex; gap: 8px; flex-wrap: wrap; }
+.fech-selo { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; font-size: 13px; font-weight: 700; background: rgba(240, 180, 79, .16); color: #f6c566; }
+.fech-selo.ok { background: rgba(70, 224, 138, .16); color: #6cf0a6; }
+.fech-selo::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+
+.fech-rodape { padding: 14px 28px; font-size: 13px; color: #a8c4da; border-top: 1px solid rgba(255, 255, 255, .1); background: rgba(0, 0, 0, .12); }
+
+/* ── atalhos: quietos, sem sombra ── */
+.home-links-titulo { font-size: 15px; font-weight: 800; color: var(--text-soft); margin-bottom: 10px; }
+.home-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; }
+.home-link {
+  display: block; padding: 14px 16px;
+  border: 1px solid var(--instituto-border); border-radius: 12px;
+  background: transparent; color: inherit; text-decoration: none;
+  transition: border-color .2s ease, background .2s ease;
+}
+.home-link:hover { border-color: var(--instituto-secondary); background: var(--instituto-surface); }
+.home-link b { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-family: var(--font-title); font-size: 15px; color: var(--title); }
+.home-link .selo-exemplo { margin: 0; }
+.home-link span { display: block; font-size: 13px; color: var(--text-soft); margin-top: 2px; }
+.home-link[hidden] { display: none; }
+
+/* ── esqueleto da tela inicial ── */
+.home-skel .skeleton.t1 { height: 32px; width: min(360px, 70%); margin-bottom: 10px; }
+.home-skel .skeleton.t2 { height: 16px; width: min(480px, 90%); }
+.home-skel .skeleton.painel { height: 260px; border-radius: 20px; margin: 22px 0 32px; }
+
+@media (max-width: 720px) {
+  .home-main { padding: 20px 14px 40px; }
+  .fech-top { padding: 20px 18px 16px; }
+  .fech-tarefa { grid-template-columns: 30px minmax(0, 1fr); padding: 16px 18px; }
+  .fech-acao { grid-column: 1 / -1; width: 100%; margin-top: 6px; }
+  .fech-barra { grid-column: 2; }
+  .fech-unidade { grid-template-columns: minmax(0, 1fr); padding: 16px 18px; }
+  .fech-rodape { padding: 12px 18px; }
+}

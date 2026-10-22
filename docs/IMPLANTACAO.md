@@ -102,6 +102,8 @@ Commit + push → o GitHub Pages atualiza.
 
 ## Observações de operação
 
+- **Painel de fechamento (v0.5.0):** depois de publicar, rode `recalcularFechamento` no editor uma vez. Ele lê as planilhas de saídas de todas as unidades e preenche o andamento do mês aberto (a aba `Fechamento` é criada sozinha). A partir daí, cada salvamento da planilha de saídas atualiza o andamento.
+
 - **Backup diário:** depois de publicar uma versão com o backup, rode `instalarGatilhos` no editor (instala a virada do mês e o backup das 2h). Para testar sem esperar: `backupAgora` e confira a pasta "Backup" dentro da pasta do projeto. Mantém 30 dias; a retenção só apaga arquivos com o padrão "nome — AAAA-MM-DD".
 - **Usuários:** a coordenação cadastra e gerencia coordenadores pela tela "Usuários". Contas da coordenação (perfil admin) continuam só pelo editor (`criarUsuario`, `redefinirSenha`).
 

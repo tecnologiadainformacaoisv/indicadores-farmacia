@@ -12,3 +12,8 @@ data/*.csv
 
 # Apps Script: credenciais locais do clasp
 .clasprc.json
+
+# Capturas de tela e dependências do teste visual
+tools/visual/node_modules/
+tools/visual/out/
+tools/visual/package-lock.json

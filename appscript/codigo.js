@@ -22,6 +22,7 @@ const ABAS = {
   LANC: 'Lancamentos',
   CONFIG: 'Config',
   LOG: 'Log',
+  FECHAMENTO: 'Fechamento',
 };
 
 const CABECALHOS = {
@@ -31,6 +32,8 @@ const CABECALHOS = {
   Lancamentos: null, // montado abaixo com CAMPOS
   Config: ['chave', 'valor', 'descricao'],
   Log: ['quando', 'usuario', 'acao', 'detalhe'],
+  // andamento do fechamento de cada unidade no mês: quantos itens da planilha de saídas já têm saída lançada
+  Fechamento: ['unidade', 'ano', 'mes', 'medPreenchidos', 'medTotal', 'matPreenchidos', 'matTotal', 'atualizadoPor', 'atualizadoEm'],
 };
 
 // Campos do formulário "Lançar dados" (mesmos ids do site, sem o prefixo f-)
@@ -118,6 +121,7 @@ const ROTAS = {
   'sair':               { fn: sair_, semSenhaDefinitiva: true },
   'trocarSenha':        { fn: trocarSenha_, semSenhaDefinitiva: true },
   'lancamentos.salvar': { fn: salvarLancamento_ },
+  'painel.carregar':    { fn: carregarPainel_, semSenhaDefinitiva: true },
   'indicadores.carregar': { fn: carregarIndicadores_ },
   'logistica.carregar': { fn: carregarLogistica_ },
   'metas.salvar':       { fn: salvarMetas_ },
@@ -444,6 +448,32 @@ function definirAtivoApi_(req, u) {
   return true;
 }
 
+// ── Painel do fechamento do mês (tela inicial) ─────────────────
+// Para cada unidade que o usuário enxerga: a Clínica Geral já foi lançada? e quanto da planilha de saídas já tem valor?
+function carregarPainel_(req, u) {
+  const sess = sessao_(req, u);
+  if (ativo_(u.trocarSenha)) return { sessao: sess, mesAberto: sess.mesAberto, unidades: [] }; // só a troca de senha vale por ora
+  const ref = mesAberto_();
+  const lanc = lerTabela_(ABAS.LANC);
+  const fech = lerTabela_(ABAS.FECHAMENTO);
+  const doMes = r => +r.ano === ref.ano && +r.mes === ref.mes;
+  const unidades = unidadesVisiveis_(u).map(un => {
+    const l = lanc.find(r => r.unidade === un.id && doMes(r));
+    const f = fech.find(r => r.unidade === un.id && doMes(r));
+    return {
+      id: un.id,
+      nome: un.nome,
+      clinica: l ? { lancado: true, por: String(l.lancadoPor), em: dataTexto_(l.lancadoEm) } : { lancado: false },
+      saidas: f ? {
+        med: { preenchidos: +f.medPreenchidos || 0, total: +f.medTotal || 0 },
+        mat: { preenchidos: +f.matPreenchidos || 0, total: +f.matTotal || 0 },
+        por: String(f.atualizadoPor), em: dataTexto_(f.atualizadoEm),
+      } : null,
+    };
+  });
+  return { sessao: sess, mesAberto: ref, unidades: unidades };
+}
+
 // ── Cargas completas de tela ───────────────────────────────────
 // Uma chamada traz sessão + dados: cada ida e volta ao Google custa 1 a 2 s, então a tela abre com uma só.
 
@@ -555,6 +585,7 @@ function salvarLogistica_(req, u) {
   if (erros.length) throw erro_(erros.slice(0, 10).join('\n'));
 
   let gravados = 0;
+  let andamento = null;
   comTrava_(() => {
     const sh = planilhaDaUnidade_(un).getSheetByName(req.aba);
     if (!sh) throw erro_('A planilha da unidade não tem a aba ' + req.aba + '.', 'configuracao');
@@ -598,9 +629,32 @@ function salvarLogistica_(req, u) {
         ini = i;
       }
     });
+    andamento = contarPreenchidos_(sh, est, colMes);
   });
+  try { gravarFechamento_(un.id, ref, req.aba, andamento, u.login); } catch (e) { console.error(e); } // o painel nunca derruba o salvamento
   registrar_(u.login, 'logistica.salvar', un.id + ' ' + req.aba + ' ' + (ref.mes + 1) + '/' + ref.ano + ' (' + gravados + ' itens)');
   return { gravados: gravados };
+}
+
+// Quantos itens da aba já têm saída lançada no mês (zero conta como lançado; célula vazia, não).
+function contarPreenchidos_(sh, est, colMes) {
+  const col = sh.getRange(1, colMes + 1, sh.getLastRow(), 1).getValues();
+  let preenchidos = 0;
+  est.itens.forEach(r => { if (col[r][0] !== '' && !isNaN(Number(col[r][0]))) preenchidos++; });
+  return { preenchidos: preenchidos, total: est.itens.length };
+}
+
+function gravarFechamento_(unidadeId, ref, aba, cont, login) {
+  if (!cont) return;
+  const campos = aba === 'MEDICAMENTOS'
+    ? { medPreenchidos: cont.preenchidos, medTotal: cont.total }
+    : { matPreenchidos: cont.preenchidos, matTotal: cont.total };
+  comTrava_(() => {
+    const atual = lerTabela_(ABAS.FECHAMENTO, true).find(r => r.unidade === unidadeId && +r.ano === ref.ano && +r.mes === ref.mes);
+    const linha = Object.assign({ unidade: unidadeId, ano: ref.ano, mes: ref.mes, atualizadoPor: login, atualizadoEm: new Date() }, campos);
+    if (atual) atualizarLinha_(ABAS.FECHAMENTO, atual._linha, linha);
+    else inserirLinha_(ABAS.FECHAMENTO, linha);
+  });
 }
 
 function planilhaDaUnidade_(un) {
@@ -724,9 +778,20 @@ function sistema_() {
 let tabelaCache_ = {}; // tabelas do Sistema lidas nesta execução
 
 // "fresco" ignora o cache: use dentro de comTrava_, para ver o que outro usuário acabou de gravar.
+function abaSistema_(nome) {
+  const ss = sistema_();
+  let sh = ss.getSheetByName(nome);
+  if (!sh && CABECALHOS[nome]) {
+    sh = ss.insertSheet(nome);
+    sh.getRange(1, 1, 1, CABECALHOS[nome].length).setValues([CABECALHOS[nome]]).setFontWeight('bold');
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+
 function lerTabela_(nome, fresco) {
   if (!fresco && tabelaCache_[nome]) return tabelaCache_[nome];
-  const sh = sistema_().getSheetByName(nome);
+  const sh = abaSistema_(nome);
   const v = repetir_(() => sh.getDataRange().getValues());
   const cab = v[0].map(String);
   const linhas = v.slice(1).map((linha, i) => {
@@ -739,14 +804,14 @@ function lerTabela_(nome, fresco) {
 }
 
 function inserirLinha_(nome, obj) {
-  const sh = sistema_().getSheetByName(nome);
+  const sh = abaSistema_(nome);
   const cab = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(String);
   sh.appendRow(cab.map(c => obj[c] === undefined ? '' : obj[c]));
   tabelaCache_ = {};
 }
 
 function atualizarLinha_(nome, linha, obj) {
-  const sh = sistema_().getSheetByName(nome);
+  const sh = abaSistema_(nome);
   const cab = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(String);
   const atual = sh.getRange(linha, 1, 1, cab.length).getValues()[0];
   sh.getRange(linha, 1, 1, cab.length).setValues([cab.map((c, j) => obj[c] === undefined ? atual[j] : obj[c])]);
@@ -918,6 +983,24 @@ function backupDiario() {
 function backupAgora() {
   backupDiario();
   Logger.log('Backup concluído. Veja a pasta "Backup" dentro da pasta do projeto e a aba Log.');
+}
+
+// 1x (e quando quiser conferir): recalcula o andamento do mês aberto lendo as planilhas de saídas de todas as unidades.
+function recalcularFechamento() {
+  const ref = mesAberto_();
+  unidades_().forEach(un => {
+    if (!un.planilhaId) return;
+    const ss = planilhaDaUnidade_(un);
+    ABAS_LOGISTICA.forEach(nome => {
+      const sh = ss.getSheetByName(nome);
+      if (!sh) return;
+      const est = estruturaAba_(sh);
+      const m = est.meses.find(x => x.mes === ref.mes);
+      if (!m) return; // a coluna do mês ainda não existe
+      gravarFechamento_(un.id, ref, nome, contarPreenchidos_(sh, est, m.col), 'sistema');
+      Logger.log(un.id + ' / ' + nome + ': ' + JSON.stringify(contarPreenchidos_(sh, est, m.col)));
+    });
+  });
 }
 
 // Diagnóstico: mostra o que o sistema enxerga na planilha de cada unidade.

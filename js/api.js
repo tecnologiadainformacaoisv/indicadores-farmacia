@@ -144,9 +144,10 @@ function rotuloPerfil(u) {
 function mostrarUsuario(u) {
   const acoes = document.querySelector('.page-header__actions');
   if (!acoes || acoes.querySelector('.user-chip')) return;
+  const iniciais = String(u.nome).split(/\s+/).filter(Boolean).slice(0, 2).map(p => p[0]).join('').toUpperCase();
   const chip = document.createElement('span');
   chip.className = 'user-chip';
-  chip.innerHTML = `<b>${esc(u.nome)}</b><small>${esc(rotuloPerfil(u))}</small>`;
+  chip.innerHTML = `<span class="user-chip__avatar" aria-hidden="true">${esc(iniciais)}</span><span class="user-chip__txt"><b>${esc(u.nome)}</b><small>${esc(rotuloPerfil(u))}</small></span>`;
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.className = 'header-btn';

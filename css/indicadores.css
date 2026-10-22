@@ -55,6 +55,7 @@ body { background: var(--bg); color: var(--txt); font-family: var(--font); font-
 }
 .nav-item:hover { color: var(--txt); background: var(--s2); }
 .nav-item.active { color: var(--title); border-left-color: var(--title); background: var(--tint); }
+a.nav-item { text-decoration: none; }
 .nav-item .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
 /* main */
@@ -109,6 +110,7 @@ body { background: var(--bg); color: var(--txt); font-family: var(--font); font-
 
 /* alerts banner */
 .alerts-bar { margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px; }
+.alerts-bar:empty { display: none; }
 .alert-item {
   display: flex; align-items: center; gap: 10px;
   padding: 12px 14px; border-radius: 10px;
@@ -129,7 +131,7 @@ body { background: var(--bg); color: var(--txt); font-family: var(--font); font-
   background: var(--c, var(--teal));
 }
 .kpi-label { font-size: 13px; font-weight: 600; color: var(--txt2); margin-bottom: 8px; }
-.kpi-val { font-family: var(--mono); font-size: 28px; font-weight: 800; color: var(--c, var(--teal)); line-height: 1; font-variant-numeric: tabular-nums; }
+.kpi-val { font-family: var(--mono); font-size: 30px; font-weight: 800; color: var(--title); line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
 .kpi-sub { font-size: 12px; color: var(--txt2); margin-top: 6px; }
 .kpi-badge {
   display: inline-flex; align-items: center; gap: 4px;
@@ -144,7 +146,7 @@ body { background: var(--bg); color: var(--txt); font-family: var(--font); font-
 .span2 { grid-column: span 2; }
 
 .card {
-  background: var(--s1); border-radius: var(--instituto-radius); box-shadow: var(--instituto-shadow);
+  background: var(--s1); border-radius: var(--instituto-radius); border: 1px solid var(--bd);
   padding: 20px 22px;
 }
 .card:has(> .tbl) { overflow-x: auto; }

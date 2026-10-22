@@ -77,8 +77,9 @@ const baseOpts = (yMax) => ({
   scales: {
     x: { grid: { color: 'transparent' }, ticks: { color: COL.txt2, font: { size: 11 } }, border: { color: COL.bd } },
     y: {
+      min: 0, // percentuais sempre a partir de zero (sem isso, valores iguais viravam um eixo de 92% a 110%)
       grid: { color: themeVar('--chart-grid') },
-      ticks: { color: COL.txt2, font: { size: 11 }, callback: v => v + '%' },
+      ticks: { color: COL.txt2, font: { size: 11 }, callback: v => v > 100 ? '' : v + '%' },
       border: { dash: [3, 3], color: 'transparent' },
       ...(yMax !== undefined ? { max: yMax } : {})
     }
@@ -589,14 +590,23 @@ function montarUnidades() {
 }
 
 // ── Init ───────────────────────────────────────────────────────
+// esqueleto dos indicadores enquanto a primeira carga não chega
+function esqueletoKpis() {
+  const html = Array.from({ length: 5 }, () => '<div class="kpi-card"><span class="skeleton" style="height:14px;width:60%"></span><span class="skeleton" style="height:28px;width:45%;margin-top:12px"></span><span class="skeleton" style="height:14px;width:75%;margin-top:12px"></span></div>').join('');
+  document.getElementById('kpi-clinica').innerHTML = html;
+  document.getElementById('kpi-logistica').innerHTML = html;
+}
+
 (async function init() {
-  setStatus('Carregando…');
+  if (!cacheLer('ind:inicial')) esqueletoKpis();
   try {
     await carregarDados();
     const avisos = [];
     if (info.mesAberto.teste) avisos.push(`Ambiente de teste: o mês aberto para lançamento está fixo em ${nomeMes(info.mesAberto)}.`);
     if (info.usuario.perfil === 'admin') avisos.push('Os coordenadores de cada unidade fazem os lançamentos; aqui você acompanha e define as metas.');
     setStatus(avisos.join(' '), info.mesAberto.teste ? 'warn' : '');
+    // atalho da tela inicial ("Lançar indicadores"): abre o formulário do mês aberto
+    if (info.usuario.perfil !== 'admin' && new URLSearchParams(location.search).has('lancar')) openEntry();
   } catch (e) {
     setStatus(e.message, 'erro');
   }

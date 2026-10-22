@@ -1,0 +1,6 @@
+{
+  "name": "indicadores-farmacia-visual",
+  "private": true,
+  "description": "Capturas de tela das páginas com servidor simulado, para revisar o design em navegador real.",
+  "dependencies": { "playwright": "^1.64.1" }
+}

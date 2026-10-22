@@ -146,8 +146,9 @@ async function carregarPlanilha(restaurar) {
     if (mostrouCache) setStatus('Atualizando…');
   }
   if (!mostrouCache) {
-    setStatus('Carregando a planilha da unidade…');
-    document.getElementById('log-wrap').hidden = true;
+    setStatus('');
+    esqueletoTabela();
+    document.getElementById('log-wrap').hidden = false;
     document.getElementById('log-toolbar').hidden = true;
   }
 
@@ -179,6 +180,51 @@ function montarAbas() {
     </button>`).join('');
 }
 
+// ── Cobertura de estoque ───────────────────────────────────────
+// Quantos meses o estoque dura no ritmo do CMM. Sem estoque e abaixo de 1 mês são os casos críticos.
+const COBERTURA_MAX = 3; // a barra enche com 3 meses ou mais
+
+function cobertura(estoque, cmm) {
+  const e = estoque === null || estoque === undefined || estoque === '' ? null : Number(estoque);
+  const c = cmm === null || cmm === undefined || cmm === '' ? null : Number(cmm);
+  if (e === null) return { cls: 'na', texto: '—', pct: 0, critico: false };
+  if (e === 0) return { cls: 'bad', texto: 'Sem estoque', pct: 0, critico: true };
+  if (!c) return { cls: 'na', texto: 'Sem CMM', pct: 0, critico: false };
+  const meses = e / c;
+  const pct = Math.min(100, Math.round(meses / COBERTURA_MAX * 100));
+  const texto = (meses < 10 ? meses.toFixed(1) : Math.round(meses)).toString().replace('.', ',') + (meses >= 1.95 && meses < 2.05 ? ' meses' : meses === 1 ? ' mês' : ' meses');
+  if (meses < 1) return { cls: 'warn', texto, pct, critico: true };
+  return { cls: 'ok', texto, pct, critico: false };
+}
+
+function celulaCobertura(c) {
+  return `<span class="cob-txt">${esc(c.texto)}</span><span class="cob-barra"><i style="--w:${c.pct}"></i></span>`;
+}
+
+let soCriticos = false;
+
+// valores exibidos no momento (o que foi digitado vale mais que o que veio da planilha)
+function valoresDaLinha(aba, it) {
+  const alt = alteracoes.get(aba.nome + '|' + it.linha) || {};
+  return { cmm: alt.cmm !== undefined ? alt.cmm : it.cmm, estoque: alt.estoque !== undefined ? alt.estoque : it.estoque };
+}
+
+function atualizarCriticos() {
+  const aba = planilha.abas.find(a => a.nome === abaAtual);
+  const n = aba.itens.filter(it => { const v = valoresDaLinha(aba, it); return cobertura(v.estoque, v.cmm).critico; }).length;
+  document.getElementById('n-criticos').textContent = n ? '(' + n + ')' : '';
+  const btn = document.getElementById('btn-criticos');
+  btn.disabled = n === 0 && !soCriticos;
+  btn.setAttribute('aria-pressed', String(soCriticos));
+}
+
+function esqueletoTabela() {
+  document.getElementById('log-head').innerHTML = '';
+  document.getElementById('log-body').innerHTML = Array.from({ length: 9 }, () =>
+    '<tr class="esqueleto"><td colspan="7"><span class="skeleton" style="height:20px"></span></td></tr>').join('');
+  document.getElementById('log-empty').hidden = true;
+}
+
 // ── Tabela ─────────────────────────────────────────────────────
 function render() {
   const aba = planilha.abas.find(a => a.nome === abaAtual);
@@ -196,28 +242,36 @@ function render() {
     <th scope="col" class="col-aberto">Saídas ${MESES_CURTO[ref.mes]}</th>
     <th scope="col" class="col-aberto">CMM</th>
     <th scope="col" class="col-aberto">Estoque disp.</th>
+    <th scope="col" class="col-cob">Cobertura</th>
   </tr>`;
 
   const ed = planilha.editavel;
   const cel = (it, campo, valor) => {
     const alt = alteracoes.get(abaAtual + '|' + it.linha);
     const v = alt && alt[campo] !== undefined ? alt[campo] : valor;
-    if (!ed) return `<td class="col-aberto">${fmt(v)}</td>`;
+    const rotulo = campo === 'saida' ? 'Saídas ' + MESES_CURTO[planilha.mesAberto.mes] : campo === 'cmm' ? 'CMM' : 'Estoque';
+    if (!ed) return `<td class="col-aberto" data-label="${rotulo}">${fmt(v)}</td>`;
     const mudou = alt && alt[campo] !== undefined;
-    return `<td class="col-aberto"><input class="num-input${mudou ? ' ' + classeMudanca(valor, alt[campo]) : ''}" type="number" min="0" step="1" inputmode="numeric" enterkeyhint="next"
+    return `<td class="col-aberto" data-label="${rotulo}"><input class="num-input${mudou ? ' ' + classeMudanca(valor, alt[campo]) : ''}" type="number" min="0" step="1" inputmode="numeric" enterkeyhint="next"
       data-linha="${it.linha}" data-campo="${campo}" value="${v === null || v === undefined || v === '' ? '' : v}"
       aria-label="${campo === 'saida' ? 'Saídas' : campo === 'cmm' ? 'CMM' : 'Estoque disponível'} de ${esc(it.produto)}"></td>`;
   };
 
-  document.getElementById('log-body').innerHTML = aba.itens.map(it => `
-    <tr data-busca="${esc(normalizar(it.produto))}" data-linha="${it.linha}"${alteracoes.has(abaAtual + '|' + it.linha) ? ' class="alterado"' : ''}>
+  document.getElementById('log-body').innerHTML = aba.itens.map(it => {
+    const v = valoresDaLinha(aba, it);
+    const cob = cobertura(v.estoque, v.cmm);
+    return `
+    <tr data-busca="${esc(normalizar(it.produto))}" data-linha="${it.linha}" data-critico="${cob.critico ? 1 : 0}"${alteracoes.has(abaAtual + '|' + it.linha) ? ' class="alterado"' : ''}>
       <td class="produto">${esc(it.produto)}</td>
       ${anteriores.map(m => `<td class="mes-anterior">${fmt(it.valores[m.i])}</td>`).join('')}
       ${cel(it, 'saida', idxAberto >= 0 ? it.valores[idxAberto] : null)}
       ${cel(it, 'cmm', it.cmm)}
       ${cel(it, 'estoque', it.estoque)}
-    </tr>`).join('');
+      <td class="col-cob cob ${cob.cls}" data-label="Cobertura">${celulaCobertura(cob)}</td>
+    </tr>`;
+  }).join('');
   filtrar();
+  atualizarCriticos();
   atualizarBarra();
 }
 
@@ -225,7 +279,7 @@ function filtrar() {
   const q = normalizar(document.getElementById('busca').value.trim());
   let visiveis = 0;
   document.querySelectorAll('#log-body tr').forEach(tr => {
-    const ok = !q || tr.dataset.busca.includes(q);
+    const ok = (!q || tr.dataset.busca.includes(q)) && (!soCriticos || tr.dataset.critico === '1');
     tr.hidden = !ok;
     if (ok) visiveis++;
   });
@@ -268,7 +322,15 @@ function aoEditar(input) {
 
   if (CAMPOS.some(c => alt[c] !== undefined)) alteracoes.set(chave, alt);
   else alteracoes.delete(chave);
-  input.closest('tr').classList.toggle('alterado', alteracoes.has(chave));
+  const tr = input.closest('tr');
+  tr.classList.toggle('alterado', alteracoes.has(chave));
+  const v = valoresDaLinha(aba, it);
+  const cob = cobertura(v.estoque, v.cmm);
+  tr.dataset.critico = cob.critico ? '1' : '0';
+  const tdCob = tr.querySelector('.cob');
+  tdCob.className = 'col-cob cob ' + cob.cls;
+  tdCob.innerHTML = celulaCobertura(cob);
+  atualizarCriticos();
   atualizarBarra();
 }
 
@@ -385,6 +447,11 @@ document.getElementById('log-tabs').addEventListener('click', e => {
 });
 
 document.getElementById('busca').addEventListener('input', filtrar);
+document.getElementById('btn-criticos').addEventListener('click', () => {
+  soCriticos = !soCriticos;
+  filtrar();
+  atualizarCriticos();
+});
 document.getElementById('btnSalvar').addEventListener('click', salvar);
 
 window.addEventListener('beforeunload', e => {

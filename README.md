@@ -17,6 +17,8 @@ projeto-indicadores-farmacia/
 ├── README.md · CHANGELOG.md · CLAUDE.md
 ├── index.html · indicadores.html · logistica.html · usuarios.html · dashboard.html
 ├── appscript/         ← API (Apps Script, publicada com clasp)
+├── tests/             ← testes do servidor e das telas (node)
+├── tools/visual/      ← capturas de tela em navegador real
 ├── assets/            ← logo ISV
 ├── css/               ← tema ISV + estilos por página
 ├── js/                ← API/sessão, tema, versão e lógica por página
@@ -27,10 +29,11 @@ projeto-indicadores-farmacia/
 ## Como usar
 
 - Regras do sistema: [docs/BRIEFING.md](docs/BRIEFING.md)
+- Design (método e decisões): [docs/DESIGN.md](docs/DESIGN.md)
 - Implantação (Apps Script, usuários, Web App): [docs/IMPLANTACAO.md](docs/IMPLANTACAO.md)
 
 Para ver as telas localmente, sirva a pasta (Live Server ou `python -m http.server 8000`). O site conversa com a API do Apps Script pela `API_URL` de `js/api.js`; sem ela, o login avisa que o sistema não está ligado ao servidor.
 
 ---
 
-Versão atual: **v0.4.1** · Versionamento: [Semantic Versioning](https://semver.org/lang/pt-BR/) · Commits: [Conventional Commits](https://www.conventionalcommits.org/pt-br/)
+Versão atual: **v0.5.0** · Versionamento: [Semantic Versioning](https://semver.org/lang/pt-BR/) · Commits: [Conventional Commits](https://www.conventionalcommits.org/pt-br/)

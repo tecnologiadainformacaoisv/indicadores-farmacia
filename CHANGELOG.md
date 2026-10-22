@@ -1,5 +1,25 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.5.0 – 2026-10-22
+### Adicionado
+- **Fechamento do mês** na tela inicial: painel que mostra o que falta lançar. O coordenador vê as tarefas (indicadores da Clínica Geral e planilha de saídas) com o andamento e o botão para continuar; a coordenação vê cada unidade com selos de Clínica e Saídas e o andamento em %
+- Atalho "Lançar indicadores" abre direto o formulário do mês aberto (`indicadores.html?lancar=1`)
+- Servidor: rota `painel.carregar` e aba `Fechamento` (criada sozinha), atualizada a cada salvamento da planilha de saídas; função `recalcularFechamento` para preencher o andamento a partir das planilhas
+- Planilha de saídas: **cobertura de estoque** por item (quantos meses o estoque dura no ritmo do CMM) com barra e cor, ponto vermelho nos críticos, botão "Só os críticos" e atualização ao digitar
+- Planilha de saídas no celular: cada item vira um bloco (nome, três campos e cobertura), sem rolagem lateral
+- Esqueleto de carregamento na tela inicial, nos indicadores e na planilha de saídas
+- `docs/DESIGN.md` (método, decisões e receita), testes em `tests/` (92 do servidor e 58 das telas) e capturas de tela em navegador real em `tools/visual/`
+
+### Alterado
+- Cabeçalho mais enxuto: versão ao lado do título, botão de tema só com ícone, usuário com iniciais, botão "Início" curto; ocupa bem menos tela no celular
+- Número dos KPIs neutro (a cor da série lia como alarme: 81,8% atingindo a meta aparecia em vermelho); o status fica no selo
+- Cartões de conteúdo planos (borda fina); atalhos da tela inicial sem sombra e sem "Abrir →"
+- Eixo dos gráficos de percentual começa em zero e não mostra o 110% de folga
+
+### Corrigido
+- Gráfico de prescrições com eixo de 92% a 110% quando os valores eram iguais
+- Espaço vazio entre o aviso e os indicadores quando não há alertas; sublinhado indevido em um item do menu lateral
+
 ## v0.4.1 – 2026-10-22
 ### Corrigido
 - Planilha de saídas: o rascunho de alterações não salvas agora volta depois de recarregar ou de a sessão expirar (antes procurava a chave errada); só volta para a mesma pessoa e unidade, e o aviso "Recuperamos N alterações" não some quando a carga do servidor chega

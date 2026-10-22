@@ -38,6 +38,7 @@ const baseOpts = (yMax) => ({
       border: { color: C.border }
     },
     y: {
+      min: 0, // percentuais a partir de zero
       grid: { color: themeVar('--chart-grid') },
       ticks: {
         color: C.text,

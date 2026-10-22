@@ -33,15 +33,18 @@ projeto-indicadores-farmacia/
 ├── css/
 │   ├── instituto.css       ← cópia de ../shared/styles/instituto.css (tokens ISV)
 │   ├── isv.css             ← tema claro/escuro, cabeçalho, rodapé, login, avisos (comum)
-│   └── dashboard.css · indicadores.css · logistica.css · usuarios.css
+│   └── home.css · dashboard.css · indicadores.css · logistica.css · usuarios.css
 ├── js/
 │   ├── version.js          ← ÚNICA fonte da versão exibida
 │   ├── theme.js            ← tema claro/escuro (carregado no <head>)
 │   ├── api.js              ← API_URL, chamadas à API, sessão, cabeçalho com usuário
 │   └── index.js · indicadores.js · logistica.js · usuarios.js · dashboard.js
 ├── data/                   ← planilha-fonte local (fora do git)
+├── tests/                  ← api.test.js (servidor) e front.test.js (telas): `node tests/api.test.js`
+├── tools/visual/           ← capturas de tela em navegador real com servidor simulado (ver docs/DESIGN.md)
 └── docs/
     ├── BRIEFING.md         ← regras de negócio definidas com a Tereza
+    ├── DESIGN.md           ← método e decisões de design, receita para repetir
     └── IMPLANTACAO.md      ← passo a passo clasp / Apps Script / Web App
 ```
 
@@ -77,6 +80,7 @@ Tudo na pasta **"Indicadores Farmácia"** do Drive da **conta da TI** (ID na pro
   - `Lancamentos` (1 linha por unidade/ano/mês, campos do formulário "Lançar dados")
   - `Config` (`MES_ABERTO_TESTE` fixa o mês aberto nos testes, ex. `2026-05`)
   - `Log` (quem fez o quê)
+  - `Fechamento` (andamento da planilha de saídas por unidade/mês: itens com saída lançada; alimenta o painel da tela inicial; criada sozinha)
 - **Pasta "Backup"** (dentro da pasta do projeto): `backupDiario` (gatilho das 2h; `backupAgora` à mão) copia a planilha Sistema e as planilhas de saídas das unidades, uma cópia por dia com nome "nome — AAAA-MM-DD", e apaga as com mais de 30 dias. As cópias da planilha Sistema contêm os hashes de senha: a pasta não pode estar com "qualquer pessoa com o link".
 - **Planilha de saídas de cada unidade** (modelo UPA): abas `MEDICAMENTOS` e `MATERIAIS`; produto · colunas de mês · CMM · estoque. O script acha cabeçalho/colunas pelo texto (`estruturaAba_`) e cria a coluna do mês antes do CMM (`garantirColunaDoMes_`). CMM e estoque são digitados (sem fórmula), como na planilha original.
 - Sessão: token no `localStorage` (`farma_sessao`), validado no servidor (CacheService, 6 h). Tema: `farma_theme`.
@@ -84,6 +88,8 @@ Tudo na pasta **"Indicadores Farmácia"** do Drive da **conta da TI** (ID na pro
 ---
 
 ## Padrões de desenvolvimento
+
+- **Design:** siga `docs/DESIGN.md` (um elemento memorável por tela, cor de série nunca vira cor de status, cartões de conteúdo planos, esqueleto no lugar de "Carregando…"). Confira em navegador real, nos dois temas, em 390 e 1280 px.
 
 - **Permissão é sempre conferida no Apps Script** (`exigirVisivel_`, `exigirLancamento_`). A tela só esconde botões.
 - O mês de lançamento vem do servidor (`mesAberto_`); o front nunca escolhe o mês nem a unidade do lançamento.
@@ -110,10 +116,10 @@ Tudo na pasta **"Indicadores Farmácia"** do Drive da **conta da TI** (ID na pro
 
 > Última atualização: 2026-10-21
 
-- **Versão:** v0.4.1 (`js/version.js`), em teste com a Tereza. **Regra: toda mudança sobe a versão** (PATCH para correções e ajustes, MINOR para nova etapa do fluxo), alterando `js/version.js` e o `CHANGELOG.md` no mesmo commit, com tag `vX.Y.Z`.
+- **Versão:** v0.5.0 (`js/version.js`), em teste com a Tereza. **Regra: toda mudança sobe a versão** (PATCH para correções e ajustes, MINOR para nova etapa do fluxo), alterando `js/version.js` e o `CHANGELOG.md` no mesmo commit, com tag `vX.Y.Z`.
 - **Implantado e em teste:** API (Web App na conta da TI), planilha "Sistema", usuário `tereza` e usuários de teste de coordenador, login, Clínica Geral na nuvem, metas por unidade e planilha de saídas item por item. `API_URL` já está em `js/api.js`.
 - Os testes usam a planilha com dados até **maio/2026** (`MES_ABERTO_TESTE = 2026-05` na aba `Config`). A versão atualizada só entra depois da validação da Tereza; antes de uso real, seguir o checklist de `docs/IMPLANTACAO.md`.
-- Validação automatizada: não há suíte no repositório; o servidor foi testado com Apps Script simulado (48 verificações: login, permissões, mês aberto, lançamentos, metas, gravação na planilha, fórmulas, criação de coluna) e a estrutura foi conferida com a planilha real de maio (169 medicamentos, 156 materiais).
+- Validação automatizada em `tests/`: servidor com Apps Script simulado (92 verificações: login, permissões, mês aberto, lançamentos, metas, usuários, backup, painel, planilha, fórmulas, colunas) e telas com DOM simulado (58). Rode os dois antes de publicar. Design validado em navegador real com `tools/visual/`.
 - Para publicar mudanças no servidor: `clasp push` + nova versão + `clasp update-deployment` (a URL do Web App não muda). Antes, `clasp show-authorized-user` deve mostrar a conta da TI.
 
 ## Próximos passos

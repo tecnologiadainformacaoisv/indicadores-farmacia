@@ -38,6 +38,7 @@
 .log-tab .count { font-weight: 600; opacity: .8; }
 .log-search input { width: min(360px, 100%); }
 .log-search { flex: 1; display: flex; justify-content: flex-end; }
+.log-toolbar { gap: 10px 12px; }
 
 /* tabela */
 .log-table-wrap { overflow: auto; max-height: calc(100vh - 300px); min-height: 320px; border: 1px solid var(--instituto-border); }
@@ -86,6 +87,34 @@
 
 .log-empty { padding: 24px; text-align: center; color: var(--text-soft); }
 
+/* cobertura: quantos meses o estoque dura no ritmo do CMM */
+.log-table th.col-cob, .log-table td.col-cob { text-align: left; min-width: 118px; }
+.log-table td.cob { padding-block: 8px; }
+.cob-txt { display: block; font-size: 13px; font-weight: 700; color: var(--instituto-text); }
+.cob-barra { display: block; height: 5px; margin-top: 5px; border-radius: 5px; overflow: hidden; background: var(--instituto-border); }
+.cob-barra i { display: block; height: 100%; width: calc(var(--w, 0) * 1%); border-radius: inherit; background: var(--c-ok); }
+.cob.warn .cob-txt { color: var(--c-warn); }
+.cob.warn .cob-barra i { background: var(--c-warn); }
+.cob.bad .cob-txt { color: var(--c-err); }
+.cob.bad .cob-barra i { background: var(--c-err); }
+.cob.na .cob-txt { color: var(--text-soft); font-weight: 600; }
+.log-table tr[data-critico="1"] td.produto::before {
+  content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 8px; border-radius: 50%;
+  background: var(--c-err); vertical-align: 1px;
+}
+.log-table tr.esqueleto td { padding: 10px 12px; border-bottom: 1px solid var(--instituto-border); }
+
+.log-tools { display: flex; align-items: center; }
+.log-filtro {
+  min-height: 44px; padding: 0 16px;
+  border: 1px solid var(--instituto-border); border-radius: 10px;
+  background: var(--instituto-surface); color: var(--text-soft);
+  font: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
+}
+.log-filtro .count { font-weight: 600; }
+.log-filtro[aria-pressed="true"] { background: var(--err-bg); border-color: var(--c-err); color: var(--c-err); }
+.log-filtro:disabled { opacity: .5; cursor: default; }
+
 /* barra de salvar, fixa no rodapé da janela */
 .save-bar {
   position: sticky; bottom: 0; z-index: 50;
@@ -100,6 +129,35 @@
 #save-info.salvo { color: var(--c-ok); font-weight: 700; }
 .log-dica { font-size: 13px; color: var(--text-soft); margin: -4px 0 12px; }
 #btnSalvar:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+/* celular: cada item vira um bloco (nome em cima, três campos lado a lado), sem rolagem lateral */
+@media (max-width: 700px) {
+  .log-table-wrap { overflow: visible; border: 0; background: transparent; box-shadow: none; }
+  .log-table, .log-table tbody { display: block; }
+  .log-table thead { display: none; }
+  .log-table tr {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px 10px;
+    margin-bottom: 10px; padding: 14px;
+    background: var(--instituto-surface); border: 1px solid var(--instituto-border); border-radius: 14px;
+  }
+  .log-table tr.alterado { border-color: var(--c-warn); }
+  .log-table tr.esqueleto { display: block; }
+  .log-table td { display: block; padding: 0; border: 0; text-align: left; background: transparent; }
+  .log-table td.produto {
+    grid-column: 1 / -1; position: static; min-width: 0; max-width: none; padding-bottom: 4px;
+    background: transparent; border: 0; box-shadow: none; font-size: 14px;
+  }
+  .log-table tr.alterado td.produto { box-shadow: none; }
+  .log-table .mes-anterior { display: none; }
+  .log-table td.col-aberto::before, .log-table td.col-cob::before {
+    content: attr(data-label); display: block; margin-bottom: 3px;
+    font-size: 12px; font-weight: 600; color: var(--text-soft);
+  }
+  .log-table td.col-aberto { background: transparent; }
+  .num-input { width: 100%; }
+  .log-table td.col-cob { grid-column: 1 / -1; min-width: 0; padding-top: 2px; }
+  .log-table tr:hover td, .log-table tr:hover td.produto, .log-table tr:hover td.col-aberto { background: transparent; }
+}
 
 @media (max-width: 768px) {
   .log-main { padding: 20px 16px 96px; }

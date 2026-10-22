@@ -1,6 +1,6 @@
 // Tela inicial: login, troca da senha provisória e menu.
 
-const views = ['login', 'senha', 'home'];
+const views = ['login', 'senha', 'skel', 'home'];
 
 function mostrar(view) {
   views.forEach(v => { document.getElementById('view-' + v).hidden = v !== view; });
@@ -34,16 +34,16 @@ async function carregar() {
     return;
   }
   // abre na hora com o que foi carregado da última vez e atualiza por trás
-  const emCache = cacheLer('sessao');
-  const mostrouCache = !!emCache && !emCache.dados.usuario.trocarSenha;
+  const emCache = cacheLer('painel');
+  const mostrouCache = !!emCache && !emCache.dados.sessao.usuario.trocarSenha;
   if (mostrouCache) montarHome(emCache.dados);
-  else status('Carregando…');
+  else mostrar('skel');
   try {
-    const info = await api('sessao');
-    cacheGravar('sessao', info);
+    const painel = await api('painel.carregar');
+    cacheGravar('painel', painel);
     status('');
-    if (info.usuario.trocarSenha) { mostrarUsuario(info.usuario); mostrar('senha'); return; }
-    montarHome(info);
+    if (painel.sessao.usuario.trocarSenha) { mostrarUsuario(painel.sessao.usuario); mostrar('senha'); return; }
+    montarHome(painel);
   } catch (e) {
     if (mostrouCache && lerToken()) {   // falha ao atualizar: mantém o que já está na tela
       status(e.message + ' Mostrando os dados da última visita.', 'warn');
@@ -73,24 +73,96 @@ document.querySelectorAll('[data-mostrar-senha]').forEach(chk => {
   });
 });
 
-function montarHome(info) {
+// ── Fechamento do mês ──────────────────────────────────────────
+const ICONE_OK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+
+function saidasResumo(unidade) {
+  const sd = unidade.saidas;
+  if (!sd) return { feito: false, parcial: false, pct: 0, texto: 'Nenhum item lançado ainda.' };
+  const pre = sd.med.preenchidos + sd.mat.preenchidos;
+  const tot = sd.med.total + sd.mat.total;
+  const feito = tot > 0 && pre >= tot;
+  const detalhe = `Medicamentos ${sd.med.preenchidos} de ${sd.med.total} · Materiais ${sd.mat.preenchidos} de ${sd.mat.total}`;
+  return {
+    feito, parcial: pre > 0 && !feito, pct: tot ? Math.round(pre / tot * 100) : 0,
+    texto: detalhe + (sd.em ? `. Atualizada por ${sd.por} em ${sd.em}.` : '.'),
+  };
+}
+
+function unidadeCompleta(un) { return un.clinica.lancado && saidasResumo(un).feito; }
+
+function tarefa(href, titulo, feito, texto, acao, pct) {
+  return `<li><a class="fech-tarefa ${feito ? 'ok' : 'pend'}" href="${href}">
+    <span class="fech-marca">${ICONE_OK}</span>
+    <span><b>${esc(titulo)}</b><small>${esc(texto)}</small></span>
+    <span class="fech-acao">${esc(acao)}</span>
+    ${pct === undefined ? '' : `<span class="fech-barra" style="--w:${pct}"><i></i></span>`}
+  </a></li>`;
+}
+
+function selo(ok, texto) { return `<span class="fech-selo${ok ? ' ok' : ''}">${esc(texto)}</span>`; }
+
+function montarFechamento(painel, admin) {
+  const mes = nomeMes(painel.mesAberto);
+  const uns = painel.unidades;
+  document.getElementById('fech-titulo').textContent = 'Fechamento de ' + mes;
+  const lista = document.getElementById('fech-lista');
+  let feitos, total;
+
+  if (admin) {
+    const completas = uns.filter(unidadeCompleta).length;
+    feitos = completas; total = uns.length;
+    document.getElementById('fech-sub').textContent = `${completas} de ${uns.length} unidades com tudo lançado.`;
+    lista.innerHTML = uns.map(un => {
+      const sd = saidasResumo(un);
+      const ultima = [un.clinica.lancado ? { por: un.clinica.por, em: un.clinica.em } : null, un.saidas ? { por: un.saidas.por, em: un.saidas.em } : null].filter(Boolean).pop();
+      const quando = ultima ? `Última atualização: ${ultima.por}, ${ultima.em}` : 'Nada lançado ainda neste mês.';
+      return `<li class="fech-unidade"><div><b>${esc(un.nome)}</b><small>${esc(quando)}</small></div>
+        <div class="fech-selos">${selo(un.clinica.lancado, 'Clínica')}${selo(sd.feito, 'Saídas' + (sd.pct && !sd.feito ? ' ' + sd.pct + '%' : ''))}</div></li>`;
+    }).join('') || '<li class="fech-unidade"><div><b>Nenhuma unidade cadastrada.</b></div></li>';
+    document.getElementById('fech-rodape').textContent = 'Os coordenadores lançam; aqui você acompanha. As metas de cada unidade ficam em Acompanhamento mensal.';
+  } else {
+    const un = uns[0];
+    if (!un) { lista.innerHTML = ''; return; }
+    const sd = saidasResumo(un);
+    feitos = (un.clinica.lancado ? 1 : 0) + (sd.feito ? 1 : 0); total = 2;
+    document.getElementById('fech-sub').textContent = feitos === 2
+      ? `${un.nome}. Tudo lançado, obrigado!`
+      : `${un.nome}. ${feitos === 0 ? 'Faltam 2 lançamentos.' : 'Falta 1 lançamento.'}`;
+    lista.innerHTML =
+      tarefa('indicadores.html?lancar=1', 'Indicadores da Clínica Geral', un.clinica.lancado,
+        un.clinica.lancado ? `Lançados por ${un.clinica.por} em ${un.clinica.em}.` : 'Ainda não lançados.',
+        un.clinica.lancado ? 'Revisar' : 'Lançar indicadores') +
+      tarefa('logistica.html', 'Planilha de saídas', sd.feito, sd.texto,
+        sd.feito ? 'Revisar' : sd.parcial ? 'Continuar lançamento' : 'Lançar saídas', sd.pct);
+    document.getElementById('fech-rodape').textContent = 'Você pode salvar aos poucos: o que já foi lançado fica gravado.';
+  }
+  const pct = total ? Math.round(feitos / total * 100) : 0;
+  const ring = document.getElementById('fech-ring');
+  ring.style.setProperty('--p', pct);
+  ring.setAttribute('aria-label', `${feitos} de ${total} concluídos`);
+  document.getElementById('fech-ring-txt').textContent = `${feitos}/${total}`;
+}
+
+function montarHome(painel) {
+  const info = painel.sessao;
   const u = info.usuario;
   mostrarUsuario(u);
   const admin = u.perfil === 'admin';
-  const unidade = info.unidades[0];
-  document.getElementById('home-ola').textContent = 'Olá, ' + u.nome;
+  document.getElementById('home-ola').textContent = 'Olá, ' + u.nome.split(' ')[0];
   document.getElementById('home-intro').textContent = admin
-    ? 'Acompanhe os lançamentos de todas as unidades e defina as metas.'
-    : `${unidade ? unidade.nome : 'Sua unidade'} · mês aberto para lançamento: ${nomeMes(info.mesAberto)}.`;
+    ? 'Acompanhe o andamento de cada unidade neste mês e defina as metas.'
+    : 'Veja o que falta lançar neste mês.';
   document.getElementById('card-indicadores').textContent = admin
     ? 'Indicadores de todas as unidades, metas e alertas.'
-    : 'Lance os indicadores clínicos e de logística do mês.';
+    : 'Indicadores clínicos e de logística, com gráficos.';
   document.getElementById('card-logistica').textContent = admin
-    ? 'Consulte as saídas de medicamentos e materiais de cada unidade.'
-    : 'Lance as saídas, o CMM e o estoque de cada item.';
+    ? 'Saídas de medicamentos e materiais de cada unidade.'
+    : 'Saídas, CMM e estoque de cada item.';
   document.getElementById('card-dashboard').hidden = !admin;
   document.getElementById('card-usuarios').hidden = !admin;
-  if (info.mesAberto.teste) status('Ambiente de teste: o mês aberto está fixo em ' + nomeMes(info.mesAberto) + '.', 'warn');
+  montarFechamento(painel, admin);
+  if (painel.mesAberto.teste) status('Ambiente de teste: o mês aberto está fixo em ' + nomeMes(painel.mesAberto) + '.', 'warn');
   mostrar('home');
 }
 

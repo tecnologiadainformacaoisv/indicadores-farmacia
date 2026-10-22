@@ -64,8 +64,9 @@
 }
 .usr-lista-topo h3 { font-size: 16px; color: var(--title); }
 .usr-contagem { font-weight: 600; color: var(--text-soft); font-size: 14px; }
+.usr-busca { flex: 1 1 260px; max-width: 380px; }
 .usr-busca input {
-  width: min(380px, 100%); min-height: 44px; padding: 8px 12px;
+  width: 100%; min-height: 44px; padding: 8px 12px;
   border: 1px solid var(--input-bd); border-radius: 10px;
   background: var(--input-bg); color: var(--instituto-text);
   font: inherit; font-size: 14px;
