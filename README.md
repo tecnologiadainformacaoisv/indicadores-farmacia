@@ -15,7 +15,7 @@ Sistema do **Instituto São Vicente (ISV)** para os coordenadores farmacêuticos
 ```
 projeto-indicadores-farmacia/
 ├── README.md · CHANGELOG.md · CLAUDE.md
-├── index.html · indicadores.html · logistica.html · dashboard.html
+├── index.html · indicadores.html · logistica.html · usuarios.html · dashboard.html
 ├── appscript/         ← API (Apps Script, publicada com clasp)
 ├── assets/            ← logo ISV
 ├── css/               ← tema ISV + estilos por página
@@ -33,4 +33,4 @@ Para ver as telas localmente, sirva a pasta (Live Server ou `python -m http.serv
 
 ---
 
-Versão atual: **v0.4.0** · Versionamento: [Semantic Versioning](https://semver.org/lang/pt-BR/) · Commits: [Conventional Commits](https://www.conventionalcommits.org/pt-br/)
+Versão atual: **v0.4.1** · Versionamento: [Semantic Versioning](https://semver.org/lang/pt-BR/) · Commits: [Conventional Commits](https://www.conventionalcommits.org/pt-br/)

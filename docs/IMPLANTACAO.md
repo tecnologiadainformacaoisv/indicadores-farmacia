@@ -59,7 +59,7 @@ Rode, nesta ordem (menu de funções no topo → **Executar**):
    criarUsuario('coord.jurema', 'Nome do coordenador', 'coordenador', 'upa-jurema')
    ```
    Mais simples: criar uma função temporária que chama as duas linhas e executá-la. A senha provisória sai no registro.
-5. **`instalarGatilhos`** — agenda a virada do mês (dia 1, de madrugada).
+5. **`instalarGatilhos`** — agenda a virada do mês (dia 1, 1h) e o backup diário (2h). Rode de novo sempre que uma versão trouxer gatilho novo.
 
 ## 4. Publicar a API
 
@@ -88,6 +88,9 @@ Commit + push → o GitHub Pages atualiza.
 | Tereza | Ver as duas unidades, alternar no seletor, sem botão de lançar |
 | Tereza | Metas → escolher uma unidade → alterar → salvar; o coordenador vê a nova meta |
 | Tereza | Planilha de saídas → consultar as duas unidades (somente leitura) |
+| Tereza | Usuários → cadastrar um coordenador de teste → copiar a senha provisória → entrar com ele em outra janela e criar a própria senha |
+| Tereza | Usuários → redefinir a senha e desativar/reativar o acesso; conferir que o acesso é cortado na hora |
+| TI | Rodar `backupAgora` e conferir a pasta "Backup" com 3 arquivos (Sistema e as duas unidades) |
 
 ## ⚠️ Antes de liberar para uso real
 
@@ -104,14 +107,15 @@ Commit + push → o GitHub Pages atualiza.
 
 - **Gatilho da virada do mês e modo de teste:** com `MES_ABERTO_TESTE` preenchido, o gatilho `virarMes` só recria a coluna do mês de teste.
 - **Virada de ano:** a planilha de saídas não guarda o ano; em fevereiro de 2027 a gravação é recusada até definirmos o formato (ver "Em aberto" no BRIEFING).
-- **Depois de mudar o código:** `clasp push`, `clasp create-version "descrição"` e `clasp update-deployment <id> --versionNumber N` mantêm a mesma URL. O gatilho já instalado continua valendo; não é preciso rodar `instalarGatilhos` de novo.
+- **Depois de mudar o código:** `clasp push`, `clasp create-version "descrição"` e `clasp update-deployment <id> --versionNumber N` mantêm a mesma URL. Os gatilhos já instalados continuam valendo, exceto quando a versão traz um gatilho novo (como o do backup na v0.4.0): nesse caso rode `instalarGatilhos` de novo.
 - **Ao mudar o formato dos campos ou da API:** o site envia o mês exibido (`ref`) em cada lançamento; páginas abertas antes da atualização pedem para recarregar.
 
 ## Operação
 
 | Situação | Como fazer (editor do Apps Script) |
 |---|---|
-| Esqueceu a senha | `redefinirSenha('login')` → senha provisória no registro |
-| Desativar usuário | aba `Usuarios`, coluna `ativo` = `FALSE` |
+| Esqueceu a senha (coordenador) | Tela **Usuários** → Redefinir senha (a Tereza entrega a nova senha provisória) |
+| Esqueceu a senha (conta da coordenação) | `redefinirSenha('login')` no editor → senha provisória no registro |
+| Desativar coordenador | Tela **Usuários** → Desativar acesso (conta da coordenação: aba `Usuarios`, coluna `ativo` = `FALSE`) |
 | Sair do modo de teste | aba `Config`, apagar o valor de `MES_ABERTO_TESTE` → passa a valer o mês que fechou |
 | Ver quem fez o quê | aba `Log` da planilha Sistema |

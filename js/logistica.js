@@ -32,22 +32,26 @@ function fmt(v) {
 // recarregar, voltam depois do login (só se a linha ainda for do mesmo produto).
 let saindoDaSessao = false;
 
-function chaveRascunho() { return 'farma_rascunho_' + unidadeSel; }
+let avisoRascunho = '';   // "Recuperamos N alterações…", mantido enquanto houver alterações recuperadas
 
+// Um único rascunho por aba do navegador, com o login e a unidade a que pertence:
+// só volta para a mesma pessoa e a mesma unidade.
 function salvarRascunho() {
   try {
-    if (alteracoes.size) sessionStorage.setItem(chaveRascunho(), JSON.stringify([...alteracoes.values()]));
-    else sessionStorage.removeItem(chaveRascunho());
+    if (alteracoes.size) {
+      sessionStorage.setItem(RASCUNHO_KEY, JSON.stringify({ login: info && info.usuario.login, unidade: unidadeSel, itens: [...alteracoes.values()] }));
+    } else sessionStorage.removeItem(RASCUNHO_KEY);
   } catch (e) { /* sem armazenamento: segue sem rascunho */ }
 }
 
 function lerRascunho() {
-  try { return JSON.parse(sessionStorage.getItem(chaveRascunho()) || '[]'); } catch (e) { return []; }
+  try { return JSON.parse(sessionStorage.getItem(RASCUNHO_KEY) || 'null'); } catch (e) { return null; }
 }
 
-function restaurarRascunho(lista) {
+function restaurarRascunho(rascunho) {
+  if (!rascunho || rascunho.login !== info.usuario.login || rascunho.unidade !== planilha.unidade) return 0;
   let n = 0;
-  lista.forEach(alt => {
+  rascunho.itens.forEach(alt => {
     const aba = planilha.abas.find(a => a.nome === alt.aba);
     const it = aba && aba.itens.find(x => x.linha === alt.linha);
     if (!it || it.produto !== alt.produto) return;
@@ -92,18 +96,28 @@ function exibirPlanilha(r, rascunho) {
   document.getElementById('log-sub').textContent = planilha.editavel
     ? `Lance as saídas de ${nomeMes(ref)}, o CMM e o estoque disponível de cada item.`
     : `Consulta. Mês aberto para as unidades: ${nomeMes(ref)}.`;
+
+  // alterações digitadas que não batem com a planilha nova (produto mudou de linha) são descartadas com aviso
+  let descartadas = 0;
+  [...alteracoes.entries()].forEach(([chave, alt]) => {
+    const aba = planilha.abas.find(a => a.nome === alt.aba);
+    const it = aba && aba.itens.find(x => x.linha === alt.linha);
+    if (!it || it.produto !== alt.produto) { alteracoes.delete(chave); descartadas++; }
+  });
+  if (planilha.editavel && rascunho) {
+    const n = restaurarRascunho(rascunho);
+    if (n) avisoRascunho = `Recuperamos ${n} ${n === 1 ? 'alteração não salva' : 'alterações não salvas'} da sua última visita. Confira e clique em Salvar.`;
+  }
+
   const avisos = [];
   if (ref.teste) avisos.push(`Ambiente de teste: o mês aberto está fixo em ${nomeMes(ref)}.`);
   if (!planilha.editavel && info.usuario.perfil !== 'admin') avisos.push('Somente leitura.');
-  setStatus(avisos.join(' '), ref.teste ? 'warn' : '');
+  if (avisoRascunho && alteracoes.size) avisos.push(avisoRascunho);
+  if (descartadas) avisos.push(`${descartadas} ${descartadas === 1 ? 'alteração foi descartada' : 'alterações foram descartadas'} porque a planilha mudou.`);
+  setStatus(avisos.join(' '), ref.teste || (avisoRascunho && alteracoes.size) || descartadas ? 'warn' : '');
 
   if (!planilha.abas.length) { setStatus('A planilha da unidade não tem as abas MEDICAMENTOS e MATERIAIS.', 'erro'); return false; }
   if (!planilha.abas.some(a => a.nome === abaAtual)) abaAtual = planilha.abas[0].nome;
-  if (planilha.editavel && rascunho.length) {
-    const n = restaurarRascunho(rascunho);
-    if (n) setStatus(`Recuperamos ${n} ${n === 1 ? 'alteração não salva' : 'alterações não salvas'} da sua última visita. Confira e clique em Salvar.`, 'warn');
-    atualizarBarra();
-  }
   const wrap = document.getElementById('log-wrap');
   const rolagem = wrap.scrollTop;
   montarAbas();
@@ -120,7 +134,7 @@ function exibirPlanilha(r, rascunho) {
 // Uma chamada traz sessão e planilha; a última carga aparece na hora enquanto a nova chega.
 async function carregarPlanilha(restaurar) {
   if (alteracoes.size && !confirm('Há alterações não salvas. Descartar?')) return false;
-  const rascunho = restaurar ? lerRascunho() : [];
+  const rascunho = restaurar ? lerRascunho() : null;
   alteracoes.clear();
   atualizarBarra(false); // não regrava o rascunho ainda: se a leitura falhar, ele continua guardado
 
@@ -154,7 +168,7 @@ async function carregarPlanilha(restaurar) {
     setStatus('Há uma versão mais nova da planilha. Salve o que digitou e recarregue a página para vê-la.', 'warn');
     return true;
   }
-  return exibirPlanilha(r, mostrouCache ? [] : rascunho);
+  return exibirPlanilha(r, mostrouCache ? null : rascunho);
 }
 
 function montarAbas() {
@@ -263,6 +277,7 @@ let mensagemSalvo = '';   // "N itens salvos às hh:mm", exibida até a próxima
 function atualizarBarra(persistir = true) {
   const n = alteracoes.size;
   if (n) mensagemSalvo = '';
+  else avisoRascunho = '';
   const el = document.getElementById('save-info');
   const invalidos = document.querySelectorAll('.num-input.invalido').length;
   // resumo por aba: quem troca de aba vê que o que digitou na outra continua lá
@@ -283,6 +298,9 @@ async function salvar() {
   const porAba = {};
   alteracoes.forEach(alt => { (porAba[alt.aba] = porAba[alt.aba] || []).push(alt); });
   const salvas = [];
+  const salvasPorAba = {};
+  const wrapSalvar = document.getElementById('log-wrap');
+  wrapSalvar.inert = true; // ninguém digita durante o envio (o que fosse digitado seria descartado ao terminar)
   try {
     let total = 0;
     for (const aba of Object.keys(porAba)) {
@@ -293,6 +311,7 @@ async function salvar() {
       // aba gravada sai das pendências: se a próxima falhar, só ela fica para salvar
       porAba[aba].forEach(a => alteracoes.delete(a.aba + "|" + a.linha));
       salvas.push(aba.toLowerCase());
+      salvasPorAba[aba] = porAba[aba];
     }
     alteracoes.clear();
     // a tabela já mostra o que foi gravado: atualiza o modelo local e redesenha, sem tela de carregamento
@@ -305,9 +324,12 @@ async function salvar() {
     render();
     atualizarEmSegundoPlano();
   } catch (e) {
+    aplicarSalvos(salvasPorAba); // o que já foi gravado aparece com o valor novo, não com o antigo
     setStatus((salvas.length ? 'Salvo: ' + salvas.join(' e ') + '. Não salvo: ' : '') + e.message, 'erro');
     render();
     atualizarBarra();
+  } finally {
+    wrapSalvar.inert = false;
   }
 }
 
@@ -335,7 +357,7 @@ async function atualizarEmSegundoPlano() {
     cacheGravar('log:' + r.logistica.unidade, r);
     const ativo = document.activeElement;
     if (alteracoes.size || (ativo && ativo.classList && ativo.classList.contains('num-input'))) return;
-    exibirPlanilha(r, []);
+    exibirPlanilha(r, null);
   } catch (e) { /* a tela já reflete o que foi salvo */ }
 }
 

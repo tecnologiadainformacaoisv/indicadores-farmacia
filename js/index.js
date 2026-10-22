@@ -109,7 +109,7 @@ document.getElementById('form-login').addEventListener('submit', async ev => {
     msg('login-msg', '');
     await carregar();
   } catch (e) {
-    msg('login-msg', e.message, 'erro');
+    msg('login-msg', e.message + (/incorretos/.test(e.message) ? ' Se esqueceu a senha, peça à coordenação farmacêutica para redefinir.' : ''), 'erro');
   } finally {
     btn.disabled = false;
   }

@@ -77,6 +77,7 @@ Tudo na pasta **"Indicadores Farmácia"** do Drive da **conta da TI** (ID na pro
   - `Lancamentos` (1 linha por unidade/ano/mês, campos do formulário "Lançar dados")
   - `Config` (`MES_ABERTO_TESTE` fixa o mês aberto nos testes, ex. `2026-05`)
   - `Log` (quem fez o quê)
+- **Pasta "Backup"** (dentro da pasta do projeto): `backupDiario` (gatilho das 2h; `backupAgora` à mão) copia a planilha Sistema e as planilhas de saídas das unidades, uma cópia por dia com nome "nome — AAAA-MM-DD", e apaga as com mais de 30 dias. As cópias da planilha Sistema contêm os hashes de senha: a pasta não pode estar com "qualquer pessoa com o link".
 - **Planilha de saídas de cada unidade** (modelo UPA): abas `MEDICAMENTOS` e `MATERIAIS`; produto · colunas de mês · CMM · estoque. O script acha cabeçalho/colunas pelo texto (`estruturaAba_`) e cria a coluna do mês antes do CMM (`garantirColunaDoMes_`). CMM e estoque são digitados (sem fórmula), como na planilha original.
 - Sessão: token no `localStorage` (`farma_sessao`), validado no servidor (CacheService, 6 h). Tema: `farma_theme`.
 
@@ -109,7 +110,7 @@ Tudo na pasta **"Indicadores Farmácia"** do Drive da **conta da TI** (ID na pro
 
 > Última atualização: 2026-10-21
 
-- **Versão:** v0.4.0 (`js/version.js`), em teste com a Tereza. **Regra: toda mudança sobe a versão** (PATCH para correções e ajustes, MINOR para nova etapa do fluxo), alterando `js/version.js` e o `CHANGELOG.md` no mesmo commit, com tag `vX.Y.Z`.
+- **Versão:** v0.4.1 (`js/version.js`), em teste com a Tereza. **Regra: toda mudança sobe a versão** (PATCH para correções e ajustes, MINOR para nova etapa do fluxo), alterando `js/version.js` e o `CHANGELOG.md` no mesmo commit, com tag `vX.Y.Z`.
 - **Implantado e em teste:** API (Web App na conta da TI), planilha "Sistema", usuário `tereza` e usuários de teste de coordenador, login, Clínica Geral na nuvem, metas por unidade e planilha de saídas item por item. `API_URL` já está em `js/api.js`.
 - Os testes usam a planilha com dados até **maio/2026** (`MES_ABERTO_TESTE = 2026-05` na aba `Config`). A versão atualizada só entra depois da validação da Tereza; antes de uso real, seguir o checklist de `docs/IMPLANTACAO.md`.
 - Validação automatizada: não há suíte no repositório; o servidor foi testado com Apps Script simulado (48 verificações: login, permissões, mês aberto, lançamentos, metas, gravação na planilha, fórmulas, criação de coluna) e a estrutura foi conferida com a planilha real de maio (169 medicamentos, 156 materiais).

@@ -10,12 +10,16 @@ function lerToken() {
   try { return localStorage.getItem(SESSAO_KEY); } catch (e) { return null; }
 }
 
+const RASCUNHO_KEY = 'farma_rascunho'; // alterações não salvas da planilha de saídas (sessionStorage)
+
 function gravarToken(token) {
+  cacheRemover(''); // entrou alguém: nada guardado de sessão anterior vale
   try { localStorage.setItem(SESSAO_KEY, token); } catch (e) { /* sem armazenamento: sessão só nesta página */ }
 }
 
 function limparToken() {
   try { localStorage.removeItem(SESSAO_KEY); } catch (e) { /* ignora */ }
+  try { sessionStorage.removeItem(RASCUNHO_KEY); } catch (e) { /* ignora */ }
   cacheRemover('');
 }
 
@@ -28,7 +32,7 @@ const CACHE_PREFIXO = 'farma_cache_';
 function cacheLer(chave) {
   try {
     const o = JSON.parse(localStorage.getItem(CACHE_PREFIXO + chave));
-    if (o && o.token && o.token === lerToken()) return o;
+    if (o && o.token && o.token === lerToken() && Date.now() - o.ts < 24 * 3600 * 1000) return o;
   } catch (e) { /* cache ilegível: ignora */ }
   return null;
 }
@@ -60,7 +64,8 @@ function validarSessao(info) {
 // (sem cabeçalho CORS, então o navegador vê "falha de rede"). Repetir a chamada resolve.
 // Todas as ações aceitam repetição, menos a troca de senha (a 2ª tentativa viria com a senha antiga).
 const TENTATIVAS_REDE = 3;
-const SEM_REPETICAO = ['trocarSenha'];
+// usuarios.criar e redefinirSenha: se a resposta se perdesse e a chamada fosse repetida, a senha provisória gerada na 1ª ficaria perdida.
+const SEM_REPETICAO = ['trocarSenha', 'usuarios.criar', 'usuarios.redefinirSenha'];
 
 async function chamar(action, dados) {
   const res = await fetch(API_URL, {
@@ -103,7 +108,9 @@ async function api(action, dados) {
       if (typeof window.antesDeSairDaSessao === 'function') window.antesDeSairDaSessao();
       location.href = 'index.html';
     }
-    throw new Error(json.erro || 'Erro no servidor.');
+    const err = new Error(json.erro || 'Erro no servidor.');
+    err.codigo = json.codigo;
+    throw err;
   }
   return json.dados;
 }

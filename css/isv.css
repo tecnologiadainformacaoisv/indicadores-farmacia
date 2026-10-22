@@ -135,6 +135,16 @@ button.header-btn { background: none; font-family: inherit; cursor: pointer; gap
   transition: border-color .2s ease, transform .2s ease;
 }
 .home-card:hover { border-color: var(--instituto-secondary); transform: translateY(-2px); }
+.home-card::after {
+  content: 'Abrir →'; display: block; margin-top: 12px;
+  font-size: 13px; font-weight: 700; color: var(--instituto-secondary);
+}
+.home-card--sec { padding: 16px 20px; box-shadow: none; background: var(--soft); }
+.home-card--sec h2 { font-size: 16px; }
+.selo-exemplo {
+  display: inline-block; margin-left: 8px; padding: 1px 10px; border-radius: 999px; vertical-align: middle;
+  font-size: 12px; font-weight: 700; background: var(--warn-bg); color: var(--alert-warn-text);
+}
 .home-card h2 { font-size: 18px; color: var(--title); margin-bottom: 6px; }
 .home-card p { color: var(--text-soft); font-size: 14px; }
 .home-card[hidden] { display: none; }
@@ -175,6 +185,7 @@ button.header-btn { background: none; font-family: inherit; cursor: pointer; gap
   font-size: 14px; background: var(--tint); color: var(--instituto-text);
   border: 1px solid var(--instituto-border);
 }
+.notice.ok { background: var(--ok-bg); border-color: var(--c-ok); color: var(--c-ok); font-weight: 600; }
 .notice.warn { background: var(--warn-bg); border-color: var(--warn-bd); color: var(--alert-warn-text); }
 .notice.erro { background: var(--err-bg); border-color: var(--err-bd); color: var(--alert-err-text); white-space: pre-line; }
 .notice[hidden] { display: none; }

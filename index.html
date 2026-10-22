@@ -38,7 +38,7 @@
       <p>Use o usuário e a senha que a coordenação farmacêutica enviou para você.</p>
       <div class="field">
         <label for="login-usuario">Usuário</label>
-        <input id="login-usuario" autocomplete="username" autocapitalize="none" required>
+        <input id="login-usuario" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" inputmode="text" required>
       </div>
       <div class="field">
         <label for="login-senha">Senha</label>
@@ -86,12 +86,12 @@
         <h2>Planilha de saídas</h2>
         <p id="card-logistica">Saídas de medicamentos e materiais, item por item.</p>
       </a>
-      <a class="home-card card-panel" href="usuarios.html" id="card-usuarios" hidden>
+      <a class="home-card home-card--sec card-panel" href="usuarios.html" id="card-usuarios" hidden>
         <h2>Usuários</h2>
         <p>Cadastre coordenadores, redefina senhas e desative acessos.</p>
       </a>
-      <a class="home-card card-panel" href="dashboard.html" id="card-dashboard" hidden>
-        <h2>Dashboard</h2>
+      <a class="home-card home-card--sec card-panel" href="dashboard.html" id="card-dashboard" hidden>
+        <h2>Dashboard <span class="selo-exemplo">Dados de exemplo</span></h2>
         <p>Visão geral das unidades (dados de exemplo nesta fase de testes).</p>
       </a>
     </div>

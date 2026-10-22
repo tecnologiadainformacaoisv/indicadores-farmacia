@@ -117,13 +117,10 @@ const ROTAS = {
   'sessao':             { fn: sessao_, semSenhaDefinitiva: true },
   'sair':               { fn: sair_, semSenhaDefinitiva: true },
   'trocarSenha':        { fn: trocarSenha_, semSenhaDefinitiva: true },
-  'lancamentos.listar': { fn: listarLancamentos_ },
   'lancamentos.salvar': { fn: salvarLancamento_ },
   'indicadores.carregar': { fn: carregarIndicadores_ },
   'logistica.carregar': { fn: carregarLogistica_ },
-  'metas.listar':       { fn: listarMetas_ },
   'metas.salvar':       { fn: salvarMetas_ },
-  'logistica.ler':      { fn: lerLogistica_ },
   'logistica.salvar':   { fn: salvarLogistica_ },
   'usuarios.carregar':      { fn: carregarUsuarios_ },
   'usuarios.criar':         { fn: criarUsuarioApi_ },
@@ -148,6 +145,7 @@ function login_(req) {
   const login = String(req.login || '').trim().toLowerCase();
   const senha = String(req.senha || '');
   if (!login || !senha) throw erro_('Informe usuário e senha.');
+  if (login.length > 64 || senha.length > 200) throw erro_('Usuário ou senha incorretos.');
 
   const cache = CacheService.getScriptCache();
   const chaveTent = 'tent:' + login;
@@ -519,7 +517,8 @@ function lerLogistica_(req, u) {
   const abas = ABAS_LOGISTICA.map(nome => {
     const sh = ss.getSheetByName(nome);
     if (!sh) return null;
-    const valores = sh.getRange(1, 1, sh.getLastRow(), sh.getLastColumn()).getValues();
+    if (!sh.getLastRow() || !sh.getLastColumn()) throw erro_('A aba ' + nome + ' está vazia.', 'configuracao');
+    const valores = repetir_(() => sh.getRange(1, 1, sh.getLastRow(), sh.getLastColumn()).getValues());
     const est = estruturaAba_(sh, valores);
     return {
       nome: nome,

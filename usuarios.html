@@ -39,6 +39,7 @@
   </div>
 
   <p class="notice" id="usr-status" role="status" hidden></p>
+  <p><button type="button" class="btn btn--primary" id="usr-retry" hidden>Tentar de novo</button></p>
 
   <!-- senha provisória: aparece uma única vez -->
   <section class="cred card-panel" id="cred" hidden aria-live="polite">
@@ -51,7 +52,7 @@
     <div class="cred__acoes">
       <button type="button" class="btn btn--primary" id="cred-copiar">Copiar usuário e senha</button>
       <button type="button" class="btn-sec" id="cred-fechar">Entendi, já anotei</button>
-      <span class="cred__msg" id="cred-msg" role="status"></span>
+      <span class="cred__msg" id="cred-msg" role="status" aria-live="polite"></span>
     </div>
   </section>
 

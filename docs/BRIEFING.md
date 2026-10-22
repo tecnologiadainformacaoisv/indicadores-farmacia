@@ -25,7 +25,8 @@ Permitir que os coordenadores farmacêuticos das unidades de saúde lancem, todo
 | Ver metas | todas | da própria unidade |
 | Alterar metas | sim | não |
 | Corrigir mês fechado | sim (a pedido) | não, só solicita |
-| Cadastrar usuários e unidades | sim | não |
+| Cadastrar coordenadores (pela tela Usuários) | sim | não |
+| Cadastrar unidades e contas da coordenação | via TI (editor do Apps Script) | não |
 
 ## Login
 
@@ -95,10 +96,9 @@ Expansão: **Caucaia** (piloto) → **Maracanaú** → demais municípios.
 
 | Versão | Entrega |
 |---|---|
-| v0.1.0 | Login com usuário e senha, perfis e unidades; tela muda conforme o perfil |
-| v0.2.0 | Clínica Geral grava na nuvem; metas por unidade, editáveis só pela Tereza |
-| v0.3.0 | Logística grava na planilha da unidade (modelo UPA); abertura e bloqueio automáticos do mês |
-| v0.4.0 | Dashboard com dados reais, filtrado por perfil; pedidos de correção |
+| v0.3.0 ✔ | Login e perfis, Clínica Geral na nuvem, metas por unidade, planilha de saídas (modelo UPA), mês aberto e virada automática |
+| v0.4.0 ✔ | Tela de usuários para a coordenação e backup diário |
+| v0.5.0 | Pedidos de correção de mês fechado; dashboard com dados reais, filtrado por perfil |
 | v1.0.0 | Piloto validado em Caucaia (UPAs) |
 | depois | Modelos Hospital e Maternidade; Maracanaú; demais municípios |
 

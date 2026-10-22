@@ -1,5 +1,23 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.4.1 – 2026-10-22
+### Corrigido
+- Planilha de saídas: o rascunho de alterações não salvas agora volta depois de recarregar ou de a sessão expirar (antes procurava a chave errada); só volta para a mesma pessoa e unidade, e o aviso "Recuperamos N alterações" não some quando a carga do servidor chega
+- Salvar não apaga mais o que foi digitado durante o envio (a tabela fica bloqueada até terminar) e, se uma das abas falhar, a outra já gravada aparece com o valor novo
+- Alterações recuperadas que não batem mais com a planilha (produto mudou de linha) são descartadas com aviso
+- Criar usuário e redefinir senha não são repetidos automaticamente em falha de rede (a senha provisória da primeira tentativa ficaria perdida)
+- Tela de Usuários: aviso de resultado visível perto da ação e botão "Tentar de novo"; texto copiado com o endereço do sistema; instrução de copiar que serve no celular; botões de 44px; textos sem gênero; item em edição destacado; contraste dos itens desativados e do selo "Ativo"; estados vazios que orientam; unidade inativa visível ao editar; coordenador que abre a página por URL volta ao início
+- Início: Dashboard com selo "Dados de exemplo" e cartões secundários mais discretos; login sem autocorreção do teclado e com orientação de senha esquecida
+- Leitura da planilha de saídas repete em falha do Google e avisa claramente quando a aba está vazia
+- Login recusa usuário/senha de tamanho absurdo (derrubava o servidor)
+
+### Segurança
+- O cache da última carga expira em 24 h e é apagado ao entrar com outra sessão; sair do sistema também apaga o rascunho
+- Removidas as rotas `lancamentos.listar`, `metas.listar` e `logistica.ler` (nenhuma tela as usa mais; as cargas completas fazem o mesmo com a mesma conferência de permissão)
+
+### Documentação
+- BRIEFING (roteiro e permissões), IMPLANTACAO (backup, usuários, gatilhos, testes), README e CLAUDE.md atualizados
+
 ## v0.4.0 – 2026-10-21
 ### Adicionado
 - Tela de **Usuários** (só coordenação): cadastrar coordenadores, editar nome e unidade, redefinir senha e desativar/reativar acessos
