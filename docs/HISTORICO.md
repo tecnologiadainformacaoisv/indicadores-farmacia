@@ -22,6 +22,7 @@ Registro cronológico do que foi decidido e entregue, para quem retomar o projet
 | v0.5.7 | Página "Como usar", link de relato no rodapé, aviso de servidor lento, mensagens de lista vazia |
 | v0.5.8 | "Relatar problema ou sugestão" ligado ao e-mail da TI |
 | v0.5.9 | Correções da revisão da v0.5.7/0.5.8: aviso de servidor lento opaco no tema escuro, rodapé e indicador "+/–" na página de ajuda |
+| v0.5.10 | Bordas visíveis no tema claro, contraste de texto, botões desabilitados legíveis e alvos de toque de 44 px no celular (revisão de UX); auditoria automática de bordas |
 
 ### Guardado no branch `atualizacao-visual` (não publicado)
 Largura das telas, Usuários (saúde dos acessos, filtros, WhatsApp, desfazer), planilha (tendência, ordenar, sem saída, colar do Excel, revisão antes de salvar), indicadores (mapa de calor, variação, resumo, metas com valor atual, resultado ao vivo, imprimir), letra maior (A+), Ctrl+K, anel do painel, fundo painel de dados e faixa de gráficos. Testes do branch: 95 (front) e 92 (API).
