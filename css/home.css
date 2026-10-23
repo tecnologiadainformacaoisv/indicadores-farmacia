@@ -115,9 +115,9 @@
 @keyframes anel-ok { 0% { transform: scale(.9); box-shadow: 0 0 0 0 rgba(70, 224, 138, .7); } 60% { transform: scale(1.08); } 100% { transform: scale(1); box-shadow: 0 0 0 4px rgba(70, 224, 138, .25); } }
 @media (prefers-reduced-motion: reduce) { .fech-ring.completo { animation: none; } }
 
-/* faixa de gráficos na entrada (assets/hero-dados.svg) com a saudação por cima */
+/* faixa de gráficos na entrada (assets/hero-dados.svg) com a saudação por cima; cores fixas de propósito: a faixa é escura nos dois temas */
 .home-hello {
-  background: #0e3d60 url("../assets/hero-dados.svg") center / cover no-repeat; /* cor de reserva se a imagem falhar */
+  background: linear-gradient(90deg, rgba(8, 38, 62, .92) 0, rgba(8, 38, 62, .7) 45%, rgba(8, 38, 62, 0) 75%), #0e3d60 url("../assets/hero-dados.svg") right center / cover no-repeat; /* cor de reserva se a imagem falhar */
   border-radius: 16px; padding: 28px 30px 30px; margin-bottom: 4px;
   box-shadow: 0 18px 40px -28px rgba(8, 44, 71, .7);
 }
@@ -134,3 +134,9 @@ a.fech-selo:hover { filter: brightness(1.25); text-decoration: underline; text-u
 
 .fech-unidade b .fech-link { display: inline-block; padding: 6px 0; }
 @media (max-width: 720px) { .fech-unidade b .fech-link { padding: 12px 0; } }
+
+@media (max-width: 640px) {
+  .home-hello { background: none; box-shadow: none; padding: 0 0 4px; }
+  .home-hello h2 { color: var(--title); }
+  .home-hello p { color: var(--text-soft); }
+}

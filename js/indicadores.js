@@ -203,8 +203,8 @@ function renderMapaCalor() {
       const val = calc ? calc[key] : null;
       const st = status(key, val);
       const meta = metas[key];
-      const rotulo = `${un.nome}, ${metas[key].label}: ${val === null ? 'sem lançamento' : fmtVal(val) + ', ' + MAPA_TEXTO[st]}`;
-      return `<td class="mc mc-${st}" title="${esc(meta ? 'Meta ' + meta.val + '%' : '')}" aria-label="${esc(rotulo)}"><b>${val === null ? '—' : fmtVal(val)}</b><span aria-hidden="true">${MAPA_GLIFO[st]}</span></td>`;
+      const rotulo = `${un.nome}, ${meta ? meta.label : key}: ${val === null ? 'sem lançamento' : fmtVal(val) + ', ' + MAPA_TEXTO[st]}`;
+      return `<td class="mc mc-${st}" title="${esc(meta ? 'Meta padrão ' + meta.val + '%' : '')}" aria-label="${esc(rotulo)}"><b>${val === null ? '—' : fmtVal(val)}</b><span aria-hidden="true">${MAPA_GLIFO[st]}</span></td>`;
     }).join('')).join('');
     return `<tr><th scope="row" class="mc-un">${esc(un.nome)}</th>${celulas}</tr>`;
   }).join('');
@@ -283,7 +283,7 @@ function renderClinica() {
         <div class="kpi-val">${fmtVal(val)}</div>
         <div class="kpi-sub">Meta: ${m.val}% · ${m.dir === 'min' ? '↑ mínimo' : '↓ máximo'}</div>
         ${deltaKpi(k.key, month, val)}
-        ${val !== null ? `<span class="kpi-badge ${st}">${st === 'ok' ? '✓ Meta atingida' : st === 'warn' ? '⚠ Atenção' : '✗ Abaixo da meta'}</span>` : '<span class="kpi-badge warn">Sem dados</span>'}
+        ${val !== null ? `<span class="kpi-badge ${st}">${st === 'ok' ? '✓ Meta atingida' : st === 'warn' ? '⚠ Atenção' : (m.dir === 'max' ? '✗ Acima do limite' : '✗ Abaixo da meta')}</span>` : '<span class="kpi-badge warn">Sem dados</span>'}
       </div>`;
   });
 
@@ -296,8 +296,8 @@ function renderClinica() {
     const vals = calcs.map(c => c[k.key]).filter(v => v !== null);
     const val = vals.length ? avg(vals) : null;
     const st = status(k.key, val);
-    if (st === 'err') alertsDiv.innerHTML += `<div class="alert-item err"><span class="alert-icon">🔴</span><span><b>${k.label}</b>: ${fmtVal(val)} — abaixo da meta de ${metas[k.key].val}% em ${MONTHS_FULL[month]}. Verificar ação corretiva.</span></div>`;
-    else if (st === 'warn') alertsDiv.innerHTML += `<div class="alert-item warn"><span class="alert-icon">🟡</span><span><b>${k.label}</b>: ${fmtVal(val)} — próximo ao limite da meta (${metas[k.key].val}%).</span></div>`;
+    if (st === 'err') alertsDiv.innerHTML += `<div class="alert-item err"><span class="alert-icon" aria-hidden="true"></span><span><b>${k.label}</b>: ${fmtVal(val)} — ${metas[k.key].dir === 'max' ? 'acima do limite' : 'abaixo da meta'} de ${metas[k.key].val}% em ${MONTHS_FULL[month]}. Verificar ação corretiva.</span></div>`;
+    else if (st === 'warn') alertsDiv.innerHTML += `<div class="alert-item warn"><span class="alert-icon" aria-hidden="true"></span><span><b>${k.label}</b>: ${fmtVal(val)} — próximo ao limite da meta (${metas[k.key].val}%).</span></div>`;
   });
 
   // Charts by month trend
@@ -316,7 +316,7 @@ function renderClinica() {
     mkOrUpdate('c-presc', 'line', { data: { labels, datasets: [lineDS('Presc.', byMonth('prescricoes'), COL.teal)] }, options: baseOpts(110), plugins: [goalPlugin('prescricoes', COL.teal)] });
     mkOrUpdate('c-prm',   'bar',  { data: { labels, datasets: [barDS('PRM', byMonth('prm'), COL.teal)]            }, options: baseOpts(),    plugins: [goalPlugin('prm', COL.teal)] });
     mkOrUpdate('c-interv','line', { data: { labels, datasets: [lineDS('Interv.', byMonth('intervencoes'), COL.teal)]}, options: baseOpts(110),plugins: [goalPlugin('intervencoes', COL.teal)] });
-    mkOrUpdate('c-altas', 'bar',  { data: { labels, datasets: [barDS('Altas', byMonth('altas'), COL.teal)]       }, options: { ...baseOpts(110), aspectRatio: 4 }, plugins: [goalPlugin('altas', COL.teal)] });
+    mkOrUpdate('c-altas', 'bar',  { data: { labels, datasets: [barDS('Altas', byMonth('altas'), COL.teal)]       }, options: { ...baseOpts(110), aspectRatio: window.innerWidth < 640 ? 1.8 : 4 }, plugins: [goalPlugin('altas', COL.teal)] });
   }, 30);
 
   // Table
@@ -388,8 +388,8 @@ function renderLogistica() {
     const vals = calcs.map(c => c[k.key]).filter(v => v !== null);
     const val = vals.length ? avg(vals) : null;
     const st = status(k.key, val);
-    if (st === 'err') alertsDiv.innerHTML += `<div class="alert-item err"><span class="alert-icon">🔴</span><span><b>${k.label}</b>: ${fmtVal(val)} — fora da meta de ${metas[k.key].val}% em ${MONTHS_FULL[month]}.</span></div>`;
-    else if (st === 'warn') alertsDiv.innerHTML += `<div class="alert-item warn"><span class="alert-icon">🟡</span><span><b>${k.label}</b>: ${fmtVal(val)} — próximo ao limite (meta: ${metas[k.key].val}%).</span></div>`;
+    if (st === 'err') alertsDiv.innerHTML += `<div class="alert-item err"><span class="alert-icon" aria-hidden="true"></span><span><b>${k.label}</b>: ${fmtVal(val)} — fora da meta de ${metas[k.key].val}% em ${MONTHS_FULL[month]}.</span></div>`;
+    else if (st === 'warn') alertsDiv.innerHTML += `<div class="alert-item warn"><span class="alert-icon" aria-hidden="true"></span><span><b>${k.label}</b>: ${fmtVal(val)} — próximo ao limite (meta: ${metas[k.key].val}%).</span></div>`;
   });
 
   const labels = MONTHS;
@@ -407,7 +407,7 @@ function renderLogistica() {
     mkOrUpdate('l-perdas', 'bar',  { data: { labels, datasets: [barDS('Perdas', byMonth('perdas'), COL.purple)]              }, options: baseOpts(), plugins: [goalPlugin('perdas', COL.purple)] });
     mkOrUpdate('l-nc',     'line', { data: { labels, datasets: [lineDS('NC', byMonth('nconformidades'), COL.purple)]        }, options: baseOpts(), plugins: [goalPlugin('nconformidades', COL.purple)] });
     mkOrUpdate('l-estoque','line', { data: { labels, datasets: [lineDS('Estoque', byMonth('estoque'), COL.purple)]           }, options: baseOpts(105), plugins: [goalPlugin('estoque', COL.purple)] });
-    mkOrUpdate('l-emerg',  'bar',  { data: { labels, datasets: [barDS('Emerg.', byMonth('emergenciais'), COL.purple)]      }, options: { ...baseOpts(), aspectRatio: 4 }, plugins: [goalPlugin('emergenciais', COL.purple)] });
+    mkOrUpdate('l-emerg',  'bar',  { data: { labels, datasets: [barDS('Emerg.', byMonth('emergenciais'), COL.purple)]      }, options: { ...baseOpts(), aspectRatio: window.innerWidth < 640 ? 1.8 : 4 }, plugins: [goalPlugin('emergenciais', COL.purple)] });
   }, 30);
 
   const tbody = document.querySelector('#table-logistica tbody');

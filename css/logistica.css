@@ -187,9 +187,8 @@
 
 /* revisão antes de salvar */
 .rev { flex: 1 1 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 20px; align-items: start; }
-.rev[hidden] { display: none; }
 .rev-resumo { grid-column: 1; font-weight: 800; color: var(--title); font-size: 14px; }
-.rev-lista { grid-column: 1; list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2px 20px; font-size: 13px; color: var(--text-soft); }
+.rev-lista { grid-column: 1; list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 2px 20px; font-size: 13px; color: var(--text-soft); }
 .rev-lista b { color: var(--instituto-text); }
 .rev-lista .aviso span { color: var(--alert-warn-text); font-weight: 700; }
 .rev-lista .mais { font-weight: 700; }
@@ -198,7 +197,6 @@
 #btnSalvar[hidden], .rev[hidden] { display: none !important; }
 
 .rev-acoes .btn-sec { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border: 1px solid var(--instituto-border); border-radius: 10px; background: var(--instituto-surface); color: var(--title); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
-.rev-lista { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
 .rev-lista li { overflow-wrap: anywhere; }
 #save-info[hidden] { display: none; }
 

@@ -249,7 +249,7 @@ html[data-fonte="grande"] body { zoom: 1.12; }
     content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
     -webkit-mask: url("../assets/fundo-dados.svg") 0 0 / 520px 340px repeat;
     mask: url("../assets/fundo-dados.svg") 0 0 / 520px 340px repeat;
-    background: var(--title); opacity: .065;
+    background: var(--title); opacity: .045;
   }
 }
 :root[data-theme="dark"] body::after { background: #9fc3e6; opacity: .07; }
@@ -280,3 +280,8 @@ body::before {
 a.fech-selo, .fech-link { position: relative; }
 a.fech-selo::after { content: ""; position: absolute; inset: -8px -2px; }
 @media (max-width: 720px) { .fech-unidade b .fech-link { padding: 12px 0; } }
+
+/* A+ só onde funciona: no celular o zoom fica desligado (a tela já usa o zoom do próprio aparelho) */
+@media (max-width: 640px) { .fonte-toggle { display: none; } }
+
+@media (max-width: 640px) { .header-btn { min-width: 44px; justify-content: center; } }

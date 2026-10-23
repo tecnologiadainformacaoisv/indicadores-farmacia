@@ -200,7 +200,7 @@ function esc(s) {
 document.addEventListener('keydown', e => {
   const alvo = e.target;
   const digitando = alvo && /^(INPUT|TEXTAREA|SELECT)$/.test(alvo.tagName);
-  const atalhoK = e.key.toLowerCase() === 'k' && (e.ctrlKey || e.metaKey);
+  const atalhoK = (e.key || '').toLowerCase() === 'k' && (e.ctrlKey || e.metaKey);
   const atalhoBarra = e.key === '/' && !digitando && !e.ctrlKey && !e.altKey && !e.metaKey && !(alvo && alvo.isContentEditable);
   if (!(atalhoK || atalhoBarra) || document.querySelector('.overlay.open')) return;
   const busca = document.querySelector('input[type="search"]');
