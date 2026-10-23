@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Como usar · Indicadores da Farmácia</title>
+<link rel="icon" href="assets/logo-isv.png">
+<script src="js/theme.js"></script>
+<link rel="stylesheet" href="css/instituto.css">
+<link rel="stylesheet" href="css/isv.css">
+<link rel="stylesheet" href="css/ajuda.css">
+</head>
+<body>
+
+<header class="page-header">
+  <div class="brand">
+    <img class="brand__logo" src="assets/logo-isv.png" alt="Instituto São Vicente" width="48" height="48">
+    <div>
+      <div class="title-row"><h1 class="page-header__title">Indicadores da Farmácia</h1><span class="version-badge" title="Versão do sistema">v<span data-app-version></span></span></div>
+      <p class="page-header__subtitle">Como usar</p>
+    </div>
+  </div>
+  <div class="page-header__actions">
+    <a class="header-btn" href="index.html" aria-label="Voltar ao início"><span aria-hidden="true">←</span><span class="hide-xs">Início</span></a>
+    <button type="button" class="header-btn theme-toggle" data-theme-toggle aria-pressed="false">
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      <span class="sr-only" data-theme-label>Tema escuro</span>
+    </button>
+  </div>
+</header>
+
+<main class="ajuda-main">
+  <h2 class="ajuda-titulo">Como usar o sistema</h2>
+  <p class="ajuda-sub">Respostas curtas para o dia a dia. Toque em um item para abrir.</p>
+
+  <div class="ajuda-grade">
+
+    <details class="ajuda-item" open>
+      <summary>Primeiro acesso</summary>
+      <ol>
+        <li>Entre com o usuário e a senha provisória que a coordenação farmacêutica passou para você.</li>
+        <li>O sistema pede uma senha nova na primeira entrada. Escolha uma que só você saiba.</li>
+        <li>Se esquecer a senha, peça à coordenação para gerar outra provisória.</li>
+      </ol>
+    </details>
+
+    <details class="ajuda-item">
+      <summary>Coordenador da unidade: o que lançar todo mês</summary>
+      <ol>
+        <li>Na tela inicial, o painel <b>Fechamento</b> mostra o que falta: <b>Indicadores da Clínica Geral</b> e <b>Planilha de saídas</b>.</li>
+        <li>Lança-se sempre o <b>mês que acabou de fechar</b>. O sistema escolhe o mês, você não precisa escolher.</li>
+        <li>Quando as duas tarefas estão prontas, o painel marca o mês como concluído.</li>
+      </ol>
+    </details>
+
+    <details class="ajuda-item">
+      <summary>Lançar os indicadores da Clínica Geral</summary>
+      <ol>
+        <li>Abra <b>Indicadores da Clínica Geral</b> e toque em <b>+ Lançar dados</b>.</li>
+        <li>Preencha os números do mês e salve. Os gráficos e as metas atualizam na hora.</li>
+        <li>Os meses anteriores ficam só para consulta.</li>
+      </ol>
+    </details>
+
+    <details class="ajuda-item">
+      <summary>Planilha de saídas, item por item</summary>
+      <ol>
+        <li>Escolha a aba <b>Medicamentos</b> ou <b>Materiais</b>.</li>
+        <li>Para cada item, digite as <b>saídas do mês</b>, o <b>CMM</b> e o <b>estoque disponível</b>. No computador, <b>Enter</b> passa para o próximo item.</li>
+        <li>Toque em <b>Salvar alterações</b>. Só o que você mudou é gravado, e pode salvar aos poucos.</li>
+        <li>Apagar um número deixa a célula vazia na planilha.</li>
+        <li>A coluna <b>Cobertura</b> mostra quantos meses o estoque dura no ritmo do CMM. Itens em vermelho ou âmbar pedem atenção. O filtro <b>Só os críticos</b> mostra só esses, e <b>Ordenar por cobertura</b> põe os piores primeiro.</li>
+      </ol>
+    </details>
+
+    <details class="ajuda-item">
+      <summary>Coordenação do Instituto: acompanhar as unidades</summary>
+      <ol>
+        <li>O painel inicial mostra, por unidade, se a Clínica e as Saídas já foram lançadas. Toque no nome da unidade ou em um selo já lançado para abrir a tela dela.</li>
+        <li>Em <b>Acompanhamento mensal</b>, escolha a unidade e o mês. Com <b>Todas as unidades</b> você vê a média.</li>
+        <li>Em <b>⚙ Metas</b>, escolha uma unidade para alterar as metas dela. Só a coordenação altera.</li>
+        <li>A coordenação acompanha, mas não lança dados.</li>
+      </ol>
+    </details>
+
+    <details class="ajuda-item">
+      <summary>Coordenação: cadastrar e cuidar dos acessos</summary>
+      <ol>
+        <li>Em <b>Usuários</b>, cadastre o coordenador com nome, usuário e unidade. O sistema gera a senha provisória, mostrada uma única vez: anote ou copie antes de fechar.</li>
+        <li><b>Redefinir senha</b> gera outra provisória e desconecta a pessoa.</li>
+        <li><b>Desativar acesso</b> impede a entrada, e os lançamentos já feitos continuam.</li>
+      </ol>
+    </details>
+
+    <details class="ajuda-item">
+      <summary>Corrigir um mês que já fechou</summary>
+      <p>Meses anteriores ficam visíveis e bloqueados. Para corrigir um número, fale com a coordenação farmacêutica do Instituto.</p>
+    </details>
+
+    <details class="ajuda-item">
+      <summary>Problemas comuns</summary>
+      <ul>
+        <li><b>“Sem conexão com o servidor”:</b> confira a internet e tente de novo. O sistema repete a chamada sozinho algumas vezes.</li>
+        <li><b>“Sua sessão expirou”:</b> entre de novo. O que você digitou na planilha e ainda não salvou volta depois do login.</li>
+        <li><b>Fechei a página sem salvar:</b> o navegador avisa antes de sair. Se saiu mesmo assim, o que estava digitado pode ser recuperado ao voltar à planilha, na mesma aba do navegador.</li>
+        <li><b>A tela parece desatualizada:</b> use Ctrl+F5 para recarregar.</li>
+        <li><b>Mostrou “Ambiente de teste”:</b> o sistema está em fase de testes e o mês aberto está fixo.</li>
+      </ul>
+    </details>
+
+  </div>
+</main>
+
+<footer class="app-footer">
+  <span>Instituto São Vicente · Indicadores da Farmácia</span>
+  <span>Versão <span data-app-version></span></span>
+</footer>
+
+<script src="js/version.js"></script>
+<script src="js/api.js"></script>
+</body>
+</html>

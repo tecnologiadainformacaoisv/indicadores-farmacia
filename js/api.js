@@ -78,7 +78,39 @@ async function chamar(action, dados) {
   return res.json();
 }
 
+// Se o servidor demora, avisa que não travou (o Apps Script às vezes leva alguns segundos).
+const AVISO_LENTO_MS = 8000;
+let chamadasPendentes = 0;
+let avisoLentoEl = null;
+
+function mostrarAvisoLento() {
+  if (chamadasPendentes <= 0 || avisoLentoEl) return;
+  avisoLentoEl = document.createElement('div');
+  avisoLentoEl.className = 'aviso-lento';
+  avisoLentoEl.setAttribute('role', 'status');
+  avisoLentoEl.textContent = 'O servidor está demorando mais que o normal. Aguarde um instante…';
+  document.body.appendChild(avisoLentoEl);
+}
+
+function esconderAvisoLento() {
+  if (chamadasPendentes > 0 || !avisoLentoEl) return;
+  avisoLentoEl.remove();
+  avisoLentoEl = null;
+}
+
 async function api(action, dados) {
+  chamadasPendentes++;
+  const t = setTimeout(mostrarAvisoLento, AVISO_LENTO_MS);
+  try {
+    return await apiChamada(action, dados);
+  } finally {
+    clearTimeout(t);
+    chamadasPendentes--;
+    esconderAvisoLento();
+  }
+}
+
+async function apiChamada(action, dados) {
   if (!API_URL) throw new Error('O sistema ainda não está ligado ao servidor. Avise a TI.');
   const max = SEM_REPETICAO.includes(action) ? 1 : TENTATIVAS_REDE;
   let json;
@@ -96,7 +128,7 @@ async function api(action, dados) {
   if (falhou) {
     throw new Error(falhou instanceof SyntaxError
       ? 'O servidor respondeu de forma inesperada. Tente de novo em instantes; se continuar, avise a TI.'
-      : 'Sem conexão com o servidor. Verifique a internet e tente de novo.');
+      : 'Sem conexão com o servidor. Verifique a internet e tente de novo em instantes.');
   }
   if (!json.ok) {
     if (action !== 'login' && (json.codigo === 'sessao' || json.codigo === 'senhaProvisoria')) {
@@ -177,3 +209,29 @@ document.addEventListener('keydown', e => {
   busca.focus();
   busca.select();
 });
+
+// ── Rodapé: "Como usar" e "Relatar problema" ────────────────────
+// E-mail da TI que recebe os relatos. Vazio = o link de relato não aparece.
+const CONTATO_SUPORTE = 'tecnologiadainformacao@institutosaovicente.com.br';
+
+function linkRelatar() {
+  const versao = typeof APP_VERSION !== 'undefined' ? APP_VERSION : '';
+  const assunto = 'Indicadores da Farmácia v' + versao + ': problema ou sugestão';
+  const corpo = 'O que você estava fazendo:\n\nO que aconteceu (ou o que gostaria que existisse):\n\n\n---\nPágina: ' + location.origin + location.pathname + '\nVersão: ' + versao;
+  return 'mailto:' + CONTATO_SUPORTE + '?subject=' + encodeURIComponent(assunto) + '&body=' + encodeURIComponent(corpo);
+}
+
+function montarRodape() {
+  const rodape = document.querySelector('.app-footer');
+  if (!rodape || rodape.querySelector('.rodape-links')) return;
+  const nav = document.createElement('span');
+  nav.className = 'rodape-links';
+  const naAjuda = /ajuda\.html$/.test(location.pathname);
+  const partes = [];
+  if (!naAjuda) partes.push('<a href="ajuda.html">Como usar</a>');
+  if (CONTATO_SUPORTE) partes.push('<a href="' + esc(linkRelatar()) + '">Relatar problema ou sugestão</a>');
+  if (!partes.length) return;
+  nav.innerHTML = partes.join(' · ');
+  rodape.insertBefore(nav, rodape.lastElementChild);
+}
+document.addEventListener('DOMContentLoaded', montarRodape);

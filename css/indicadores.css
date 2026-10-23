@@ -81,11 +81,11 @@ a.nav-item { text-decoration: none; }
 }
 .btn-primary { background: linear-gradient(135deg, var(--instituto-primary-2), var(--instituto-secondary)); color: #fff; }
 .btn-primary:hover { opacity: .92; }
-.btn-ghost { background: var(--s1); color: var(--title); border: 1px solid var(--bd); }
+.btn-ghost { background: var(--s1); color: var(--title); border: 1px solid var(--borda-controle); }
 .btn-ghost:hover { border-color: var(--instituto-secondary); }
 
 .month-select {
-  background: var(--s1); border: 1px solid var(--bd); color: var(--txt);
+  background: var(--s1); border: 1px solid var(--borda-controle); color: var(--txt);
   font-family: var(--font); font-size: 14px; min-height: 40px; padding: 8px 10px;
   border-radius: 10px; cursor: pointer;
 }

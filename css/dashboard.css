@@ -270,3 +270,5 @@ canvas { width: 100% !important; }
 
 /* conteúdo só aparece depois de confirmar o perfil (js/dashboard.js) */
 .aguardando-sessao main, .aguardando-sessao .tabbar { visibility: hidden; }
+
+@media (max-width: 768px) { .unit-btn { min-height: 44px; } }

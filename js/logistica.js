@@ -6,7 +6,10 @@ const MESES_ANTERIORES = 3;           // quantos meses fechados mostrar ao lado 
 const CAMPOS = ['saida', 'cmm', 'estoque'];
 
 let info = null;
-let unidadeSel = '';
+// atalho da tela inicial da coordenação: logistica.html?unidade=<id> abre direto a planilha de uma unidade
+const unidadeDoEndereco = new URLSearchParams(location.search).get('unidade');
+let unidadeSel = unidadeDoEndereco && /^[A-Za-z0-9_.-]+$/.test(unidadeDoEndereco) ? unidadeDoEndereco : '';
+let tentouEndereco = false;   // o ?unidade= do endereço só é tentado uma vez
 let planilha = null;                  // resposta de logistica.ler
 let abaAtual = '';
 const alteracoes = new Map();         // "aba|linha" -> { aba, linha, produto, saida, cmm, estoque }
@@ -40,7 +43,10 @@ function salvarRascunho() {
   try {
     if (alteracoes.size) {
       sessionStorage.setItem(RASCUNHO_KEY, JSON.stringify({ login: info && info.usuario.login, unidade: unidadeSel, itens: [...alteracoes.values()] }));
-    } else sessionStorage.removeItem(RASCUNHO_KEY);
+    } else {
+      const r = lerRascunho();
+      if (!r || (r.login === (info && info.usuario.login) && r.unidade === unidadeSel)) sessionStorage.removeItem(RASCUNHO_KEY);
+    }
   } catch (e) { /* sem armazenamento: segue sem rascunho */ }
 }
 
@@ -91,6 +97,8 @@ function exibirPlanilha(r, rascunho) {
   if (!validarSessao(info)) return false;
   planilha = r.logistica;
   unidadeSel = planilha.unidade;
+  // o caminho de volta mantém a unidade que a coordenação estava vendo
+  document.getElementById('mig-acomp').href = 'indicadores.html' + (info.usuario.perfil === 'admin' && unidadeSel ? '?unidade=' + encodeURIComponent(unidadeSel) : '');
   montarSeletorUnidade();
   const ref = planilha.mesAberto;
   document.getElementById('log-sub').textContent = planilha.editavel
@@ -157,6 +165,13 @@ async function carregarPlanilha(restaurar) {
   try {
     r = await api('logistica.carregar', unidadeSel ? { unidade: unidadeSel } : {});
   } catch (e) {
+    if (unidadeDoEndereco && unidadeSel === unidadeDoEndereco && !tentouEndereco) {
+      // unidade do endereço inválida ou de outra pessoa: volta para a unidade padrão
+      tentouEndereco = true;
+      unidadeSel = '';
+      history.replaceState(null, '', location.pathname);
+      return carregarPlanilha(restaurar);
+    }
     if (!mostrouCache) {
       document.getElementById('log-sub').textContent = '';
       document.getElementById('log-body').innerHTML = '';   // tira o esqueleto: o erro já explica
@@ -249,13 +264,44 @@ function cobertura(estoque, cmm) {
   return { cls: 'ok', texto, pct, critico: false };
 }
 
+// Ordenação por cobertura, num clique: pior primeiro (sem estoque) → melhor; de novo: melhor → pior; de novo: ordem da planilha.
+let ordemCob = '';   // '' | 'asc' | 'desc'
+
+// meses de estoque para ordenar: sem estoque = -1; sem dado (estoque vazio ou sem CMM) fica sempre no fim
+function chaveCobertura(v) {
+  const e = v.estoque === null || v.estoque === undefined || v.estoque === '' ? null : Number(v.estoque);
+  const c = v.cmm === null || v.cmm === undefined || v.cmm === '' ? null : Number(v.cmm);
+  if (e === null || !isFinite(e)) return null;
+  if (e === 0) return -1;
+  if (!c || !isFinite(c)) return null;
+  return e / c;
+}
+
+function ordenarPorCobertura(itens, aba) {
+  if (!ordemCob) return itens;
+  const dir = ordemCob === 'asc' ? 1 : -1;
+  return itens
+    .map((it, i) => ({ it, i, k: chaveCobertura(valoresDaLinha(aba, it)) }))
+    .sort((a, b) => (a.k === null) - (b.k === null) || (a.k === null ? 0 : (a.k - b.k) * dir) || a.i - b.i)
+    .map(x => x.it);
+}
+
+function textoOrdemCob() {
+  return ordemCob === 'asc' ? 'Cobertura: pior primeiro ↑' : ordemCob === 'desc' ? 'Cobertura: melhor primeiro ↓' : 'Ordenar por cobertura';
+}
+
+function alternarOrdemCob() {
+  ordemCob = ordemCob === '' ? 'asc' : ordemCob === 'asc' ? 'desc' : '';
+  render();
+  document.getElementById('ordem-live').textContent = ordemCob === 'asc' ? 'Ordenado por cobertura, pior primeiro.' : ordemCob === 'desc' ? 'Ordenado por cobertura, melhor primeiro.' : 'Ordem da planilha.';
+}
+
 function celulaCobertura(c) {
   return `<span class="cob-txt">${esc(c.texto)}</span><span class="cob-barra"><i style="--w:${c.pct}"></i></span>`;
 }
 
 let soCriticos = false;
 let soParados = false;      // itens com estoque e sem nenhuma saída nos últimos meses
-let ordenarCrit = false;    // menor cobertura primeiro
 const CRIT_SR = '<span class="sr-only">Estoque crítico: </span>'; // o ponto vermelho não pode ser só cor
 
 // valores exibidos no momento (o que foi digitado vale mais que o que veio da planilha)
@@ -263,18 +309,6 @@ function valoresDaLinha(aba, it) {
   const alt = alteracoes.get(aba.nome + '|' + it.linha) || {};
   return { cmm: alt.cmm !== undefined ? alt.cmm : it.cmm, estoque: alt.estoque !== undefined ? alt.estoque : it.estoque };
 }
-
-// meses que o estoque dura (para ordenar): sem estoque primeiro, sem dado por último
-function mesesCobertura(v) {
-  const e = v.estoque === null || v.estoque === undefined || v.estoque === '' ? null : Number(v.estoque);
-  const c = v.cmm === null || v.cmm === undefined || v.cmm === '' ? null : Number(v.cmm);
-  if (e === null) return Infinity;
-  if (e === 0) return -1;
-  if (!c) return Infinity;
-  return e / c;
-}
-
-function cmpCobertura(x, y) { return x < y ? -1 : x > y ? 1 : 0; }
 
 // "parado": tem estoque, mas nenhuma saída nos meses fechados mostrados nem no mês aberto
 function parado(aba, it) {
@@ -342,7 +376,7 @@ function render() {
     <th scope="col" class="col-aberto">Saídas ${MESES_CURTO[ref.mes]}</th>
     <th scope="col" class="col-aberto">CMM</th>
     <th scope="col" class="col-aberto">Estoque disp.</th>
-    <th scope="col" class="col-cob">Cobertura</th>
+    <th scope="col" class="col-cob"${ordemCob ? ' aria-sort="' + (ordemCob === 'asc' ? 'ascending' : 'descending') + '"' : ''}>Cobertura</th>
     <th scope="col" class="col-tend">Tendência das saídas</th>
   </tr>`;
 
@@ -358,8 +392,10 @@ function render() {
       aria-label="${campo === 'saida' ? 'Saídas' : campo === 'cmm' ? 'CMM' : 'Estoque disponível'} de ${esc(it.produto)}"></td>`;
   };
 
-  const itens = ordenarCrit ? [...aba.itens].sort((a, b) => cmpCobertura(mesesCobertura(valoresDaLinha(aba, a)), mesesCobertura(valoresDaLinha(aba, b)))) : aba.itens;
-  document.getElementById('log-body').innerHTML = itens.map(it => {
+  const btnOrdem = document.getElementById('btn-ordem-cob');
+  btnOrdem.textContent = textoOrdemCob();
+  btnOrdem.classList.toggle('ativo', ordemCob !== '');
+  document.getElementById('log-body').innerHTML = ordenarPorCobertura(aba.itens, aba).map(it => {
     const v = valoresDaLinha(aba, it);
     const cob = cobertura(v.estoque, v.cmm);
     return `
@@ -387,7 +423,12 @@ function filtrar() {
     tr.hidden = !ok;
     if (ok) visiveis++;
   });
-  document.getElementById('log-empty').hidden = visiveis > 0;
+  const vazio = document.getElementById('log-empty');
+  const busca = document.getElementById('busca').value.trim();
+  vazio.textContent = busca ? 'Nenhum produto encontrado para "' + busca + '".'
+    : soCriticos ? 'Nenhum item crítico nesta aba. Estoque sem alertas.'
+    : 'Nenhum produto encontrado.';
+  vazio.hidden = visiveis > 0;
 }
 
 // ── Edição ─────────────────────────────────────────────────────
@@ -551,6 +592,8 @@ document.getElementById('log-body').addEventListener('keydown', e => {
   if (prox) { prox.focus(); prox.select(); }
 });
 
+document.getElementById('btn-ordem-cob').addEventListener('click', alternarOrdemCob);
+
 document.getElementById('log-tabs').addEventListener('click', e => {
   const b = e.target.closest('.log-tab');
   if (!b) return;
@@ -657,11 +700,6 @@ document.getElementById('log-body').addEventListener('paste', e => {
   setStatus(colados + (colados === 1 ? ' valor colado' : ' valores colados') + (ignorados ? ' · ' + ignorados + ' ignorado(s): célula vazia, decimal ou texto' : '') + '. Revise e salve.', ignorados ? 'warn' : '');
 });
 
-document.getElementById('btn-ordenar').addEventListener('click', () => {
-  ordenarCrit = !ordenarCrit;
-  document.getElementById('btn-ordenar').setAttribute('aria-pressed', String(ordenarCrit));
-  render();
-});
 document.getElementById('btn-parados').addEventListener('click', () => {
   soParados = !soParados;
   filtrar();

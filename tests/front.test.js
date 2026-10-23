@@ -24,7 +24,7 @@ function respostaServidor(body, perfil) {
   switch (req.action) {
     case 'sessao': return sessao(perfil);
     case 'indicadores.carregar': return { sessao: sessao(perfil), unidade: req.unidade === undefined ? (perfil === 'admin' ? '' : 'upa-centro') : req.unidade, lancamentos: [lanc], metas: METAS };
-    case 'logistica.carregar': return {
+    case 'logistica.carregar': if (req.unidade === 'invalida') throw new Error('Você não tem acesso a esta unidade.'); return {
       sessao: sessao(perfil),
       logistica: {
         unidade: req.unidade || 'upa-centro', mesAberto: { ano: 2026, mes: 4, teste: true }, editavel: perfil !== 'admin',
@@ -69,18 +69,20 @@ const semSS = new Map();
 function visita(script, armazenamento, perfil, opcoes = {}) {
   const els = {};
   const chamadas = [];
+  const corpos = [];
   const ctx = {
     console, setTimeout: (fn) => { try { fn(); } catch (e) { erros.push('timeout: ' + e.message); } }, clearTimeout() {}, Promise, JSON, Date, Math, Object, Array, Number, String, Map, Set, Error, isFinite, parseInt,
     localStorage: { getItem: k => armazenamento.has(k) ? armazenamento.get(k) : null, setItem: (k, v) => armazenamento.set(k, String(v)), removeItem: k => armazenamento.delete(k), get length() { return armazenamento.size; } },
     sessionStorage: { getItem: k => (opcoes.ss || semSS).has(k) ? (opcoes.ss || semSS).get(k) : null, setItem: (k, v) => (opcoes.ss || semSS).set(k, String(v)), removeItem: k => (opcoes.ss || semSS).delete(k) },
-    location: { href: '', search: '', origin: 'https://exemplo.test', pathname: '/usuarios.html' }, URLSearchParams,
-    confirm: () => true,
+    location: { href: '', search: opcoes.search || '', origin: 'https://exemplo.test', pathname: '/usuarios.html' }, URLSearchParams,
+    confirm: () => true, history: { replaceState() {} },
     matchMedia: () => ({ matches: true }),
     themeVar: () => '#888888',
     Chart: class { constructor(el, cfg) { this.canvas = el; this.data = cfg.data; this.options = cfg.options; } destroy() {} update() {} },
     fetch: async (url, init) => {
       chamadas.push(JSON.parse(init.body).action);
-      if (opcoes.falhaRede) throw new TypeError('Failed to fetch');
+      corpos.push(JSON.parse(init.body));
+      if (opcoes.falhaRede || ctx.__falhar) throw new TypeError('Failed to fetch');
       const dados = respostaServidor(init.body, perfil);
       return { json: async () => ({ ok: true, dados }) };
     },
@@ -97,7 +99,7 @@ function visita(script, armazenamento, perfil, opcoes = {}) {
   const erros = [];
   const codigo = ['api.js', script].map(f => fs.readFileSync(root + f, 'utf8')).join('\n');
   try { vm.runInContext(codigo, ctx); } catch (e) { erros.push('carga: ' + e.stack.split('\n').slice(0, 3).join(' | ')); }
-  return { ctx, els, chamadas, erros };
+  return { ctx, els, chamadas, corpos, erros };
 }
 
 const pausa = ms => new Promise(r => setTimeout(r, ms));
@@ -208,6 +210,67 @@ const check = (nome, c, extra) => { if (c) ok++; else { falhas++; console.log('F
     check('rascunho: sair do sistema apaga', !ss.has('farma_rascunho'));
     check('cache: sair do sistema apaga', ![...arm.keys()].some(k => k.startsWith('farma_cache_')), [...arm.keys()]);
   }
+  // ordenar a cobertura com um clique: pior → melhor → melhor → pior → ordem da planilha
+  {
+    const v = visita('logistica.js', new Map([['farma_sessao', 'TOKEN1']]), 'coordenador');
+    await pausa(80);
+    const R = c => vm.runInContext(c, v.ctx);
+    const aba = "({nome:'MEDICAMENTOS'})";
+    const itens = "[{linha:1,produto:'A',cmm:10,estoque:30},{linha:2,produto:'B',cmm:10,estoque:0},{linha:3,produto:'C',cmm:10,estoque:5},{linha:4,produto:'D',cmm:0,estoque:9},{linha:5,produto:'E',cmm:10,estoque:null},{linha:6,produto:'F',cmm:10,estoque:100}]";
+    const ordem = () => R("ordenarPorCobertura(" + itens + ", " + aba + ").map(x => x.produto).join('')");
+    check('cobertura: sem clique mantém a ordem da planilha', ordem() === 'ABCDEF', ordem());
+    R("alternarOrdemCob()");
+    check('cobertura: 1º clique = pior primeiro (sem estoque), sem dado no fim', ordem() === 'BCAFDE', ordem());
+    R("alternarOrdemCob()");
+    check('cobertura: 2º clique = melhor primeiro, sem dado continua no fim', ordem() === 'FACBDE', ordem());
+    R("alternarOrdemCob()");
+    check('cobertura: 3º clique volta à ordem da planilha', ordem() === 'ABCDEF' && R('ordemCob') === '', ordem());
+    check('cobertura: botão da barra ganha o texto do estado', v.els['btn-ordem-cob'].textContent === 'Ordenar por cobertura');
+    check('cobertura: sem erro de execução', v.erros.length === 0, v.erros);
+  }
+  // rodapé, aviso de servidor lento e mensagens
+  {
+    const v = visita('logistica.js', new Map([['farma_sessao', 'TOKEN1']]), 'coordenador');
+    await pausa(80);
+    const R = c => vm.runInContext(c, v.ctx);
+    const url = R("linkRelatar()");
+    check('rodapé: link de relato é um mailto com assunto e versão', url.startsWith('mailto:tecnologiadainformacao@institutosaovicente.com.br?subject=') && decodeURIComponent(url).includes('Versão:'), url);
+    check('aviso lento: nenhuma chamada pendente depois de terminar', R('chamadasPendentes') === 0 && R('avisoLentoEl') === null);
+    R("chamadasPendentes = 1; mostrarAvisoLento();");
+    check('aviso lento: aparece com chamada pendente', R('avisoLentoEl') !== null);
+    R("chamadasPendentes = 0; esconderAvisoLento();");
+    check('aviso lento: some quando não há chamada pendente', R('avisoLentoEl') === null);
+    check('lote ajuda: sem erro de execução', v.erros.length === 0, v.erros);
+  }
+  // troca de unidade que falha não pode deixar as metas apontando para a unidade nova
+  {
+    const v = visita('indicadores.js', new Map([['farma_sessao', 'TOKEN1']]), 'admin');
+    await pausa(80);
+    const R = c => vm.runInContext(c, v.ctx);
+    check('troca de unidade: começa em "todas"', R('unidadeSel') === '');
+    const sel = v.els['unitSel'];
+    v.ctx.__falhar = true;
+    sel.value = 'upa-jurema';
+    await sel.__ouvintes.change();
+    await pausa(80);
+    check('troca de unidade que falha: a unidade das metas continua a anterior', R('unidadeSel') === '', R('unidadeSel'));
+    check('troca de unidade que falha: o seletor volta para a unidade anterior', sel.value === '', sel.value);
+    check('troca de unidade que falha: aviso de erro na tela', /erro/.test(v.els['page-status'].className) && /anterior/.test(v.els['page-status'].textContent), v.els['page-status'].textContent);
+    v.ctx.__falhar = false;
+    sel.value = 'upa-jurema';
+    await sel.__ouvintes.change();
+    await pausa(80);
+    check('troca de unidade que dá certo: passa a valer a unidade nova', R('unidadeSel') === 'upa-jurema', R('unidadeSel'));
+  }
+  // planilha: ?unidade= inválida cai na unidade padrão
+  {
+    const v = visita('logistica.js', new Map([['farma_sessao', 'TOKEN1']]), 'coordenador', { search: '?unidade=invalida' });
+    await pausa(200);
+    const pedidos = v.corpos.filter(c => c.action === 'logistica.carregar');
+    check('planilha: unidade inválida do endereço é tentada uma vez e depois cai no padrão', pedidos.some(c => c.unidade === 'invalida') && pedidos[pedidos.length - 1].unidade === undefined, pedidos);
+    check('planilha: depois do fallback a tabela carrega', vm.runInContext('planilha && planilha.unidade', v.ctx) === 'upa-centro', vm.runInContext('typeof planilha', v.ctx));
+    check('planilha fallback: sem erro de execução', v.erros.length === 0, v.erros);
+  }
   // início: cache da sessão
   const arm = new Map([['farma_sessao', 'T']]);
   let v = visita('index.js', arm, 'coordenador'); // index.js precisa de elementos; só confere que carrega
@@ -223,6 +286,33 @@ const check = (nome, c, extra) => { if (c) ok++; else { falhas++; console.log('F
   await pausa(80);
   const listaA = va.els['fech-lista'].innerHTML;
   check('painel da coordenação: todas as unidades com selos', listaA.includes('UPA Centro') && listaA.includes('UPA Jurema') && listaA.includes('fech-selo') && va.els['fech-ring-txt'].textContent === '0/2', va.els['fech-ring-txt'].textContent);
+  // links da coordenação: unidade e selos já lançados abrem a tela da unidade; pendentes não
+  check('painel da coordenação: nome da unidade abre o acompanhamento dela', listaA.includes('href="indicadores.html?unidade=upa-centro"') && listaA.includes('href="indicadores.html?unidade=upa-jurema"'), listaA.slice(0, 300));
+  check('painel da coordenação: selos lançados viram link (clínica e saídas)', /<a class="fech-selo ok" href="indicadores.html\?unidade=upa-centro"[^>]*>Clínica lançada/.test(listaA) && /<a class="fech-selo" href="logistica.html\?unidade=upa-centro"[^>]*>Saídas/.test(listaA), listaA.slice(0, 600));
+  check('painel da coordenação: selos pendentes ficam sem link', /<span class="fech-selo"[^>]*>Clínica pendente/.test(listaA) && /<span class="fech-selo"[^>]*>Saídas pendentes/.test(listaA) && !listaA.includes('logistica.html?unidade=upa-jurema'), listaA.slice(-500));
+  {
+    const vi = visita('indicadores.js', new Map([['farma_sessao', 'T']]), 'admin', { search: '?unidade=upa-jurema' });
+    await pausa(80);
+    check('indicadores: ?unidade= pede essa unidade ao servidor', vi.corpos.some(c => c.action === 'indicadores.carregar' && c.unidade === 'upa-jurema'), vi.corpos);
+    const vl = visita('logistica.js', new Map([['farma_sessao', 'T']]), 'admin', { search: '?unidade=upa-jurema' });
+    await pausa(80);
+    check('planilha: ?unidade= pede essa unidade ao servidor', vl.corpos.some(c => c.action === 'logistica.carregar' && c.unidade === 'upa-jurema'), vl.corpos);
+    const vx = visita('indicadores.js', new Map([['farma_sessao', 'T']]), 'admin', { search: '?unidade=../x;drop' });
+    await pausa(80);
+    check('indicadores: ?unidade= com texto estranho é ignorado', vx.corpos.every(c => c.unidade === undefined), vx.corpos);
+  }
+  check('painel da coordenação: selos-link dizem a unidade no nome acessível', /aria-label="Clínica lançada — UPA Centro"/.test(listaA) && /aria-label="Saídas [0-9]+% — UPA Centro"/.test(listaA), listaA.slice(0, 500));
+  // rascunho de outra unidade sobrevive a abrir uma unidade diferente
+  {
+    const ss = new Map([['farma_rascunho', JSON.stringify({ login: 'coord.centro', unidade: 'upa-jurema', itens: [{ aba: 'MEDICAMENTOS', linha: 6, produto: 'DIPIRONA', saida: 5 }] })]]);
+    const vr = visita('logistica.js', new Map([['farma_sessao', 'T']]), 'coordenador', { ss });
+    await pausa(150);
+    check('rascunho: de outra unidade não é apagado ao abrir esta', ss.has('farma_rascunho'), [...ss.keys()]);
+    check('migalhas: link de volta sem unidade para coordenador', vr.els['mig-acomp'].href === 'indicadores.html', vr.els['mig-acomp'].href);
+    const va2 = visita('logistica.js', new Map([['farma_sessao', 'T']]), 'admin', { search: '?unidade=upa-jurema' });
+    await pausa(150);
+    check('migalhas: coordenação volta ao acompanhamento da mesma unidade', va2.els['mig-acomp'].href === 'indicadores.html?unidade=upa-jurema', va2.els['mig-acomp'].href);
+  }
   // saídas só concluem com as duas abas lançadas (aba nunca salva tem total 0)
   const soMed = vm.runInContext("saidasResumo({ saidas: { med: { preenchidos: 10, total: 10 }, mat: { preenchidos: 0, total: 0 }, por: 'a', em: 'b' } })", vc.ctx);
   check('saídas: só medicamentos lançados NÃO conclui', soMed.feito === false && soMed.pct <= 99 && soMed.texto.includes('Materiais: nenhum item lançado'), soMed);
@@ -234,8 +324,6 @@ const check = (nome, c, extra) => { if (c) ok++; else { falhas++; console.log('F
     const v = visita('logistica.js', new Map([['farma_sessao', 'TOKEN1']]), 'coordenador');
     await pausa(80);
     const R = c => vm.runInContext(c, v.ctx);
-    check('mesesCobertura: sem estoque vem primeiro, sem dado por último', R("mesesCobertura({estoque:0,cmm:10})") === -1 && R("mesesCobertura({estoque:null,cmm:10})") === Infinity && R("mesesCobertura({estoque:5,cmm:0})") === Infinity && R("mesesCobertura({estoque:5,cmm:10})") === 0.5);
-    check('mesesCobertura: ordenação por criticidade', R("[{estoque:30,cmm:10},{estoque:0,cmm:10},{estoque:5,cmm:10},{estoque:null,cmm:1}].sort((a,b)=>mesesCobertura(a)-mesesCobertura(b)).map(x=>x.estoque).join(',')") === '0,5,30,');
     // parado: item sem saída nos meses fechados e no atual, mas com estoque
     R("planilha.abas[0].itens.push({linha:7,produto:'PARADO',valores:[0,null],cmm:10,estoque:30},{linha:8,produto:'SEMESTOQUE',valores:[0,null],cmm:10,estoque:0},{linha:9,produto:'COMSAIDA',valores:[0,null],cmm:10,estoque:30})");
     check('parado: tem estoque e nenhuma saída', R("parado(planilha.abas[0], planilha.abas[0].itens[1])") === true);

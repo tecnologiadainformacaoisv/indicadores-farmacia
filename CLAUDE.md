@@ -24,6 +24,7 @@ projeto-indicadores-farmacia/
 ├── indicadores.html        ← acompanhamento mensal (lançamento + metas + gráficos)
 ├── logistica.html          ← planilha de saídas: lançamento item por item
 ├── usuarios.html           ← cadastro de coordenadores (só admin)
+├── ajuda.html              ← "Como usar": passo a passo curto (sem login)
 ├── dashboard.html          ← dashboard (só admin; dados de EXEMPLO fixos, ainda não ligado à base)
 ├── .clasp.json             ← ID do projeto Apps Script (a conta logada no clasp precisa ser a da TI)
 ├── appscript/
@@ -33,7 +34,7 @@ projeto-indicadores-farmacia/
 ├── css/
 │   ├── instituto.css       ← cópia de ../shared/styles/instituto.css (tokens ISV)
 │   ├── isv.css             ← tema claro/escuro, cabeçalho, rodapé, login, avisos (comum)
-│   └── home.css · dashboard.css · indicadores.css · logistica.css · usuarios.css
+│   └── home.css · dashboard.css · indicadores.css · logistica.css · usuarios.css · ajuda.css
 ├── js/
 │   ├── version.js          ← ÚNICA fonte da versão exibida
 │   ├── theme.js            ← tema claro/escuro (carregado no <head>)
@@ -42,6 +43,7 @@ projeto-indicadores-farmacia/
 ├── data/                   ← planilha-fonte local (fora do git)
 ├── tests/                  ← api.test.js (servidor) e front.test.js (telas): `node tests/api.test.js`
 ├── tools/visual/           ← capturas de tela em navegador real com servidor simulado (ver docs/DESIGN.md)
+│                             (`auditar-bordas.js`: mede o contraste das bordas nas telas e nos dois temas)
 └── docs/
     ├── BRIEFING.md         ← regras de negócio definidas com a Tereza
     ├── DESIGN.md           ← método e decisões de design, receita para repetir
@@ -114,14 +116,16 @@ Tudo na pasta **"Indicadores Farmácia"** do Drive da **conta da TI** (ID na pro
 
 ## Estado atual do desenvolvimento
 
-> Última atualização: 2026-10-22
+> Última atualização: 2026-10-23 (histórico do dia em `docs/HISTORICO.md`)
 
 - **Painel de fechamento:** tela inicial mostra o andamento do mês (rota `painel.carregar`, aba `Fechamento`); depois de publicar versões com ele, rode `recalcularFechamento` no editor.
-- **Versão:** v0.5.0 (`js/version.js`), em teste com a Tereza. **Regra: toda mudança sobe a versão** (PATCH para correções e ajustes, MINOR para nova etapa do fluxo), alterando `js/version.js` e o `CHANGELOG.md` no mesmo commit, com tag `vX.Y.Z`.
+- **Versão:** v0.5.10 (`js/version.js`), em teste com a Tereza. **Regra: toda mudança sobe a versão** (PATCH para correções e ajustes, MINOR para nova etapa do fluxo), alterando `js/version.js` e o `CHANGELOG.md` no mesmo commit, com tag `vX.Y.Z`.
 - **Implantado e em teste:** API (Web App na conta da TI), planilha "Sistema", usuário `tereza` e usuários de teste de coordenador, login, Clínica Geral na nuvem, metas por unidade e planilha de saídas item por item. `API_URL` já está em `js/api.js`.
 - Os testes usam a planilha com dados até **maio/2026** (`MES_ABERTO_TESTE = 2026-05` na aba `Config`). A versão atualizada só entra depois da validação da Tereza; antes de uso real, seguir o checklist de `docs/IMPLANTACAO.md`.
-- Validação automatizada em `tests/`: servidor com Apps Script simulado (92 verificações: login, permissões, mês aberto, lançamentos, metas, usuários, backup, painel, planilha, fórmulas, colunas) e telas com DOM simulado (58). Rode os dois antes de publicar. Design validado em navegador real com `tools/visual/`.
+- Validação automatizada em `tests/`: servidor com Apps Script simulado (92 verificações: login, permissões, mês aberto, lançamentos, metas, usuários, backup, painel, planilha, fórmulas, colunas) e telas com DOM simulado (81). Rode os dois antes de publicar. Design validado em navegador real com `tools/visual/`. Antes de publicar mudanças visuais, rode `node tools/visual/auditar-bordas.js` (contraste das bordas) e o agente `ux-revisor`.
 - Para publicar mudanças no servidor: `clasp push` + nova versão + `clasp update-deployment` (a URL do Web App não muda). Antes, `clasp show-authorized-user` deve mostrar a conta da TI.
+- **"Atualização visual":** lote grande de melhorias de tela guardado no branch `atualizacao-visual` por decisão da gestão (não entregar tudo de primeira). Não publicar nem juntar ao `main` sem o usuário escolher o que entra; lista em `docs/ATUALIZACAO-VISUAL.md` (no branch).
+- Telas de apoio: `ajuda.html` ("Como usar", sem login) e link "Relatar problema ou sugestão" no rodapé (e-mail da TI em `CONTATO_SUPORTE`, `js/api.js`).
 
 ## Próximos passos
 

@@ -1,5 +1,62 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.5.11 – 2026-10-23
+### Corrigido
+- Acompanhamento mensal: se a troca de unidade falhar (rede instável), a tela volta para a unidade anterior; antes "Salvar metas" podia gravar os valores de uma unidade na outra
+- Acompanhamento mensal e planilha de saídas: os atalhos de um para o outro levam a unidade que a coordenação está vendo
+- Planilha de saídas: `?unidade=` inválida ou de outra unidade abre a unidade padrão em vez de ficar sem tela
+
+## v0.5.10 – 2026-10-23
+### Corrigido
+- Tema claro: bordas dos cartões, abas, filtros, botões e campos estavam quase invisíveis (contraste 1,1:1 a 1,5:1). Cartões e divisórias ficaram um pouco mais marcados e campos e botões chegaram a ~3:1 (WCAG 1.4.11), nos dois temas
+- Nova auditoria automática de bordas (`tools/visual/auditar-bordas.js`): mede o contraste de cada borda em todas as telas e nos dois temas
+- Tela inicial: cartões "Ir para" passam a ter fundo próprio e o aviso de ambiente de teste não encosta mais nos cartões
+- Contraste de texto no tema claro: texto auxiliar, selos de atenção e de meta atingida, avatar, migalhas e "Dados de exemplo" passam de 4,5:1
+- Botões desabilitados (Salvar alterações, filtros, Cadastrar) com cor própria em vez de transparência: o texto agora se lê
+- Celular: botões do cabeçalho, links do rodapé, migalhas, selos clicáveis, abas do dashboard e botões de salvar com área de toque de 44 px
+- Alertas do acompanhamento sem espaço antes dos dois pontos; ações da lista de usuários com largura igual; dica do usuário cabe numa linha
+
+## v0.5.9 – 2026-10-22
+### Corrigido
+- Aviso de servidor lento com fundo opaco no tema escuro
+- Página "Como usar" também recebe o link de relato no rodapé; itens da ajuda mostram "+" e "–" para indicar que abrem e fecham
+
+## v0.5.8 – 2026-10-22
+### Adicionado
+- Rodapé: "Relatar problema ou sugestão" ligado ao e-mail da TI do Instituto
+
+## v0.5.7 – 2026-10-22
+### Adicionado
+- Página "Como usar" (`ajuda.html`): passo a passo curto para o coordenador e para a coordenação, com problemas comuns; link no rodapé de todas as telas
+- Rodapé: link "Relatar problema ou sugestão" (abre o e-mail da TI já com página e versão; só aparece quando `CONTATO_SUPORTE` em `js/api.js` está preenchido)
+- Aviso "O servidor está demorando mais que o normal" quando uma chamada passa de 8 s
+### Alterado
+- Planilha de saídas: mensagens de lista vazia por situação (busca sem resultado, nenhum item crítico)
+- Mensagem de falta de conexão mais clara
+
+## v0.5.6 – 2026-10-22
+### Corrigido
+- Planilha de saídas: abrir outra unidade (atalho da tela inicial ou seletor) não apaga mais o rascunho não salvo da unidade anterior
+- `?unidade=` que não abre (unidade de outro coordenador ou inexistente): a tela cai na visão padrão com aviso, em vez de ficar só com o erro
+- Migalhas da planilha mantêm a unidade que a coordenação estava vendo; o botão de ordenar a cobertura anuncia o estado para leitor de tela; selos-link do início dizem a unidade no nome acessível; área de toque maior no nome da unidade; ordenação tolera estoque ou CMM não numérico; ids de unidade com maiúscula, "_" ou "." também funcionam no endereço
+
+## v0.5.5 – 2026-10-22
+### Adicionado
+- Tela inicial da coordenação: o nome da unidade abre o acompanhamento mensal já nela, e os selos "Clínica lançada" e "Saídas" (quando há lançamento) abrem o formulário da Clínica e a planilha de saídas daquela unidade. Selos pendentes continuam sem link
+- Acompanhamento mensal e planilha de saídas aceitam `?unidade=<id>` no endereço
+
+## v0.5.4 – 2026-10-22
+### Adicionado
+- Planilha de saídas: migalhas de pão (Início › Acompanhamento mensal › Planilha de saídas) para voltar ao menu lateral do acompanhamento
+
+## v0.5.3 – 2026-10-22
+### Alterado
+- Planilha de saídas: a ordenação da cobertura fica só no botão da barra; o cabeçalho "Cobertura" voltou a ser texto simples
+
+## v0.5.2 – 2026-10-22
+### Adicionado
+- Planilha de saídas: ordenar pela cobertura de estoque com um clique (botão na barra ou cabeçalho "Cobertura"): pior primeiro (sem estoque) → melhor primeiro → ordem da planilha. Itens sem dado de estoque ou CMM ficam sempre no fim.
+
 ## v0.5.1 – 2026-10-22
 ### Corrigido
 - Fechamento: "Saídas" só conta como concluída com medicamentos **e** materiais lançados (antes bastava salvar só os medicamentos)

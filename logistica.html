@@ -31,6 +31,14 @@
 </header>
 
 <main class="log-main">
+  <nav class="migalhas" aria-label="Você está em">
+    <ol>
+      <li><a href="index.html">Início</a></li>
+      <li><a href="indicadores.html" id="mig-acomp">Acompanhamento mensal</a></li>
+      <li><span aria-current="page">Planilha de saídas</span></li>
+    </ol>
+  </nav>
+
 
   <div class="log-top">
     <div>
@@ -51,7 +59,7 @@
     <div class="log-tools">
       <button type="button" class="log-filtro" id="btn-criticos" aria-pressed="false">Só os críticos <span class="count" id="n-criticos"></span></button>
       <button type="button" class="log-filtro" id="btn-parados" aria-pressed="false" title="Têm estoque e nenhuma saída nos últimos meses">Sem saída <span class="count" id="n-parados"></span></button>
-      <button type="button" class="log-filtro" id="btn-ordenar" aria-pressed="false" title="Menor cobertura de estoque primeiro">Ordenar por criticidade</button>
+      <button type="button" class="log-filtro" id="btn-ordem-cob" title="Clique para alternar: pior → melhor, melhor → pior, ordem da planilha">Ordenar por cobertura</button><span class="sr-only" id="ordem-live" role="status"></span>
     </div>
     <div class="log-search">
       <label class="sr-only" for="busca">Buscar produto</label>

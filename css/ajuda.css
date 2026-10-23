@@ -1,0 +1,39 @@
+/* Ajuda — "Como usar" (tokens em instituto.css / isv.css) */
+
+.ajuda-main {
+  flex: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 32px 48px;
+}
+
+.ajuda-titulo { font-size: 20px; color: var(--title); }
+.ajuda-sub { font-size: 14px; color: var(--text-soft); margin: 2px 0 16px; }
+
+.ajuda-grade { display: grid; grid-template-columns: 1fr; gap: 10px; align-items: start; }
+@media (min-width: 900px) { .ajuda-grade { grid-template-columns: 1fr 1fr; } }
+
+.ajuda-item {
+  background: var(--instituto-surface);
+  border: 1px solid var(--instituto-border);
+  border-radius: 12px;
+  padding: 0 18px;
+}
+.ajuda-item[open] { padding-bottom: 14px; }
+.ajuda-item summary {
+  min-height: 48px; display: flex; align-items: center;
+  font-weight: 700; color: var(--title); cursor: pointer;
+}
+.ajuda-item summary:focus-visible { outline: 2px solid var(--instituto-secondary); outline-offset: 2px; border-radius: 6px; }
+.ajuda-item ol, .ajuda-item ul { padding-left: 20px; display: grid; gap: 6px; font-size: 14px; color: var(--instituto-text); }
+.ajuda-item p { font-size: 14px; color: var(--instituto-text); }
+.ajuda-item b { color: var(--title); }
+
+@media (max-width: 768px) { .ajuda-main { padding: 16px 16px 40px; } }
+
+/* indicador de abrir/fechar nos itens */
+.ajuda-item summary { list-style: none; justify-content: space-between; gap: 12px; }
+.ajuda-item summary::-webkit-details-marker { display: none; }
+.ajuda-item summary::after { content: "+"; font-size: 20px; font-weight: 700; color: var(--instituto-secondary); }
+.ajuda-item[open] summary::after { content: "–"; }

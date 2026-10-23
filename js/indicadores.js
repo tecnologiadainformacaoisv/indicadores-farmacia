@@ -296,8 +296,8 @@ function renderClinica() {
     const vals = calcs.map(c => c[k.key]).filter(v => v !== null);
     const val = vals.length ? avg(vals) : null;
     const st = status(k.key, val);
-    if (st === 'err') alertsDiv.innerHTML += `<div class="alert-item err"><span class="alert-icon">🔴</span><b>${k.label}</b>: ${fmtVal(val)} — abaixo da meta de ${metas[k.key].val}% em ${MONTHS_FULL[month]}. Verificar ação corretiva.</div>`;
-    else if (st === 'warn') alertsDiv.innerHTML += `<div class="alert-item warn"><span class="alert-icon">🟡</span><b>${k.label}</b>: ${fmtVal(val)} — próximo ao limite da meta (${metas[k.key].val}%).</div>`;
+    if (st === 'err') alertsDiv.innerHTML += `<div class="alert-item err"><span class="alert-icon">🔴</span><span><b>${k.label}</b>: ${fmtVal(val)} — abaixo da meta de ${metas[k.key].val}% em ${MONTHS_FULL[month]}. Verificar ação corretiva.</span></div>`;
+    else if (st === 'warn') alertsDiv.innerHTML += `<div class="alert-item warn"><span class="alert-icon">🟡</span><span><b>${k.label}</b>: ${fmtVal(val)} — próximo ao limite da meta (${metas[k.key].val}%).</span></div>`;
   });
 
   // Charts by month trend
@@ -388,8 +388,8 @@ function renderLogistica() {
     const vals = calcs.map(c => c[k.key]).filter(v => v !== null);
     const val = vals.length ? avg(vals) : null;
     const st = status(k.key, val);
-    if (st === 'err') alertsDiv.innerHTML += `<div class="alert-item err"><span class="alert-icon">🔴</span><b>${k.label}</b>: ${fmtVal(val)} — fora da meta de ${metas[k.key].val}% em ${MONTHS_FULL[month]}.</div>`;
-    else if (st === 'warn') alertsDiv.innerHTML += `<div class="alert-item warn"><span class="alert-icon">🟡</span><b>${k.label}</b>: ${fmtVal(val)} — próximo ao limite (meta: ${metas[k.key].val}%).</div>`;
+    if (st === 'err') alertsDiv.innerHTML += `<div class="alert-item err"><span class="alert-icon">🔴</span><span><b>${k.label}</b>: ${fmtVal(val)} — fora da meta de ${metas[k.key].val}% em ${MONTHS_FULL[month]}.</span></div>`;
+    else if (st === 'warn') alertsDiv.innerHTML += `<div class="alert-item warn"><span class="alert-icon">🟡</span><span><b>${k.label}</b>: ${fmtVal(val)} — próximo ao limite (meta: ${metas[k.key].val}%).</span></div>`;
   });
 
   const labels = MONTHS;
@@ -711,6 +711,8 @@ function aplicarCarga(r) {
 function exibirCarga(r) {
   aplicarCarga(r);
   if (!validarSessao(info)) return;
+  const q = info.usuario.perfil === 'admin' && unidadeSel ? '?unidade=' + encodeURIComponent(unidadeSel) : '';
+  document.querySelectorAll('a[href^="logistica.html"]').forEach(a => { a.href = 'logistica.html' + q; });
   if (!unidadesProntas) {
     unidadesProntas = true;
     document.getElementById('monthSel').value = info.mesAberto.mes;
@@ -752,9 +754,8 @@ function montarUnidades() {
     sel.value = unidadeSel;
     sel.hidden = false;
     sel.addEventListener('change', async () => {
-      unidadeSel = sel.value;
       setStatus('Carregando…');
-      try { await carregarDados(sel.value); setStatus(''); } catch (e) { setStatus(e.message, 'erro'); }
+      try { await carregarDados(sel.value); setStatus(''); } catch (e) { sel.value = unidadeSel; setStatus(e.message + ' Continua a unidade anterior.', 'erro'); }
     });
   } else {
     label.textContent = nomeUnidade(unidadeSel);
@@ -773,10 +774,16 @@ function esqueletoKpis() {
   });
 }
 
+// atalho da tela inicial da coordenação: indicadores.html?unidade=<id> abre direto uma unidade
+function unidadePedida() {
+  const u = new URLSearchParams(location.search).get('unidade');
+  return u && /^[A-Za-z0-9_.-]+$/.test(u) ? u : undefined;
+}
+
 (async function init() {
   if (!cacheLer('ind:inicial')) esqueletoKpis();
   try {
-    await carregarDados();
+    await carregarDados(unidadePedida());
     const avisos = [];
     if (info.mesAberto.teste) avisos.push(`Ambiente de teste: o mês aberto para lançamento está fixo em ${nomeMes(info.mesAberto)}.`);
     if (info.usuario.perfil === 'admin') avisos.push('Os coordenadores de cada unidade fazem os lançamentos; aqui você acompanha e define as metas.');
@@ -787,6 +794,15 @@ function esqueletoKpis() {
       history.replaceState(null, '', location.pathname); // F5 ou "voltar" não reabrem o formulário
     }
   } catch (e) {
+    // unidade pedida no endereço que não abriu: cai na visão padrão em vez de deixar a tela sem saída
+    if (unidadePedida()) {
+      history.replaceState(null, '', location.pathname);
+      try {
+        await carregarDados();
+        setStatus('Não foi possível abrir a unidade pedida (' + e.message + ') Mostrando a visão padrão.', 'warn');
+        return;
+      } catch (e2) { e = e2; }
+    }
     setStatus(e.message, 'erro');
   }
 })();

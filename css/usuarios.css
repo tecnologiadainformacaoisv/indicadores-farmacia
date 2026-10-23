@@ -14,12 +14,12 @@
 .btn-sec {
   display: inline-flex; align-items: center; justify-content: center;
   min-height: 44px; padding: 0 16px;
-  border: 1px solid var(--instituto-border); border-radius: 10px;
+  border: 1px solid var(--borda-controle); border-radius: 10px;
   background: var(--instituto-surface); color: var(--title);
   font: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
 }
 .btn-sec:hover { border-color: var(--instituto-secondary); }
-.btn-sec:disabled, .btn:disabled { opacity: .55; cursor: not-allowed; }
+.btn-sec:disabled, .btn:disabled { background: var(--soft); border-color: var(--instituto-border); color: var(--text-soft); opacity: 1; cursor: not-allowed; box-shadow: none; }
 .btn-sec.perigo { color: var(--c-err); }
 .btn-sec.perigo:hover { border-color: var(--c-err); }
 
@@ -144,3 +144,6 @@
 }
 
 .btn-sec.desfazer { min-height: 32px; padding: 0 12px; margin-left: 8px; }
+
+.usr-item__acoes .btn-sec { min-width: 140px; }
+@media (max-width: 768px) { .usr-form .btn { min-height: 44px; } }
