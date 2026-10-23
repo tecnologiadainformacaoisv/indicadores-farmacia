@@ -9,6 +9,7 @@ let info = null;
 // atalho da tela inicial da coordenação: logistica.html?unidade=<id> abre direto a planilha de uma unidade
 const unidadeDoEndereco = new URLSearchParams(location.search).get('unidade');
 let unidadeSel = unidadeDoEndereco && /^[A-Za-z0-9_.-]+$/.test(unidadeDoEndereco) ? unidadeDoEndereco : '';
+let tentouEndereco = false;   // o ?unidade= do endereço só é tentado uma vez
 let planilha = null;                  // resposta de logistica.ler
 let abaAtual = '';
 const alteracoes = new Map();         // "aba|linha" -> { aba, linha, produto, saida, cmm, estoque }
@@ -164,6 +165,13 @@ async function carregarPlanilha(restaurar) {
   try {
     r = await api('logistica.carregar', unidadeSel ? { unidade: unidadeSel } : {});
   } catch (e) {
+    if (unidadeDoEndereco && unidadeSel === unidadeDoEndereco && !tentouEndereco) {
+      // unidade do endereço inválida ou de outra pessoa: volta para a unidade padrão
+      tentouEndereco = true;
+      unidadeSel = '';
+      history.replaceState(null, '', location.pathname);
+      return carregarPlanilha(restaurar);
+    }
     if (!mostrouCache) {
       document.getElementById('log-sub').textContent = '';
       document.getElementById('log-body').innerHTML = '';   // tira o esqueleto: o erro já explica

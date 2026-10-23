@@ -1,5 +1,11 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.5.11 – 2026-10-23
+### Corrigido
+- Acompanhamento mensal: se a troca de unidade falhar (rede instável), a tela volta para a unidade anterior; antes "Salvar metas" podia gravar os valores de uma unidade na outra
+- Acompanhamento mensal e planilha de saídas: os atalhos de um para o outro levam a unidade que a coordenação está vendo
+- Planilha de saídas: `?unidade=` inválida ou de outra unidade abre a unidade padrão em vez de ficar sem tela
+
 ## v0.5.10 – 2026-10-23
 ### Corrigido
 - Tema claro: bordas dos cartões, abas, filtros, botões e campos estavam quase invisíveis (contraste 1,1:1 a 1,5:1). Cartões e divisórias ficaram um pouco mais marcados e campos e botões chegaram a ~3:1 (WCAG 1.4.11), nos dois temas

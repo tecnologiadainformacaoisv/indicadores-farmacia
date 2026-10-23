@@ -24,7 +24,7 @@ function respostaServidor(body, perfil) {
   switch (req.action) {
     case 'sessao': return sessao(perfil);
     case 'indicadores.carregar': return { sessao: sessao(perfil), unidade: req.unidade === undefined ? (perfil === 'admin' ? '' : 'upa-centro') : req.unidade, lancamentos: [lanc], metas: METAS };
-    case 'logistica.carregar': return {
+    case 'logistica.carregar': if (req.unidade === 'invalida') throw new Error('Você não tem acesso a esta unidade.'); return {
       sessao: sessao(perfil),
       logistica: {
         unidade: req.unidade || 'upa-centro', mesAberto: { ano: 2026, mes: 4, teste: true }, editavel: perfil !== 'admin',
@@ -75,14 +75,14 @@ function visita(script, armazenamento, perfil, opcoes = {}) {
     localStorage: { getItem: k => armazenamento.has(k) ? armazenamento.get(k) : null, setItem: (k, v) => armazenamento.set(k, String(v)), removeItem: k => armazenamento.delete(k), get length() { return armazenamento.size; } },
     sessionStorage: { getItem: k => (opcoes.ss || semSS).has(k) ? (opcoes.ss || semSS).get(k) : null, setItem: (k, v) => (opcoes.ss || semSS).set(k, String(v)), removeItem: k => (opcoes.ss || semSS).delete(k) },
     location: { href: '', search: opcoes.search || '' }, URLSearchParams,
-    confirm: () => true,
+    confirm: () => true, history: { replaceState() {} },
     matchMedia: () => ({ matches: true }),
     themeVar: () => '#888888',
     Chart: class { constructor(el, cfg) { this.canvas = el; this.data = cfg.data; this.options = cfg.options; } destroy() {} update() {} },
     fetch: async (url, init) => {
       chamadas.push(JSON.parse(init.body).action);
       corpos.push(JSON.parse(init.body));
-      if (opcoes.falhaRede) throw new TypeError('Failed to fetch');
+      if (opcoes.falhaRede || ctx.__falhar) throw new TypeError('Failed to fetch');
       const dados = respostaServidor(init.body, perfil);
       return { json: async () => ({ ok: true, dados }) };
     },
@@ -241,6 +241,35 @@ const check = (nome, c, extra) => { if (c) ok++; else { falhas++; console.log('F
     R("chamadasPendentes = 0; esconderAvisoLento();");
     check('aviso lento: some quando não há chamada pendente', R('avisoLentoEl') === null);
     check('lote ajuda: sem erro de execução', v.erros.length === 0, v.erros);
+  }
+  // troca de unidade que falha não pode deixar as metas apontando para a unidade nova
+  {
+    const v = visita('indicadores.js', new Map([['farma_sessao', 'TOKEN1']]), 'admin');
+    await pausa(80);
+    const R = c => vm.runInContext(c, v.ctx);
+    check('troca de unidade: começa em "todas"', R('unidadeSel') === '');
+    const sel = v.els['unitSel'];
+    v.ctx.__falhar = true;
+    sel.value = 'upa-jurema';
+    await sel.__ouvintes.change();
+    await pausa(80);
+    check('troca de unidade que falha: a unidade das metas continua a anterior', R('unidadeSel') === '', R('unidadeSel'));
+    check('troca de unidade que falha: o seletor volta para a unidade anterior', sel.value === '', sel.value);
+    check('troca de unidade que falha: aviso de erro na tela', /erro/.test(v.els['page-status'].className) && /anterior/.test(v.els['page-status'].textContent), v.els['page-status'].textContent);
+    v.ctx.__falhar = false;
+    sel.value = 'upa-jurema';
+    await sel.__ouvintes.change();
+    await pausa(80);
+    check('troca de unidade que dá certo: passa a valer a unidade nova', R('unidadeSel') === 'upa-jurema', R('unidadeSel'));
+  }
+  // planilha: ?unidade= inválida cai na unidade padrão
+  {
+    const v = visita('logistica.js', new Map([['farma_sessao', 'TOKEN1']]), 'coordenador', { search: '?unidade=invalida' });
+    await pausa(200);
+    const pedidos = v.corpos.filter(c => c.action === 'logistica.carregar');
+    check('planilha: unidade inválida do endereço é tentada uma vez e depois cai no padrão', pedidos.some(c => c.unidade === 'invalida') && pedidos[pedidos.length - 1].unidade === undefined, pedidos);
+    check('planilha: depois do fallback a tabela carrega', vm.runInContext('planilha && planilha.unidade', v.ctx) === 'upa-centro', vm.runInContext('typeof planilha', v.ctx));
+    check('planilha fallback: sem erro de execução', v.erros.length === 0, v.erros);
   }
   // início: cache da sessão
   const arm = new Map([['farma_sessao', 'T']]);

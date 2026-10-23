@@ -544,6 +544,8 @@ function aplicarCarga(r) {
 function exibirCarga(r) {
   aplicarCarga(r);
   if (!validarSessao(info)) return;
+  const q = info.usuario.perfil === 'admin' && unidadeSel ? '?unidade=' + encodeURIComponent(unidadeSel) : '';
+  document.querySelectorAll('a[href^="logistica.html"]').forEach(a => { a.href = 'logistica.html' + q; });
   if (!unidadesProntas) {
     unidadesProntas = true;
     document.getElementById('monthSel').value = info.mesAberto.mes;
@@ -585,9 +587,8 @@ function montarUnidades() {
     sel.value = unidadeSel;
     sel.hidden = false;
     sel.addEventListener('change', async () => {
-      unidadeSel = sel.value;
       setStatus('Carregando…');
-      try { await carregarDados(sel.value); setStatus(''); } catch (e) { setStatus(e.message, 'erro'); }
+      try { await carregarDados(sel.value); setStatus(''); } catch (e) { sel.value = unidadeSel; setStatus(e.message + ' Continua a unidade anterior.', 'erro'); }
     });
   } else {
     label.textContent = nomeUnidade(unidadeSel);
