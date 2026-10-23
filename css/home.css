@@ -75,10 +75,12 @@
 .home-link {
   display: block; padding: 14px 16px;
   border: 1px solid var(--instituto-border); border-radius: 12px;
-  background: transparent; color: inherit; text-decoration: none;
+  background: var(--instituto-surface); color: inherit; text-decoration: none;
   transition: border-color .2s ease, background .2s ease;
+  box-shadow: 0 1px 3px rgba(10, 61, 98, .08);
 }
-.home-link:hover { border-color: var(--instituto-secondary); background: var(--instituto-surface); }
+.home-link:hover { border-color: var(--instituto-secondary); background: var(--tint); }
+:root[data-theme="dark"] .home-link { box-shadow: none; }
 .home-link b { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-family: var(--font-title); font-size: 15px; color: var(--title); }
 .home-link .selo-exemplo { margin: 0; }
 .home-link span { display: block; font-size: 13px; color: var(--text-soft); margin-top: 2px; }
@@ -110,3 +112,4 @@ a.fech-selo:hover { filter: brightness(1.25); text-decoration: underline; text-u
 .fech-link:focus-visible, a.fech-selo:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
 
 .fech-unidade b .fech-link { display: inline-block; padding: 6px 0; }
+@media (max-width: 720px) { .fech-unidade b .fech-link { padding: 12px 0; } }

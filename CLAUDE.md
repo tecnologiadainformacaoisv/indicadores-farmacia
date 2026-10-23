@@ -43,6 +43,7 @@ projeto-indicadores-farmacia/
 ├── data/                   ← planilha-fonte local (fora do git)
 ├── tests/                  ← api.test.js (servidor) e front.test.js (telas): `node tests/api.test.js`
 ├── tools/visual/           ← capturas de tela em navegador real com servidor simulado (ver docs/DESIGN.md)
+│                             (`auditar-bordas.js`: mede o contraste das bordas nas telas e nos dois temas)
 └── docs/
     ├── BRIEFING.md         ← regras de negócio definidas com a Tereza
     ├── DESIGN.md           ← método e decisões de design, receita para repetir

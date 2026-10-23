@@ -1,5 +1,15 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.5.10 – 2026-10-23
+### Corrigido
+- Tema claro: bordas dos cartões, abas, filtros, botões e campos estavam quase invisíveis (contraste 1,1:1 a 1,5:1). Cartões e divisórias ficaram um pouco mais marcados e campos e botões chegaram a ~3:1 (WCAG 1.4.11), nos dois temas
+- Nova auditoria automática de bordas (`tools/visual/auditar-bordas.js`): mede o contraste de cada borda em todas as telas e nos dois temas
+- Tela inicial: cartões "Ir para" passam a ter fundo próprio e o aviso de ambiente de teste não encosta mais nos cartões
+- Contraste de texto no tema claro: texto auxiliar, selos de atenção e de meta atingida, avatar, migalhas e "Dados de exemplo" passam de 4,5:1
+- Botões desabilitados (Salvar alterações, filtros, Cadastrar) com cor própria em vez de transparência: o texto agora se lê
+- Celular: botões do cabeçalho, links do rodapé, migalhas, selos clicáveis, abas do dashboard e botões de salvar com área de toque de 44 px
+- Alertas do acompanhamento sem espaço antes dos dois pontos; ações da lista de usuários com largura igual; dica do usuário cabe numa linha
+
 ## v0.5.9 – 2026-10-22
 ### Corrigido
 - Aviso de servidor lento com fundo opaco no tema escuro

@@ -218,8 +218,8 @@ function renderClinica() {
     const vals = calcs.map(c => c[k.key]).filter(v => v !== null);
     const val = vals.length ? avg(vals) : null;
     const st = status(k.key, val);
-    if (st === 'err') alertsDiv.innerHTML += `<div class="alert-item err"><span class="alert-icon">🔴</span><b>${k.label}</b>: ${fmtVal(val)} — abaixo da meta de ${metas[k.key].val}% em ${MONTHS_FULL[month]}. Verificar ação corretiva.</div>`;
-    else if (st === 'warn') alertsDiv.innerHTML += `<div class="alert-item warn"><span class="alert-icon">🟡</span><b>${k.label}</b>: ${fmtVal(val)} — próximo ao limite da meta (${metas[k.key].val}%).</div>`;
+    if (st === 'err') alertsDiv.innerHTML += `<div class="alert-item err"><span class="alert-icon">🔴</span><span><b>${k.label}</b>: ${fmtVal(val)} — abaixo da meta de ${metas[k.key].val}% em ${MONTHS_FULL[month]}. Verificar ação corretiva.</span></div>`;
+    else if (st === 'warn') alertsDiv.innerHTML += `<div class="alert-item warn"><span class="alert-icon">🟡</span><span><b>${k.label}</b>: ${fmtVal(val)} — próximo ao limite da meta (${metas[k.key].val}%).</span></div>`;
   });
 
   // Charts by month trend
@@ -307,8 +307,8 @@ function renderLogistica() {
     const vals = calcs.map(c => c[k.key]).filter(v => v !== null);
     const val = vals.length ? avg(vals) : null;
     const st = status(k.key, val);
-    if (st === 'err') alertsDiv.innerHTML += `<div class="alert-item err"><span class="alert-icon">🔴</span><b>${k.label}</b>: ${fmtVal(val)} — fora da meta de ${metas[k.key].val}% em ${MONTHS_FULL[month]}.</div>`;
-    else if (st === 'warn') alertsDiv.innerHTML += `<div class="alert-item warn"><span class="alert-icon">🟡</span><b>${k.label}</b>: ${fmtVal(val)} — próximo ao limite (meta: ${metas[k.key].val}%).</div>`;
+    if (st === 'err') alertsDiv.innerHTML += `<div class="alert-item err"><span class="alert-icon">🔴</span><span><b>${k.label}</b>: ${fmtVal(val)} — fora da meta de ${metas[k.key].val}% em ${MONTHS_FULL[month]}.</span></div>`;
+    else if (st === 'warn') alertsDiv.innerHTML += `<div class="alert-item warn"><span class="alert-icon">🟡</span><span><b>${k.label}</b>: ${fmtVal(val)} — próximo ao limite (meta: ${metas[k.key].val}%).</span></div>`;
   });
 
   const labels = MONTHS;

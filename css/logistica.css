@@ -30,7 +30,7 @@
 .log-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
 .log-tab {
   min-height: 44px; padding: 0 18px;
-  border: 1px solid var(--instituto-border); border-radius: 10px;
+  border: 1px solid var(--borda-controle); border-radius: 10px;
   background: var(--instituto-surface); color: var(--text-soft);
   font: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
 }
@@ -107,13 +107,13 @@
 .log-tools { display: flex; align-items: center; }
 .log-filtro {
   min-height: 44px; padding: 0 16px;
-  border: 1px solid var(--instituto-border); border-radius: 10px;
+  border: 1px solid var(--borda-controle); border-radius: 10px;
   background: var(--instituto-surface); color: var(--text-soft);
   font: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
 }
 .log-filtro .count { font-weight: 600; }
 .log-filtro[aria-pressed="true"] { background: var(--err-bg); border-color: var(--c-err); color: var(--c-err); }
-.log-filtro:disabled { opacity: .5; cursor: default; }
+.log-filtro:disabled { background: var(--soft); border-color: var(--instituto-border); color: var(--text-soft); cursor: default; }
 
 /* barra de salvar, fixa no rodapé da janela */
 .save-bar {
@@ -128,7 +128,7 @@
 #save-info.pendente { color: var(--alert-warn-text); font-weight: 700; }
 #save-info.salvo { color: var(--c-ok); font-weight: 700; }
 .log-dica { font-size: 13px; color: var(--text-soft); margin: -4px 0 12px; }
-#btnSalvar:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+#btnSalvar:disabled { background: var(--soft); border: 1px solid var(--instituto-border); color: var(--text-soft); opacity: 1; cursor: not-allowed; transform: none; box-shadow: none; }
 
 /* celular: cada item vira um bloco (nome em cima, três campos lado a lado), sem rolagem lateral */
 @media (max-width: 700px) {
@@ -183,3 +183,9 @@
 .migalhas a:hover { text-decoration: underline; }
 .migalhas a:focus-visible { outline: 2px solid var(--instituto-secondary); outline-offset: 1px; }
 .migalhas [aria-current="page"] { color: var(--text-soft); font-weight: 700; }
+
+@media (max-width: 700px) {
+  .migalhas a { display: inline-block; padding: 12px 6px; }
+  #btnSalvar { min-height: 44px; }
+}
+.migalhas a { color: var(--title); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: color-mix(in srgb, var(--title) 40%, transparent); }
