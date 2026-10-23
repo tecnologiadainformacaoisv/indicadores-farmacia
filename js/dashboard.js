@@ -70,7 +70,7 @@ function lineDataset(label, data, color) {
     label, data,
     borderColor: color, borderWidth: 2.5,
     backgroundColor: ctx => makeGrad(ctx.chart.ctx, color),
-    fill: true, tension: 0.4,
+    fill: true, tension: 0.4, cubicInterpolationMode: 'monotone',
     pointBackgroundColor: color,
     pointBorderColor: themeVar('--chart-bg'),
     pointBorderWidth: 2,

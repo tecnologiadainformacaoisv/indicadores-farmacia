@@ -115,11 +115,11 @@ function goalPlugin(metaKey, color) {
       ctx.save();
       ctx.beginPath();
       ctx.setLineDash([6, 4]);
-      ctx.strokeStyle = color + 'bb';
+      ctx.strokeStyle = COL.txt2 || (color + 'bb'); // meta em cinza: a cor da série não vira cor de status
       ctx.lineWidth = 1.5;
       ctx.moveTo(left, yPos); ctx.lineTo(right, yPos);
       ctx.stroke();
-      ctx.fillStyle = color + 'bb';
+      ctx.fillStyle = COL.txt2 || (color + 'bb');
       ctx.font = '11px Segoe UI';
       ctx.fillText('Meta ' + meta.val + '%', right - 60, yPos - 4);
       ctx.restore();
@@ -132,7 +132,7 @@ function lineDS(label, data, color) {
     label, data,
     borderColor: color, borderWidth: 2.5,
     backgroundColor: ctx => makeGrad(ctx.chart.ctx, color),
-    fill: true, tension: 0.4,
+    fill: true, tension: 0.4, cubicInterpolationMode: 'monotone',
     pointBackgroundColor: data.map(v => v === null ? 'transparent' : color),
     pointBorderColor: themeVar('--chart-bg'), pointBorderWidth: 2,
     pointRadius: data.map(v => v === null ? 0 : 4),
@@ -313,10 +313,10 @@ function renderClinica() {
 
   setTimeout(() => {
     mkOrUpdate('c-conc',  'line', { data: { labels, datasets: [lineDS('Conc.', byMonth('conciliacoes'), COL.teal)]  }, options: baseOpts(110), plugins: [goalPlugin('conciliacoes', COL.teal)] });
-    mkOrUpdate('c-presc', 'line', { data: { labels, datasets: [lineDS('Presc.', byMonth('prescricoes'), COL.blue)] }, options: baseOpts(110), plugins: [goalPlugin('prescricoes', COL.blue)] });
-    mkOrUpdate('c-prm',   'bar',  { data: { labels, datasets: [barDS('PRM', byMonth('prm'), COL.amber)]            }, options: baseOpts(),    plugins: [goalPlugin('prm', COL.amber)] });
-    mkOrUpdate('c-interv','line', { data: { labels, datasets: [lineDS('Interv.', byMonth('intervencoes'), COL.rose)]}, options: baseOpts(110),plugins: [goalPlugin('intervencoes', COL.rose)] });
-    mkOrUpdate('c-altas', 'bar',  { data: { labels, datasets: [barDS('Altas', byMonth('altas'), COL.purple)]       }, options: baseOpts(110), plugins: [goalPlugin('altas', COL.purple)] });
+    mkOrUpdate('c-presc', 'line', { data: { labels, datasets: [lineDS('Presc.', byMonth('prescricoes'), COL.teal)] }, options: baseOpts(110), plugins: [goalPlugin('prescricoes', COL.teal)] });
+    mkOrUpdate('c-prm',   'bar',  { data: { labels, datasets: [barDS('PRM', byMonth('prm'), COL.teal)]            }, options: baseOpts(),    plugins: [goalPlugin('prm', COL.teal)] });
+    mkOrUpdate('c-interv','line', { data: { labels, datasets: [lineDS('Interv.', byMonth('intervencoes'), COL.teal)]}, options: baseOpts(110),plugins: [goalPlugin('intervencoes', COL.teal)] });
+    mkOrUpdate('c-altas', 'bar',  { data: { labels, datasets: [barDS('Altas', byMonth('altas'), COL.teal)]       }, options: { ...baseOpts(110), aspectRatio: 4 }, plugins: [goalPlugin('altas', COL.teal)] });
   }, 30);
 
   // Table
@@ -403,11 +403,11 @@ function renderLogistica() {
   `;
 
   setTimeout(() => {
-    mkOrUpdate('l-desab',  'line', { data: { labels, datasets: [lineDS('Desab.', byMonth('desabastecimento'), COL.teal)]   }, options: baseOpts(), plugins: [goalPlugin('desabastecimento', COL.teal)] });
-    mkOrUpdate('l-perdas', 'bar',  { data: { labels, datasets: [barDS('Perdas', byMonth('perdas'), COL.rose)]              }, options: baseOpts(), plugins: [goalPlugin('perdas', COL.rose)] });
-    mkOrUpdate('l-nc',     'line', { data: { labels, datasets: [lineDS('NC', byMonth('nconformidades'), COL.amber)]        }, options: baseOpts(), plugins: [goalPlugin('nconformidades', COL.amber)] });
-    mkOrUpdate('l-estoque','line', { data: { labels, datasets: [lineDS('Estoque', byMonth('estoque'), COL.blue)]           }, options: baseOpts(105), plugins: [goalPlugin('estoque', COL.blue)] });
-    mkOrUpdate('l-emerg',  'bar',  { data: { labels, datasets: [barDS('Emerg.', byMonth('emergenciais'), COL.purple)]      }, options: baseOpts(), plugins: [goalPlugin('emergenciais', COL.purple)] });
+    mkOrUpdate('l-desab',  'line', { data: { labels, datasets: [lineDS('Desab.', byMonth('desabastecimento'), COL.purple)]   }, options: baseOpts(), plugins: [goalPlugin('desabastecimento', COL.purple)] });
+    mkOrUpdate('l-perdas', 'bar',  { data: { labels, datasets: [barDS('Perdas', byMonth('perdas'), COL.purple)]              }, options: baseOpts(), plugins: [goalPlugin('perdas', COL.purple)] });
+    mkOrUpdate('l-nc',     'line', { data: { labels, datasets: [lineDS('NC', byMonth('nconformidades'), COL.purple)]        }, options: baseOpts(), plugins: [goalPlugin('nconformidades', COL.purple)] });
+    mkOrUpdate('l-estoque','line', { data: { labels, datasets: [lineDS('Estoque', byMonth('estoque'), COL.purple)]           }, options: baseOpts(105), plugins: [goalPlugin('estoque', COL.purple)] });
+    mkOrUpdate('l-emerg',  'bar',  { data: { labels, datasets: [barDS('Emerg.', byMonth('emergenciais'), COL.purple)]      }, options: { ...baseOpts(), aspectRatio: 4 }, plugins: [goalPlugin('emergenciais', COL.purple)] });
   }, 30);
 
   const tbody = document.querySelector('#table-logistica tbody');

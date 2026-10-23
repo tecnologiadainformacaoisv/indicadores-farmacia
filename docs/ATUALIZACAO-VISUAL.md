@@ -30,6 +30,8 @@ Para ativar só parte: levar os arquivos/trechos do recurso desejado (tabela aba
 | Letra maior (botão A+) | todas | `js/theme.js`, `css/isv.css` |
 | Atalho Ctrl+K / "/" para a busca | todas | `js/api.js` |
 | Anel do painel pulsa ao concluir | Início | `js/index.js`, `css/home.css` |
+| Gráficos em cor neutra (azul na Clínica, violeta na Logística), meta tracejada em cinza; status só nos selos e alertas | Indicadores | `js/indicadores.js` |
+| Gráficos largos (Altas, Emergenciais) mais altos; curvas sem ultrapassar 100% (interpolação monotônica) | Indicadores, Dashboard | `js/indicadores.js`, `js/dashboard.js` |
 | Fundo "painel de dados" (contornos fantasmas de KPI, barras, linha, rosca, tabela e mapa de calor, a 6,5%) + logo pequeno no canto | todas | `css/isv.css`, `assets/fundo-dados.svg` |
 | Faixa de gráficos na entrada (área, barras e linha de meta; saudação por cima) | Início | `css/home.css`, `assets/hero-dados.svg` |
 | Ferramentas de preview e capturas com servidor simulado | desenvolvimento | `tools/visual/` |
@@ -51,6 +53,6 @@ Observações: o logo tem 256 px (um SVG ficaria mais nítido); a faixa soma ~70
 
 ## Fora desta atualização (já publicado no main)
 
-v0.5.2 a v0.5.8: ordenar cobertura com um clique, migalhas de pão na planilha, links da unidade e dos selos na tela inicial da coordenação (`?unidade=<id>`), correções da revisão, página "Como usar", link "Relatar problema ou sugestão" (e-mail da TI), aviso de servidor lento e mensagens de lista vazia. Ao juntar este branch ao main haverá conflito na ordenação da planilha ("Ordenar por criticidade" do branch x "Ordenar por cobertura" do main): ficar com a do main.
+v0.5.2 a v0.5.8: ordenar cobertura com um clique, migalhas de pão na planilha, links da unidade e dos selos na tela inicial da coordenação (`?unidade=<id>`), correções da revisão, página "Como usar", link "Relatar problema ou sugestão" (e-mail da TI), aviso de servidor lento e mensagens de lista vazia. O main até a v0.5.11 já foi trazido para este branch (merge de 2026-10-23); a ordenação da planilha ficou a do main ("Ordenar por cobertura").
 
 Observações da revisão: a máscara do fundo só é aplicada onde o navegador a suporta (`@supports`); `tools/visual/projecao-fundo.html` grava a sessão simulada no `localStorage` do domínio onde for servida, então só use no preview local; ao juntar ao main, subir `js/version.js` e o `CHANGELOG.md`. O rodapé da página de ajuda e o aviso de servidor lento (v0.5.9 do main) já estão no main.
