@@ -68,8 +68,8 @@ const usuarios = [
 function responder(req, perfil) {
   switch (req.action) {
     case 'sessao': return sessao(perfil);
-    case 'indicadores.carregar': return { sessao: sessao(perfil), unidade: perfil === 'admin' ? '' : 'upa-centro', lancamentos: perfil === 'admin' ? lancamentos : lancamentos.filter(l => l.unidade === 'upa-centro'), metas: METAS };
-    case 'logistica.carregar': return { sessao: sessao(perfil), logistica: logistica(perfil) };
+    case 'indicadores.carregar': { const un = perfil === 'admin' ? (req.unidade === undefined ? '' : req.unidade) : 'upa-centro'; return { sessao: sessao(perfil), unidade: un, lancamentos: un ? lancamentos.filter(l => l.unidade === un) : lancamentos, metas: METAS }; }
+    case 'logistica.carregar': return { sessao: sessao(perfil), logistica: { ...logistica(perfil), unidade: perfil === 'admin' && req.unidade ? req.unidade : 'upa-centro' } };
     case 'usuarios.carregar': return { sessao: sessao('admin'), usuarios };
     case 'painel.carregar': return painel(perfil);
     default: return null;
