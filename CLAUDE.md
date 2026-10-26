@@ -12,7 +12,7 @@ Sistema para os **coordenadores farmacêuticos das unidades de saúde** lançare
 - **Piloto:** Caucaia, começando pelas UPAs (modelo de planilha UPA). Unidades e apelidos em [`../UNIDADES-ISV.md`](../UNIDADES-ISV.md).
 - **Mês de referência:** sempre o mês que fechou. Só ele fica aberto; os anteriores ficam visíveis e bloqueados.
 
-**Stack:** front estático (HTML/CSS/JS vanilla + Chart.js 4.4.1, GitHub Pages) + API em **Google Apps Script** (Web App na conta da TI) + **Planilhas Google** como base.
+**Stack:** front estático (HTML/CSS/JS vanilla + Chart.js 4.4.1, GitHub Pages) em **https://farmacia.institutosaovicente.com.br** (CNAME no DNS da HostGator → `tecnologiadainformacaoisv.github.io`; arquivo `CNAME` na raiz; o endereço antigo `github.io` redireciona para o novo) + API em **Google Apps Script** (Web App na conta da TI) + **Planilhas Google** como base.
 
 ---
 
