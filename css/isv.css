@@ -249,7 +249,7 @@ html[data-fonte="grande"] body { zoom: 1.12; }
     content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
     -webkit-mask: url("../assets/fundo-dados.svg") 0 0 / 520px 340px repeat;
     mask: url("../assets/fundo-dados.svg") 0 0 / 520px 340px repeat;
-    background: var(--title); opacity: .045;
+    background: #000; opacity: .07; /* tema claro: preto, para as linhas aparecerem sobre o fundo cinza-claro */
   }
 }
 :root[data-theme="dark"] body::after { background: #9fc3e6; opacity: .07; }
