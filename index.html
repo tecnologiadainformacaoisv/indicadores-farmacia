@@ -32,9 +32,47 @@
 <main class="page-content home-main">
 
   <!-- LOGIN -->
-  <section id="view-login" hidden>
+  <section id="view-login" class="login-split" hidden>
+    <aside class="login-previa" id="login-previa">
+      <p class="login-previa__kicker">Indicadores da Farmácia</p>
+      <h2 class="login-previa__titulo">Cada unidade lança. A coordenação acompanha.</h2>
+      <div class="lp-janela" aria-hidden="true">
+        <div class="lp-trilho">
+          <article class="lp-slide">
+            <h3>Fechamento do mês</h3>
+            <div class="lp-fech">
+              <div class="lp-anel" style="--p:72"><b>72%</b></div>
+              <ul>
+                <li><i class="ok"></i>Indicadores do mês</li>
+                <li><i class="ok"></i>Metas da unidade</li>
+                <li><i></i>Planilha de saídas</li>
+              </ul>
+            </div>
+          </article>
+          <article class="lp-slide">
+            <h3>Resultado contra a meta</h3>
+            <div class="lp-barras">
+              <span style="--h:62"></span><span style="--h:78"></span><span style="--h:70"></span><span style="--h:91"></span><span style="--h:84"></span>
+              <em style="--h:80"></em>
+            </div>
+            <p class="lp-legenda">Últimos 5 meses · linha = meta</p>
+          </article>
+          <article class="lp-slide">
+            <h3>Cobertura de estoque</h3>
+            <div class="lp-hbarras">
+              <div><span>Dipirona</span><i style="--w:88"></i></div>
+              <div><span>Soro 0,9%</span><i style="--w:64"></i></div>
+              <div><span>Ceftriaxona</span><i style="--w:18" class="crit"></i></div>
+            </div>
+            <p class="lp-legenda">Dias de estoque por item</p>
+          </article>
+        </div>
+      </div>
+      <div class="lp-pontos" aria-hidden="true"></div>
+    </aside>
     <form class="auth-card card-panel" id="form-login" novalidate>
-      <h2>Entrar</h2>
+      <img class="login-logo" src="assets/logo-isv.png" alt="" width="44" height="44">
+      <h2><span class="t-a">Entrar</span><span class="t-b">Bem-vindo de volta</span></h2>
       <p>Use o usuário e a senha que a coordenação farmacêutica enviou para você.</p>
       <div class="field">
         <label for="login-usuario">Usuário</label>
@@ -42,11 +80,22 @@
       </div>
       <div class="field">
         <label for="login-senha">Senha</label>
-        <input id="login-senha" type="password" aria-describedby="login-msg" autocomplete="current-password" required>
+        <div class="senha-wrap">
+          <input id="login-senha" type="password" aria-describedby="login-msg login-caps" autocomplete="current-password" required>
+          <button type="button" class="olho" id="login-olho" aria-pressed="false" aria-label="Mostrar senha">
+            <svg class="olho-riscado" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.9 17.9A10.1 10.1 0 0 1 12 19.5c-6.4 0-10-7.5-10-7.5a17.7 17.7 0 0 1 4.1-5.1M9.9 4.6A9.6 9.6 0 0 1 12 4.5c6.4 0 10 7.5 10 7.5a17.7 17.7 0 0 1-2.2 3.2M14.1 14.1a3 3 0 1 1-4.2-4.2"/><path d="M2 2l20 20"/></svg>
+            <svg class="olho-aberto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <p class="caps-aviso" id="login-caps" hidden>Caps Lock está ligado.</p>
       </div>
+      <button type="button" class="esqueceu" id="login-esqueceu">Esqueceu a senha?</button>
       <label class="show-pass"><input type="checkbox" data-mostrar-senha> Mostrar senha</label>
       <p class="form-msg" id="login-msg" role="alert"></p>
-      <button class="btn btn--primary btn-block" type="submit">Entrar</button>
+      <button class="btn btn--primary btn-block" type="submit"><span class="spin" aria-hidden="true"></span>Entrar</button>
+      <p class="login-confianca">Acesso restrito a colaboradores do Instituto São Vicente.</p>
+      <p class="login-ajuda" id="login-ajuda"><span class="aj-txt">Esqueceu a senha? Peça à coordenação farmacêutica para redefinir.</span> <a href="ajuda.html">Como usar</a></p>
+      <p class="login-rodape"><span>Instituto São Vicente</span><span>versão <span data-app-version></span></span></p>
     </form>
   </section>
 
@@ -123,5 +172,7 @@
 <script src="js/version.js"></script>
 <script src="js/api.js"></script>
 <script src="js/index.js"></script>
+<script src="js/login-previa.js"></script>
+<script src="js/login-seletor.js"></script>
 </body>
 </html>

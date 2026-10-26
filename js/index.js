@@ -182,6 +182,7 @@ document.getElementById('form-login').addEventListener('submit', async ev => {
   const senha = document.getElementById('login-senha').value;
   if (!login || !senha) { msg('login-msg', 'Informe usuário e senha.', 'erro'); return; }
   btn.disabled = true;
+  btn.classList.add('carregando');
   msg('login-msg', 'Entrando…');
   try {
     const r = await api('login', { login, senha });
@@ -193,8 +194,36 @@ document.getElementById('form-login').addEventListener('submit', async ev => {
     msg('login-msg', e.message + (/incorretos/.test(e.message) ? ' Se esqueceu a senha, peça à coordenação farmacêutica para redefinir.' : ''), 'erro');
   } finally {
     btn.disabled = false;
+    btn.classList.remove('carregando');
   }
 });
+
+// "Esqueceu a senha?": mostra a orientação (não há redefinição automática; é a coordenação que redefine)
+(function () {
+  const b = document.getElementById('login-esqueceu');
+  const aj = document.getElementById('login-ajuda');
+  if (!b || !aj) return;
+  b.setAttribute('aria-expanded', 'false');
+  b.addEventListener('click', () => { b.setAttribute('aria-expanded', String(aj.classList.toggle('aberta'))); });
+})();
+
+// botão "olho" dentro do campo de senha e aviso de Caps Lock
+(function () {
+  const senha = document.getElementById('login-senha');
+  const olho = document.getElementById('login-olho');
+  const caps = document.getElementById('login-caps');
+  if (!senha || !olho || !caps) return;
+  olho.addEventListener('click', () => {
+    const ver = senha.type === 'password';
+    senha.type = ver ? 'text' : 'password';
+    olho.setAttribute('aria-pressed', String(ver));
+    olho.setAttribute('aria-label', ver ? 'Ocultar senha' : 'Mostrar senha');
+  });
+  const checar = ev => { caps.hidden = !(ev.getModifierState && ev.getModifierState('CapsLock')); };
+  senha.addEventListener('keydown', checar);
+  senha.addEventListener('keyup', checar);
+  senha.addEventListener('blur', () => { caps.hidden = true; });
+})();
 
 document.getElementById('form-senha').addEventListener('submit', async ev => {
   ev.preventDefault();
