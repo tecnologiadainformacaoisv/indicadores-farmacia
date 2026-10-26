@@ -1,5 +1,9 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.6.3 – 2026-10-26
+### Ajustado
+- Relatório mensal: tabelas mais compactas (tipo do item na mesma linha do nome, menos espaço entre linhas); o relatório da UPA Centro/maio caiu de 21 para 14 páginas
+
 ## v0.6.2 – 2026-10-26
 ### Ajustado
 - Relatório mensal usa o **papel timbrado oficial do ISV** (extraído do relatório da Tereza): topo com logo e faixas, marca d'água e rodapé com contatos, em todas as páginas impressas e na prévia

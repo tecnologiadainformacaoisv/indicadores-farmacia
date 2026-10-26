@@ -59,17 +59,17 @@
 .r-kpis small { display: block; font-size: 10.5px; color: #7a8794; margin-top: 3px; }
 
 /* tabelas */
-.r-tab { width: 100%; border-collapse: collapse; margin: 6px 0 10px; font: 11px/1.35 'Segoe UI', system-ui, sans-serif; font-variant-numeric: tabular-nums; }
-.r-tab th { text-align: left; font-size: 9.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #7a8794; padding: 4px 6px; border-bottom: 1px solid #c9d2db; }
-.r-tab td { padding: 4px 6px; border-bottom: 1px solid #e6ebf0; vertical-align: top; }
+.r-tab { width: 100%; border-collapse: collapse; margin: 6px 0 10px; font: 10.5px/1.25 'Segoe UI', system-ui, sans-serif; font-variant-numeric: tabular-nums; }
+.r-tab th { text-align: left; font-size: 9px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: #7a8794; padding: 3px 6px; border-bottom: 1px solid #c9d2db; }
+.r-tab td { padding: 2px 6px; border-bottom: 1px solid #e6ebf0; vertical-align: top; }
 .r-tab th.n, .r-tab td.n { text-align: right; white-space: nowrap; }
 .r-tab tr { break-inside: avoid; }
 .r-tab thead { display: table-header-group; }
 .r-tab .tot td { font-weight: 700; border-top: 1px solid #c9d2db; }
-.r-item small { display: block; font-size: 9px; color: #7a8794; text-transform: capitalize; }
+.r-item small { display: inline; margin-left: 6px; font-size: 8.5px; color: #7a8794; text-transform: capitalize; white-space: nowrap; }
 .r-crit { color: #44566a; }
 .r-quad { display: inline-block; width: 8px; height: 8px; margin-right: 6px; background: var(--c); border-radius: 1px; }
-.r-anexo td, .r-anexo th { font-size: 10px; padding: 3px 5px; }
+.r-anexo td, .r-anexo th { font-size: 9.5px; padding: 1.5px 5px; }
 
 /* barras de situação do estoque: o número dentro do trecho; a cor só reforça */
 .r-barras { display: grid; gap: 8px; margin: 8px 0 10px; font-family: 'Segoe UI', system-ui, sans-serif; }
