@@ -31,13 +31,13 @@
 .rel-folha[hidden] { display: none; }
 .rel-papel { width: 100%; border-collapse: collapse; }
 .rel-papel > thead > tr > td, .rel-papel > tfoot > tr > td, .rel-papel > tbody > tr > td { padding: 0; }
-.rel-corpo { padding: 6px 40px 22px; }
+.rel-corpo { padding: 14px 44px 22px; }
 
-.timbre { display: flex; align-items: center; justify-content: center; gap: 14px; padding: 18px 40px 10px; border-bottom: 3px solid #27ae60; margin-bottom: 10px; }
-.timbre img { width: 64px; height: 64px; }
-.timbre__nome { font-size: 15px; letter-spacing: .14em; color: #0a3d62; line-height: 1.15; }
-.timbre__nome b { font-size: 21px; letter-spacing: .1em; }
-.timbre-rodape { display: flex; flex-direction: column; gap: 2px; padding: 8px 40px 14px; border-top: 4px solid #0a3d62; font: 10px/1.35 'Segoe UI', system-ui, sans-serif; color: #44566a; }
+/* papel timbrado do ISV (extraído do relatório da Tereza): topo, marca d'água e rodapé */
+.timbre-topo { aspect-ratio: 990 / 125; background: url("../assets/timbrado-topo.png") 0 0 / 100% 100% no-repeat; }
+.timbre-rod { position: relative; aspect-ratio: 990 / 149; container-type: inline-size; background: url("../assets/timbrado-rodape.png") 0 0 / 100% 100% no-repeat; }
+.timbre-rod span { position: absolute; left: 8.6%; right: 3%; top: var(--y); transform: translateY(-50%); font: 1.2cqw/1.2 'Segoe UI', system-ui, sans-serif; color: #2b3a4a; white-space: nowrap; }
+.rel-corpo { background: url("../assets/timbrado-marca.png") center top / 100% auto repeat-y; }
 
 .r-kicker { font: 600 10.5px 'Segoe UI', system-ui, sans-serif; letter-spacing: .02em; color: #566376; margin-top: 6px; }
 .r-titulo { font-family: Georgia, 'Times New Roman', serif; font-size: 25px; line-height: 1.2; font-weight: 700; color: #0a3d62; margin: 6px 0 8px; }
@@ -82,22 +82,26 @@
   .rel-main { padding: 16px 14px 40px; }
   .rel-folha { width: 100%; overflow-x: auto; }
   .rel-corpo { padding: 6px 16px 18px; }
-  .timbre, .timbre-rodape { padding-left: 16px; padding-right: 16px; }
   .r-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .rel-filtros { width: 100%; }
   .rel-campo { flex: 1; }
   .rel-filtros .btn { width: 100%; }
 }
 
-/* ── impressão: só a folha, em A4, cabeçalho e rodapé do papel timbrado em todas as páginas ── */
-@page { size: A4; margin: 8mm 0; }
+/* ── impressão: só a folha, em A4; o topo se repete em cada página e o rodapé fica fixo no pé de todas ── */
+@page { size: A4; margin: 0; }
 @media print {
-  html, body { background: #fff !important; }
+  html { background: #fff !important; }
+  body { background: transparent !important; }
   .page-header, .migalhas, .rel-top, .notice, .app-footer, .aviso-lento { display: none !important; }
   .rel-main { max-width: none; padding: 0; margin: 0; }
-  .rel-folha { width: auto; margin: 0; border: 0; border-radius: 0; box-shadow: none; }
+  .rel-folha { width: auto; margin: 0; border: 0; border-radius: 0; box-shadow: none; background: transparent; }
   .rel-papel > thead { display: table-header-group; }
   .rel-papel > tfoot { display: table-footer-group; }
-  .r-segs span, .r-quad, .timbre, .timbre-rodape, .rel-corpo h2 { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .rel-papel > tfoot td { height: 34mm; }
+  .timbre-rod { position: fixed; left: 0; bottom: 0; width: 210mm; }
+  .rel-corpo { background: none; padding: 4mm 12mm 0; }
+  body::before { content: ""; position: fixed; left: 0; top: 24mm; width: 210mm; height: 237mm; z-index: -1; background: url("../assets/timbrado-marca.png") center / 100% 100% no-repeat; }
+  .timbre-topo, .timbre-rod, .r-segs span, .r-quad, .rel-corpo h2 { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .r-quebra { break-before: page; }
 }

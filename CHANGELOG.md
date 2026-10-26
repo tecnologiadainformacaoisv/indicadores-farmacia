@@ -1,5 +1,9 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.6.2 – 2026-10-26
+### Ajustado
+- Relatório mensal usa o **papel timbrado oficial do ISV** (extraído do relatório da Tereza): topo com logo e faixas, marca d'água e rodapé com contatos, em todas as páginas impressas e na prévia
+
 ## v0.6.1 – 2026-10-26
 ### Ajustado
 - "Relatório mensal" no menu lateral do acompanhamento (só a coordenação), abrindo na unidade que ela está vendo; `relatorios.html?unidade=` inválida abre a unidade padrão
