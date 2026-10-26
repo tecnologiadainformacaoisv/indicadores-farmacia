@@ -1,5 +1,9 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.6.4 – 2026-10-26
+### Ajustado
+- Tela de relatórios: título, descrição, seletores de unidade e mês e botão de imprimir centralizados (as migalhas continuam à esquerda)
+
 ## v0.6.3 – 2026-10-26
 ### Ajustado
 - Relatório mensal: tabelas mais compactas (tipo do item na mesma linha do nome, menos espaço entre linhas); o relatório da UPA Centro/maio caiu de 21 para 14 páginas

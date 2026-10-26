@@ -1,10 +1,10 @@
 /* Relatórios: controles na tela (tokens do sistema) e folha A4 em papel branco (valores fixos: o papel não muda com o tema) */
 
 .rel-main { flex: 1; width: 100%; max-width: 980px; margin: 0 auto; padding: 24px 32px 48px; }
-.rel-top { display: flex; flex-wrap: wrap; gap: 14px 24px; justify-content: space-between; align-items: flex-end; margin-bottom: 16px; }
+.rel-top { display: flex; flex-direction: column; gap: 14px; align-items: center; text-align: center; margin-bottom: 16px; }
 .rel-title { font-size: 20px; color: var(--title); }
-.rel-sub { font-size: 14px; color: var(--text-soft); margin-top: 2px; max-width: 56ch; }
-.rel-filtros { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: flex-end; }
+.rel-sub { font-size: 14px; color: var(--text-soft); margin: 2px auto 0; max-width: 56ch; }
+.rel-filtros { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: flex-end; justify-content: center; text-align: left; }
 .rel-campo { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600; }
 .rel-select {
   min-height: 44px; padding: 0 12px; min-width: 160px;
