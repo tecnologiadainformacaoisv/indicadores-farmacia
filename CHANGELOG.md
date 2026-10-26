@@ -1,5 +1,9 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.6.1 – 2026-10-26
+### Ajustado
+- "Relatório mensal" no menu lateral do acompanhamento (só a coordenação), abrindo na unidade que ela está vendo; `relatorios.html?unidade=` inválida abre a unidade padrão
+
 ## v0.6.0 – 2026-10-26
 ### Adicionado
 - Nova tela **Relatórios** (só a coordenação do Instituto): escolhe a unidade e o mês, vê a prévia do relatório mensal de farmácia e imprime ou salva em PDF (papel timbrado do ISV, A4, cabeçalho e rodapé em todas as páginas)

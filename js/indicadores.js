@@ -546,6 +546,11 @@ function exibirCarga(r) {
   if (!validarSessao(info)) return;
   const q = info.usuario.perfil === 'admin' && unidadeSel ? '?unidade=' + encodeURIComponent(unidadeSel) : '';
   document.querySelectorAll('a[href^="logistica.html"]').forEach(a => { a.href = 'logistica.html' + q; });
+  // o relatório é só da coordenação do Instituto e abre na unidade que ela está vendo
+  const admin = info.usuario.perfil === 'admin';
+  document.getElementById('nav-rel').hidden = !admin;
+  document.getElementById('nav-rel-titulo').hidden = !admin;
+  document.getElementById('nav-rel').href = 'relatorios.html' + q;
   if (!unidadesProntas) {
     unidadesProntas = true;
     document.getElementById('monthSel').value = info.mesAberto.mes;

@@ -226,7 +226,9 @@ if (typeof document !== 'undefined' && typeof module === 'undefined') (function 
   const $ = id => document.getElementById(id);
   let info = null;
   let planilha = null;
-  let unidadeSel = '';
+  let tentouEndereco = false;
+  const doEndereco = new URLSearchParams(location.search).get('unidade');
+  let unidadeSel = doEndereco && /^[A-Za-z0-9_.-]+$/.test(doEndereco) ? doEndereco : '';   // atalho da tela de acompanhamento
 
   function setStatus(texto, tipo) {
     const el = $('rel-status');
@@ -280,6 +282,7 @@ if (typeof document !== 'undefined' && typeof module === 'undefined') (function 
       setStatus('');
       desenhar();
     } catch (e) {
+      if (unidadeSel && !planilha && !tentouEndereco) { tentouEndereco = true; unidadeSel = ''; return carregar(); }   // ?unidade= inválida: abre a padrão
       $('rel-folha').hidden = true;
       setStatus(e.message, 'erro');
     }
