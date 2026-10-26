@@ -140,3 +140,6 @@ a.fech-selo:hover { filter: brightness(1.25); text-decoration: underline; text-u
   .home-hello h2 { color: var(--title); }
   .home-hello p { color: var(--text-soft); }
 }
+
+/* tema claro: descrição dos atalhos em preto a 75% (o cinza ficava claro demais sobre o fundo de linhas) */
+:root:not([data-theme="dark"]) .home-link span { color: rgba(0, 0, 0, .75); }
