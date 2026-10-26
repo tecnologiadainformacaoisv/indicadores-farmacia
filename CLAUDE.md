@@ -24,6 +24,7 @@ projeto-indicadores-farmacia/
 ├── indicadores.html        ← acompanhamento mensal (lançamento + metas + gráficos)
 ├── logistica.html          ← planilha de saídas: lançamento item por item
 ├── usuarios.html           ← cadastro de coordenadores (só admin)
+├── relatorios.html         ← relatório mensal de farmácia por unidade: prévia + imprimir/PDF (só admin; lê a planilha de saídas)
 ├── ajuda.html              ← "Como usar": passo a passo curto (sem login)
 ├── dashboard.html          ← dashboard (só admin; dados de EXEMPLO fixos, ainda não ligado à base)
 ├── .clasp.json             ← ID do projeto Apps Script (a conta logada no clasp precisa ser a da TI)
@@ -34,12 +35,12 @@ projeto-indicadores-farmacia/
 ├── css/
 │   ├── instituto.css       ← cópia de ../shared/styles/instituto.css (tokens ISV)
 │   ├── isv.css             ← tema claro/escuro, cabeçalho, rodapé, login, avisos (comum)
-│   └── home.css · dashboard.css · indicadores.css · logistica.css · usuarios.css · ajuda.css
+│   └── home.css · dashboard.css · indicadores.css · logistica.css · usuarios.css · relatorios.css · ajuda.css
 ├── js/
 │   ├── version.js          ← ÚNICA fonte da versão exibida
 │   ├── theme.js            ← tema claro/escuro (carregado no <head>)
 │   ├── api.js              ← API_URL, chamadas à API, sessão, cabeçalho com usuário
-│   └── index.js · indicadores.js · logistica.js · usuarios.js · dashboard.js
+│   └── index.js · indicadores.js · logistica.js · usuarios.js · relatorios.js · dashboard.js
 ├── data/                   ← planilha-fonte local (fora do git)
 ├── tests/                  ← api.test.js (servidor) e front.test.js (telas): `node tests/api.test.js`
 ├── tools/visual/           ← capturas de tela em navegador real com servidor simulado (ver docs/DESIGN.md)
@@ -121,6 +122,7 @@ Tudo na pasta **"Indicadores Farmácia"** do Drive da **conta da TI** (ID na pro
 > Última atualização: 2026-10-23 (histórico do dia em `docs/HISTORICO.md`)
 
 - **Painel de fechamento:** tela inicial mostra o andamento do mês (rota `painel.carregar`, aba `Fechamento`); depois de publicar versões com ele, rode `recalcularFechamento` no editor.
+- **Relatórios (v0.6.0):** `relatorios.html` usa a rota `logistica.carregar` e calcula tudo no navegador (`js/relatorios.js`); sem mudança no servidor. Modelo: relatório da Tereza (hospital de Pacatuba, set/2026) em `data/`. Faltam: textos de análise (aguardando planilhas novas da Tereza), Portaria 344 e vencidos.
 - **Versão:** v0.5.10 (`js/version.js`), em teste com a Tereza. **Regra: toda mudança sobe a versão** (PATCH para correções e ajustes, MINOR para nova etapa do fluxo), alterando `js/version.js` e o `CHANGELOG.md` no mesmo commit, com tag `vX.Y.Z`.
 - **Implantado e em teste:** API (Web App na conta da TI), planilha "Sistema", usuário `tereza` e usuários de teste de coordenador, login, Clínica Geral na nuvem, metas por unidade e planilha de saídas item por item. `API_URL` já está em `js/api.js`.
 - Os testes usam a planilha com dados até **maio/2026** (`MES_ABERTO_TESTE = 2026-05` na aba `Config`). A versão atualizada só entra depois da validação da Tereza; antes de uso real, seguir o checklist de `docs/IMPLANTACAO.md`.

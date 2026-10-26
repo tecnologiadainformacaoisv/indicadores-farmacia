@@ -1,5 +1,13 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.6.0 – 2026-10-26
+### Adicionado
+- Nova tela **Relatórios** (só a coordenação do Instituto): escolhe a unidade e o mês, vê a prévia do relatório mensal de farmácia e imprime ou salva em PDF (papel timbrado do ISV, A4, cabeçalho e rodapé em todas as páginas)
+- O relatório segue o modelo da Tereza (hospital de Pacatuba, setembro/2026): resumo executivo, saídas contra o mês anterior (maiores altas e quedas), situação do estoque por faixa de cobertura, itens zerados, cobertura crítica e baixa com reposição sugerida, excesso e itens sem saída, verificações do registro e anexo com todos os itens
+- Os números vêm da planilha de saídas da unidade (mesma leitura da tela "Planilha de saídas"); nada é gravado e não há mudança no servidor
+- Ficam de fora por enquanto: textos de análise e recomendações, Portaria 344 e vencidos (o sistema ainda não tem essas abas)
+- Cartão "Relatórios" na tela inicial da coordenação
+
 ## v0.5.12 – 2026-10-26
 ### Corrigido
 - Celular: a seta de voltar do cabeçalho tem área de toque de 44 px de largura
