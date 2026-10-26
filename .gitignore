@@ -17,3 +17,7 @@ data/*.csv
 tools/visual/node_modules/
 tools/visual/out/
 tools/visual/package-lock.json
+
+# relatórios e planilhas com dados reais (o repositório é público)
+data/*.pdf
+data/TESTE*
