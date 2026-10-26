@@ -1,5 +1,11 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.5.12 – 2026-10-26
+### Corrigido
+- Celular: a seta de voltar do cabeçalho tem área de toque de 44 px de largura
+- Indicadores de limite máximo (PRM) dizem "Acima do limite" em vez de "Abaixo da meta"
+- Alertas do acompanhamento com ponto colorido em vez de emoji
+
 ## v0.5.11 – 2026-10-23
 ### Corrigido
 - Acompanhamento mensal: se a troca de unidade falhar (rede instável), a tela volta para a unidade anterior; antes "Salvar metas" podia gravar os valores de uma unidade na outra

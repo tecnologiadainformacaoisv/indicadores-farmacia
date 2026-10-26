@@ -207,7 +207,7 @@ function renderClinica() {
         <div class="kpi-label">${k.label}</div>
         <div class="kpi-val">${fmtVal(val)}</div>
         <div class="kpi-sub">Meta: ${m.val}% · ${m.dir === 'min' ? '↑ mínimo' : '↓ máximo'}</div>
-        ${val !== null ? `<span class="kpi-badge ${st}">${st === 'ok' ? '✓ Meta atingida' : st === 'warn' ? '⚠ Atenção' : '✗ Abaixo da meta'}</span>` : '<span class="kpi-badge warn">Sem dados</span>'}
+        ${val !== null ? `<span class="kpi-badge ${st}">${st === 'ok' ? '✓ Meta atingida' : st === 'warn' ? '⚠ Atenção' : (m.dir === 'max' ? '✗ Acima do limite' : '✗ Abaixo da meta')}</span>` : '<span class="kpi-badge warn">Sem dados</span>'}
       </div>`;
   });
 
@@ -218,8 +218,8 @@ function renderClinica() {
     const vals = calcs.map(c => c[k.key]).filter(v => v !== null);
     const val = vals.length ? avg(vals) : null;
     const st = status(k.key, val);
-    if (st === 'err') alertsDiv.innerHTML += `<div class="alert-item err"><span class="alert-icon">🔴</span><span><b>${k.label}</b>: ${fmtVal(val)} — abaixo da meta de ${metas[k.key].val}% em ${MONTHS_FULL[month]}. Verificar ação corretiva.</span></div>`;
-    else if (st === 'warn') alertsDiv.innerHTML += `<div class="alert-item warn"><span class="alert-icon">🟡</span><span><b>${k.label}</b>: ${fmtVal(val)} — próximo ao limite da meta (${metas[k.key].val}%).</span></div>`;
+    if (st === 'err') alertsDiv.innerHTML += `<div class="alert-item err"><span class="alert-icon" aria-hidden="true"></span><span><b>${k.label}</b>: ${fmtVal(val)} — ${metas[k.key].dir === 'max' ? 'acima do limite' : 'abaixo da meta'} de ${metas[k.key].val}% em ${MONTHS_FULL[month]}. Verificar ação corretiva.</span></div>`;
+    else if (st === 'warn') alertsDiv.innerHTML += `<div class="alert-item warn"><span class="alert-icon" aria-hidden="true"></span><span><b>${k.label}</b>: ${fmtVal(val)} — próximo ao limite da meta (${metas[k.key].val}%).</span></div>`;
   });
 
   // Charts by month trend
@@ -307,8 +307,8 @@ function renderLogistica() {
     const vals = calcs.map(c => c[k.key]).filter(v => v !== null);
     const val = vals.length ? avg(vals) : null;
     const st = status(k.key, val);
-    if (st === 'err') alertsDiv.innerHTML += `<div class="alert-item err"><span class="alert-icon">🔴</span><span><b>${k.label}</b>: ${fmtVal(val)} — fora da meta de ${metas[k.key].val}% em ${MONTHS_FULL[month]}.</span></div>`;
-    else if (st === 'warn') alertsDiv.innerHTML += `<div class="alert-item warn"><span class="alert-icon">🟡</span><span><b>${k.label}</b>: ${fmtVal(val)} — próximo ao limite (meta: ${metas[k.key].val}%).</span></div>`;
+    if (st === 'err') alertsDiv.innerHTML += `<div class="alert-item err"><span class="alert-icon" aria-hidden="true"></span><span><b>${k.label}</b>: ${fmtVal(val)} — fora da meta de ${metas[k.key].val}% em ${MONTHS_FULL[month]}.</span></div>`;
+    else if (st === 'warn') alertsDiv.innerHTML += `<div class="alert-item warn"><span class="alert-icon" aria-hidden="true"></span><span><b>${k.label}</b>: ${fmtVal(val)} — próximo ao limite (meta: ${metas[k.key].val}%).</span></div>`;
   });
 
   const labels = MONTHS;

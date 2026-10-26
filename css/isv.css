@@ -247,3 +247,5 @@ button.header-btn { background: none; font-family: inherit; cursor: pointer; }
 a.fech-selo, .fech-link { position: relative; }
 a.fech-selo::after { content: ""; position: absolute; inset: -8px -2px; }
 @media (max-width: 720px) { .fech-unidade b .fech-link { padding: 12px 0; } }
+
+@media (max-width: 640px) { .header-btn { min-width: 44px; justify-content: center; } }
