@@ -1,5 +1,9 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.6.10 – 2026-10-27
+### Alterado
+- O título "Indicadores da Farmácia" no topo das telas internas agora é um link que volta à tela inicial
+
 ## v0.6.9 – 2026-10-27
 ### Adicionado
 - Relatórios: campo opcional de **texto de análise** (parágrafos separados por linha em branco; `**assim**` vira negrito). O texto entra logo depois do resumo executivo, só aparece se for preenchido e fica guardado apenas no navegador de quem digitou, por unidade e mês
