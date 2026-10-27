@@ -1,5 +1,11 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.6.14 – 2026-10-27
+### Adicionado
+- Relatórios: **CMM automático**. Quando o CMM está em branco na planilha, o relatório calcula a média das saídas dos meses com dado até o mês do relatório (célula vazia não conta como zero; mínimo de 2 meses). O valor aparece com * e uma nota explica. O CMM preenchido na planilha é sempre respeitado
+### Corrigido
+- Servidor: célula só com espaço era lida como 0 (CMM/estoque/saída); agora é "sem dados", como o "*" e texto. Exige `clasp push` + nova versão do Web App
+
 ## v0.6.13 – 2026-10-27
 ### Corrigido
 - Relatórios: se o mês anterior falta em **só uma** das abas (ex.: julho sem coluna em Medicamentos), a comparação com o mês anterior é desligada e um aviso aparece; antes, o total mostrava um aumento falso (itens "novos")

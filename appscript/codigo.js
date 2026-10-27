@@ -843,6 +843,7 @@ function normalizar_(s) {
 }
 
 function numOuNulo_(v) {
+  if (typeof v === 'string') v = v.trim();   // "*", texto e célula só com espaço = sem dados (Number(' ') daria 0)
   return (v === '' || v === null || v === undefined || isNaN(Number(v))) ? null : Number(v);
 }
 

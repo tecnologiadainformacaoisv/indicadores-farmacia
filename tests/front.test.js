@@ -199,6 +199,10 @@ const check = (nome, c, extra) => { if (c) ok++; else { falhas++; console.log('F
     check('relatorios: mês anterior faltando em uma aba desliga a comparação (sem "novo" falso)', metade.temAnterior === false && metade.semAnterior.join() === 'MEDICAMENTOS' && metade.total.ant === null && htmlMetade.includes('não tem a coluna do mês anterior') && !htmlMetade.includes('>novo<'), metade.semAnterior);
     check('relatorios: sem CMM nem estoque em nenhum item avisa e não mostra "0 zerados"', R.htmlRelatorio(nulo, un, 2026).includes('não traz CMM nem estoque') && R.htmlRelatorio(nulo, un, 2026).includes('estoque não informado na planilha'));
     check('relatorios: com estoque informado não aparece o aviso de estoque ausente', !R.htmlRelatorio(branco, un, 2026).includes('não traz CMM nem estoque'));
+    const auto = R.montarRelatorio(plan([aba('MEDICAMENTOS', [2, 3, 4], [['A', [10, null, 30], null, 5], ['B', [null, null, 30], null, 5], ['C', [10, 20, 30], 99, 5]])]), 4);
+    check('relatorios: CMM em branco vira a média dos meses com dado (vazio não conta como zero)', auto.itens[0].cmm === 20 && auto.itens[0].cmmAuto === true, auto.itens[0]);
+    check('relatorios: com menos de 2 meses de dado o CMM continua vazio; o da planilha é respeitado', auto.itens[1].cmm === null && auto.itens[2].cmm === 99 && auto.itens[2].cmmAuto === false);
+    check('relatorios: nota e asterisco do CMM automático só aparecem quando houve cálculo', R.htmlRelatorio(auto, un, 2026).includes('foi calculado pelo sistema (1 item)') && R.htmlRelatorio(auto, un, 2026).includes('20*') && !R.htmlRelatorio(branco, un, 2026).includes('foi calculado pelo sistema'));
     check('relatorios: título usa "do" para hospital e "da" para as demais', R.htmlRelatorio(branco, { nome: 'Hospital Municipal', municipio: '' }, 2026).includes('farmácia do Hospital Municipal') && R.htmlRelatorio(branco, un, 2026).includes('farmácia da '));
   }
   // tela de usuários

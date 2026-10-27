@@ -206,6 +206,14 @@ r = call('logistica.salvar', { ref: R(), unidade: 'upa-centro', aba: 'MEDICAMENT
 check('protege contra linha trocada', !r.ok, r);
 r = call('logistica.salvar', { ref: R(), unidade: 'upa-centro', aba: 'MEDICAMENTOS', itens: [{ linha: 2, produto: 'UPA CENTRO', saida: 1 }] }, tC);
 check('não grava em linha de cabeçalho', !r.ok, r);
+{
+  const gs = planilhas['ID-CENTRO'].getSheetByName('MEDICAMENTOS').g;
+  const antes = [gs[5][7], gs[5][8]];
+  gs[5][7] = '*'; gs[5][8] = ' ';
+  const lido = call('logistica.ler', { unidade: 'upa-centro' }, tT2).dados.abas.find(x => x.nome === 'MEDICAMENTOS').itens[0];
+  check('"*" e célula em branco na planilha viram sem dados (null)', lido.cmm === null && lido.estoque === null, lido);
+  gs[5][7] = antes[0]; gs[5][8] = antes[1];
+}
 r = call('logistica.ler', { unidade: 'upa-jurema' }, tT2);
 check('tereza lê outra unidade sem editar', r.ok && r.dados.editavel === false);
 r = call('logistica.salvar', { ref: R(), unidade: 'upa-centro', aba: 'MEDICAMENTOS', itens: [{ linha: 6, produto: 'DIPIRONA', saida: 1 }] }, tT2);

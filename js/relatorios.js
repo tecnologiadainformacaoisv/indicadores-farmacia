@@ -52,6 +52,13 @@ function variacao(atual, ant) {
   return (p > 0 ? '+' : p < 0 ? '−' : '') + Math.abs(p) + '%';
 }
 
+// CMM em branco na planilha: média das saídas dos meses COM dado até o mês do relatório (célula vazia ou "*" não conta como zero).
+// Precisa de pelo menos 2 meses com dado; com menos, fica sem CMM.
+function cmmAutomatico(aba, it, mesSel) {
+  const v = aba.meses.map((m, k) => (m.mes <= mesSel ? it.valores[k] : null)).filter(x => typeof x === 'number');
+  return v.length >= 2 ? Math.round(v.reduce((a, b) => a + b, 0) / v.length) : null;
+}
+
 // Monta todos os números do relatório para o mês escolhido (mesSel = 0..11), comparando com o mês anterior.
 function montarRelatorio(planilha, mesSel) {
   const itens = [];
@@ -70,8 +77,9 @@ function montarRelatorio(planilha, mesSel) {
         aba: aba.nome, nome: limparNome(it.produto), atual: bruto === null || bruto === undefined ? 0 : bruto,
         // célula em branco conta como zero, no mês e no anterior (só fica null se a aba não tem o mês anterior)
         branco: bruto === null || bruto === undefined, ant: iAn < 0 ? null : (ant === null || ant === undefined ? 0 : ant), antN: ant || 0,
-        cmm: it.cmm, estoque: it.estoque,
+        cmm: it.cmm, estoque: it.estoque, cmmAuto: false,
       };
+      if (o.cmm === null || o.cmm === undefined) { const c = cmmAutomatico(aba, it, mesSel); if (c !== null) { o.cmm = c; o.cmmAuto = true; } }
       classificar(o);
       itens.push(o);
     });
@@ -146,6 +154,8 @@ function htmlRelatorio(r, un, ano, analise) {
     out.push(`<p class="r-aviso">Atenção: a planilha não traz CMM nem estoque disponível; a situação do estoque, a cobertura e a reposição não puderam ser calculadas.</p>`);
   }
 
+  const nCmmAuto = r.itens.filter(i => i.cmmAuto).length;
+
   // capa
   out.push(`<p class="r-kicker">RELATÓRIO MENSAL DE FARMÁCIA · COMPETÊNCIA ${esc(MES)} DE ${ano}</p>
     <h1 class="r-titulo">Saídas e estoque da farmácia ${/^hospital/i.test(un.nome) ? 'do' : 'da'} ${esc(un.nome)} em ${esc(mesTxt)} de ${ano}</h1>
@@ -165,6 +175,7 @@ function htmlRelatorio(r, un, ano, analise) {
     <h2 class="r-h2">Como os números foram calculados</h2>
     <p><b>Saída do mês</b> é a quantidade dispensada em ${esc(mesTxt)}, conforme a coluna do mês nas abas Medicamentos e Materiais. Células em branco contam como zero, também no mês anterior.</p>
     <p><b>Cobertura</b> = estoque disponível ÷ saída de ${esc(mesTxt)}, expressa em dias (abaixo de 1 mês) ou meses. Itens sem saída no mês não têm cobertura calculada. A planilha não informa a data de referência do estoque; considerou-se o estoque do fechamento do mês.</p>
+    ${nCmmAuto ? `<p><b>CMM</b> em branco na planilha foi calculado pelo sistema (${num(nCmmAuto)} ${nCmmAuto === 1 ? 'item' : 'itens'}): média das saídas dos meses com dado até ${esc(mesTxt)}, sem contar célula vazia como zero, e só para itens com pelo menos 2 meses de dado. Aparece com * na lista de itens.</p>` : ''}
     <p><b>Reposição sugerida</b> = quantidade para atingir 2 meses de cobertura pelo consumo do mês (2 × saída do mês − estoque). É um ponto de partida para o pedido; não considera pedidos em trânsito, prazos de entrega nem picos atípicos do mês.</p>`);
 
   // 1. Saídas
@@ -239,7 +250,7 @@ function htmlRelatorio(r, un, ano, analise) {
   r.abas.forEach(n => {
     const l = r.itens.filter(i => i.aba === n);
     out.push(`<h3 class="r-h3">${esc(ROTULO_ABA[n] || n)} (${num(l.length)})</h3>` + tabela(['Item', mesAnt ? mesAnt.charAt(0).toUpperCase() + mesAnt.slice(1) : 'Anterior', mesTxt.charAt(0).toUpperCase() + mesTxt.slice(1), 'Var.', 'CMM', 'Estoque', 'Cobertura', 'Situação'],
-      l.map(i => `<tr><td class="r-item">${esc(i.nome)}</td><td class="n">${i.ant === null ? '—' : num(i.antN)}</td><td class="n">${num(i.atual)}</td><td class="n">${esc(variacao(i.atual, i.ant === null ? null : i.antN))}</td><td class="n">${i.cmm === null || i.cmm === undefined ? '—' : num(i.cmm)}</td><td class="n">${i.estoque === null || i.estoque === undefined ? '—' : num(i.estoque)}</td><td class="n">${cobertura(i)}</td><td class="r-crit">${esc(POR_FAIXA[i.faixa].rotulo)}</td></tr>`), 'r-anexo'));
+      l.map(i => `<tr><td class="r-item">${esc(i.nome)}</td><td class="n">${i.ant === null ? '—' : num(i.antN)}</td><td class="n">${num(i.atual)}</td><td class="n">${esc(variacao(i.atual, i.ant === null ? null : i.antN))}</td><td class="n">${i.cmm === null || i.cmm === undefined ? '—' : num(i.cmm) + (i.cmmAuto ? '*' : '')}</td><td class="n">${i.estoque === null || i.estoque === undefined ? '—' : num(i.estoque)}</td><td class="n">${cobertura(i)}</td><td class="r-crit">${esc(POR_FAIXA[i.faixa].rotulo)}</td></tr>`), 'r-anexo'));
   });
 
   return out.join('\n');
