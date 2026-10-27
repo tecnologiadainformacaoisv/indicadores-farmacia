@@ -37,6 +37,29 @@ Para ativar só parte: levar os arquivos/trechos do recurso desejado (tabela aba
 | Ferramentas de preview e capturas com servidor simulado | desenvolvimento | `tools/visual/` |
 | Página de projeções para comparar fundos lado a lado (temporária, para decisão) | desenvolvimento | `tools/visual/projecao-fundo.html` |
 
+## Recursos nomeados da tela inicial da rede (2026-10-27)
+
+Cada recurso tem **tag**, arquivos próprios e um gancho mínimo em `index.html` e `js/index.js`, para poder ser trazido ao `main` sozinho (`git cherry-pick <tag>`; os conflitos esperados são só nos ganchos). Sem o script de um recurso, a tela usa o comportamento anterior.
+
+| Tag | Recurso | Arquivos | Depende de |
+|---|---|---|---|
+| `visual-home-larga` | Tela inicial usa a largura toda (até 1680 px); unidades do fechamento em 2 colunas | `css/home-larga.css` | nada |
+| `visual-atalhos-resumo` | Atalhos azul-marinho com número e mini gráfico só onde há dado real; Usuários sem número; Dashboard discreto | `js/atalhos-resumo.js`, `css/atalhos-resumo.css` | nada (ouve `rede:resumo` se houver o painel) |
+| `visual-painel-rede` | Fechamento por município: cartão (botão) por município, quatro estados com formas distintas (tudo lançado, em andamento, nada lançado, **sem planilha ainda**), filtro por tipo, busca, lista por situação | `js/painel-rede.js`, `css/painel-rede.css`, `js/rede-catalogo.js` | nada |
+| `visual-seletor-unidades` | Seletor no topo (só coordenação): janela modal acessível, filtro por município e equipamento, faixa de filtro ativo, folha em dois passos no celular; no celular os atalhos vêm antes dos municípios | `js/seletor-unidades.js`, `css/seletor-unidades.css` | `visual-painel-rede` |
+
+Ordem para trazer ao `main`: `visual-home-larga`, `visual-atalhos-resumo`, `visual-painel-rede`, `visual-seletor-unidades`. Cada um sobe `js/version.js` e o `CHANGELOG.md` no `main`.
+
+### Decisões e limites
+
+- **Cadastro provisório.** `js/rede-catalogo.js` tem os 152 equipamentos em 12 municípios, extraídos de `../UNIDADES-ISV.md` (20/10/2026), com o tipo de cada um (Hospital, UPA, UBS, CAPS, Outros). O servidor ainda **não tem município nem tipo** na aba `Unidades`. Quando tiver, o painel passa a ler dali e o arquivo some.
+- **Casamento com o painel pelo nome.** O painel (`painel.carregar`) não traz município; a unidade é achada pelo nome ou pelos apelidos (`a` no catálogo). Nome ambíguo não casa por engano: vira "Outras unidades". Hoje só as unidades de Caucaia têm planilha; os demais 148 aparecem como "Sem planilha ainda" (e não "Nada lançado"), para a contagem não ficar falsa.
+- **Filtro.** Vale só na tela inicial (os atalhos "Ir para" recalculam com o recorte), fica guardado **só na sessão** (`sessionStorage`, por usuário) e é anunciado numa faixa em âmbar com o botão "Ver todas as unidades". O filtro é visual: a permissão continua no Apps Script.
+- **Não feito (depende do servidor):** número de "acessos ativos" em Usuários (não existe contagem; o atalho ficou sem número), "Última atualização" por unidade e total de itens por unidade para o "em andamento" fino. Hospitais e UBS sem planilha só passam a ter dado quando as planilhas forem criadas.
+- **Revisão de UX (27/10):** cartão do município é o controle acessível e os quadrados são só decoração; diálogo com `aria-modal`, foco na busca, Esc e foco devolvido; estado parcial nos municípios; alvos de 44 px; bordas de controle ≥ 3:1; âmbar (e não verde) para "filtro ativo".
+
+Login novo (proposta, commit 249747e): `js/login-previa.js`, `js/login-seletor.js` (painel temporário de interruptores, só aparece na tela de login) e `css/home.css`. Falta escolher os itens e remover o seletor temporário antes de levar ao `main`.
+
 ## Pendências conhecidas
 
 - Janeiro: sem mês anterior para comparar; os cálculos não separam anos (depende da regra de virada de ano, em aberto no BRIEFING).
@@ -53,7 +76,7 @@ Observações: o logo tem 256 px (um SVG ficaria mais nítido); a faixa soma ~70
 
 ## Fora desta atualização (já publicado no main)
 
-v0.5.2 a v0.5.8: ordenar cobertura com um clique, migalhas de pão na planilha, links da unidade e dos selos na tela inicial da coordenação (`?unidade=<id>`), correções da revisão, página "Como usar", link "Relatar problema ou sugestão" (e-mail da TI), aviso de servidor lento e mensagens de lista vazia. O main até a v0.5.11 já foi trazido para este branch (merge de 2026-10-23); a ordenação da planilha ficou a do main ("Ordenar por cobertura").
+v0.5.2 a v0.5.8: ordenar cobertura com um clique, migalhas de pão na planilha, links da unidade e dos selos na tela inicial da coordenação (`?unidade=<id>`), correções da revisão, página "Como usar", link "Relatar problema ou sugestão" (e-mail da TI), aviso de servidor lento e mensagens de lista vazia. O main até a v0.6.9 já foi trazido para este branch (merge de 2026-10-27); a ordenação da planilha ficou a do main ("Ordenar por cobertura").
 
 Observações da revisão: a máscara do fundo só é aplicada onde o navegador a suporta (`@supports`); `tools/visual/projecao-fundo.html` grava a sessão simulada no `localStorage` do domínio onde for servida, então só use no preview local; ao juntar ao main, subir `js/version.js` e o `CHANGELOG.md`. O rodapé da página de ajuda e o aviso de servidor lento (v0.5.9 do main) já estão no main.
 
