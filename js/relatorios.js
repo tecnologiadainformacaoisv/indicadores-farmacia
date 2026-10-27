@@ -55,10 +55,11 @@ function variacao(atual, ant) {
 // Monta todos os números do relatório para o mês escolhido (mesSel = 0..11), comparando com o mês anterior.
 function montarRelatorio(planilha, mesSel) {
   const itens = [];
+  const ausentes = [];   // abas sem a coluna do mês escolhido
   let temAnterior = false;
   planilha.abas.forEach(aba => {
     const iAt = aba.meses.findIndex(m => m.mes === mesSel);
-    if (iAt < 0) return;
+    if (iAt < 0) { ausentes.push(aba.nome); return; }
     const iAn = aba.meses.findIndex(m => m.mes === mesSel - 1);
     if (iAn >= 0) temAnterior = true;
     aba.itens.forEach(it => {
@@ -66,7 +67,8 @@ function montarRelatorio(planilha, mesSel) {
       const ant = iAn >= 0 ? it.valores[iAn] : null;
       const o = {
         aba: aba.nome, nome: limparNome(it.produto), atual: bruto === null || bruto === undefined ? 0 : bruto,
-        branco: bruto === null || bruto === undefined, ant: ant === undefined ? null : ant, antN: ant || 0,
+        // célula em branco conta como zero, no mês e no anterior (só fica null se a aba não tem o mês anterior)
+        branco: bruto === null || bruto === undefined, ant: iAn < 0 ? null : (ant === null || ant === undefined ? 0 : ant), antN: ant || 0,
         cmm: it.cmm, estoque: it.estoque,
       };
       classificar(o);
@@ -93,7 +95,7 @@ function montarRelatorio(planilha, mesSel) {
     comSaida: soma('comSaida'), comSaidaAnt: temAnterior ? soma('comSaidaAnt') : null,
     faixas: Object.fromEntries(FAIXAS.map(f => [f.id, itens.filter(i => i.faixa === f.id).length])),
   };
-  return { mes: mesSel, itens, abas, porAba, total, temAnterior };
+  return { mes: mesSel, itens, abas, porAba, total, temAnterior, ausentes };
 }
 
 // ── HTML do relatório ──────────────────────────────────────────
@@ -121,6 +123,9 @@ function htmlRelatorio(r, un, ano) {
   const nMat = r.porAba.MATERIAIS ? r.porAba.MATERIAIS.itens : 0;
   const zer = t.faixas.zerado + t.faixas.semsemsaida;
   const out = [];
+  if (r.ausentes && r.ausentes.length) {
+    out.push(`<p class="r-aviso">Atenção: a planilha não tem a coluna de ${esc(mesTxt)} na aba ${esc(r.ausentes.map(n => ROTULO_ABA[n] || n).join(', '))}; o relatório não inclui esses itens.</p>`);
+  }
 
   // capa
   out.push(`<p class="r-kicker">RELATÓRIO MENSAL DE FARMÁCIA · COMPETÊNCIA ${esc(MES)} DE ${ano}</p>
@@ -138,7 +143,7 @@ function htmlRelatorio(r, un, ano) {
       <div><b>${esc(varTotal)}</b><span>${r.temAnterior ? 'variação das saídas contra ' + esc(mesAnt) : 'sem mês anterior na planilha'}</span><small>${r.temAnterior ? num(t.ant) + ' em ' + esc(mesAnt) + ' → ' + num(t.atual) + ' em ' + esc(mesTxt) : '&nbsp;'}</small></div>
     </div>
     <h2 class="r-h2">Como os números foram calculados</h2>
-    <p><b>Saída do mês</b> é a quantidade dispensada em ${esc(mesTxt)}, conforme a coluna do mês nas abas Medicamentos e Materiais. Células em branco contam como zero.</p>
+    <p><b>Saída do mês</b> é a quantidade dispensada em ${esc(mesTxt)}, conforme a coluna do mês nas abas Medicamentos e Materiais. Células em branco contam como zero, também no mês anterior.</p>
     <p><b>Cobertura</b> = estoque disponível ÷ saída de ${esc(mesTxt)}, expressa em dias (abaixo de 1 mês) ou meses. Itens sem saída no mês não têm cobertura calculada. A planilha não informa a data de referência do estoque; considerou-se o estoque do fechamento do mês.</p>
     <p><b>Reposição sugerida</b> = quantidade para atingir 2 meses de cobertura pelo consumo do mês (2 × saída do mês − estoque). É um ponto de partida para o pedido; não considera pedidos em trânsito, prazos de entrega nem picos atípicos do mês.</p>`);
 
@@ -226,7 +231,9 @@ if (typeof document !== 'undefined' && typeof module === 'undefined') (function 
   const $ = id => document.getElementById(id);
   let info = null;
   let planilha = null;
+  let verificouPerfil = false;
   let tentouEndereco = false;
+  let pedido = 0;   // só vale a resposta do último pedido (trocar de unidade rápido não mistura dados)
   const doEndereco = new URLSearchParams(location.search).get('unidade');
   let unidadeSel = doEndereco && /^[A-Za-z0-9_.-]+$/.test(doEndereco) ? doEndereco : '';   // atalho da tela de acompanhamento
 
@@ -237,9 +244,22 @@ if (typeof document !== 'undefined' && typeof module === 'undefined') (function 
     el.hidden = !texto;
   }
 
+  function semFolha(mensagem) {
+    $('rel-folha').hidden = true;
+    $('btn-imprimir').disabled = true;
+    $('mesSel').innerHTML = '';
+    setStatus(mensagem, 'erro');
+  }
+
+  // Meses que podem virar relatório: existem em TODAS as abas, não são futuros e têm algum número lançado.
   function mesesDisponiveis() {
-    const aba = planilha.abas[0];
-    return aba ? aba.meses.map(m => m.mes) : [];
+    const abas = planilha.abas;
+    if (!abas.length) return [];
+    const ate = planilha.mesAberto.mes;
+    return abas[0].meses.map(m => m.mes).filter(mes => mes <= ate && abas.every(a => {
+      const i = a.meses.findIndex(m => m.mes === mes);
+      return i >= 0 && a.itens.some(it => it.valores[i] !== null && it.valores[i] !== undefined);
+    }));
   }
 
   function desenhar() {
@@ -255,22 +275,22 @@ if (typeof document !== 'undefined' && typeof module === 'undefined') (function 
       : `Confira a prévia abaixo e clique em Imprimir. A planilha não tem o mês anterior a ${MESES_REL[mes]}: a comparação não aparece.`;
   }
 
-  function montarMeses() {
-    const lista = mesesDisponiveis();
-    const sel = $('mesSel');
-    const padrao = lista.indexOf(planilha.mesAberto.mes) >= 0 ? planilha.mesAberto.mes : lista[lista.length - 1];
-    sel.innerHTML = lista.map(m => `<option value="${m}">${esc(MESES_NOME[m])}/${planilha.mesAberto.ano}</option>`).join('');
-    sel.value = String(padrao);
-  }
-
   async function carregar() {
-    setStatus('Carregando os dados da unidade…');
+    const meu = ++pedido;
     $('btn-imprimir').disabled = true;
     try {
+      // coordenador não tem este relatório: volta ao início antes de buscar qualquer dado
+      if (!verificouPerfil) {
+        const sessao = await exigirSessao();
+        if (meu !== pedido) return;
+        if (sessao.usuario.perfil !== 'admin') { location.href = 'index.html'; return; }
+        verificouPerfil = true;
+      }
+      setStatus('Carregando os dados da unidade…');
       const r = await api('logistica.carregar', unidadeSel ? { unidade: unidadeSel } : {});
+      if (meu !== pedido) return;
       info = r.sessao;
       if (!validarSessao(info)) return;
-      if (info.usuario.perfil !== 'admin') { location.href = 'index.html'; return; }
       planilha = r.logistica;
       unidadeSel = planilha.unidade;
       if (!$('unitSel').dataset.pronto) {
@@ -278,13 +298,19 @@ if (typeof document !== 'undefined' && typeof module === 'undefined') (function 
         $('unitSel').innerHTML = info.unidades.map(u => `<option value="${esc(u.id)}">${esc(u.nome)}</option>`).join('');
       }
       $('unitSel').value = unidadeSel;
-      montarMeses();
+
+      if (!planilha.abas.length) return semFolha('A planilha desta unidade não tem as abas de medicamentos e materiais. Avise a TI.');
+      const lista = mesesDisponiveis();
+      if (!lista.length) return semFolha('Não há mês com dados lançados em todas as abas da planilha desta unidade.');
+      const sel = $('mesSel');
+      sel.innerHTML = lista.map(m => `<option value="${m}">${esc(MESES_NOME[m])}/${planilha.mesAberto.ano}</option>`).join('');
+      sel.value = String(lista.indexOf(planilha.mesAberto.mes) >= 0 ? planilha.mesAberto.mes : lista[lista.length - 1]);
       setStatus('');
       desenhar();
     } catch (e) {
+      if (meu !== pedido) return;
       if (unidadeSel && !planilha && !tentouEndereco) { tentouEndereco = true; unidadeSel = ''; return carregar(); }   // ?unidade= inválida: abre a padrão
-      $('rel-folha').hidden = true;
-      setStatus(e.message, 'erro');
+      semFolha(e.message);
     }
   }
 

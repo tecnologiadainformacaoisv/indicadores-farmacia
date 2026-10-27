@@ -50,6 +50,8 @@
 .rel-corpo h2 { font-family: Georgia, 'Times New Roman', serif; font-size: 18px; color: #0a3d62; font-weight: 700; margin: 22px 0 8px; padding-bottom: 3px; border-bottom: 1px solid #27ae60; break-after: avoid; }
 .rel-corpo h3 { font-family: Georgia, 'Times New Roman', serif; font-size: 14px; color: #1d2733; margin: 14px 0 6px; break-after: avoid; }
 .rel-corpo p { margin: 6px 0; }
+.r-aviso { padding: 6px 10px; border: 1px solid #e6b800; background: #fff8e0; font: 11px/1.4 'Segoe UI', system-ui, sans-serif; margin: 8px 0; }
+.rel-dica { font-size: 12.5px; color: var(--text-soft); max-width: 70ch; margin: 0 auto 12px; text-align: center; }
 .r-nota { font-size: 11.5px; color: #566376; }
 .r-vazio { font: italic 12px 'Segoe UI', system-ui, sans-serif; color: #566376; }
 
@@ -93,7 +95,7 @@
 @media print {
   html { background: #fff !important; }
   body { background: transparent !important; }
-  .page-header, .migalhas, .rel-top, .notice, .app-footer, .aviso-lento { display: none !important; }
+  .page-header, .migalhas, .rel-top, .rel-dica, .notice, .app-footer, .aviso-lento { display: none !important; }
   .rel-main { max-width: none; padding: 0; margin: 0; }
   .rel-folha { width: auto; margin: 0; border: 0; border-radius: 0; box-shadow: none; background: transparent; }
   .rel-papel > thead { display: table-header-group; }

@@ -1,5 +1,15 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.6.5 – 2026-10-27
+### Corrigido
+- Relatórios: planilha sem abas ou sem mês lançado mostra mensagem em vez de um relatório zerado
+- Relatórios: só aparecem meses que existem em todas as abas, que não são futuros e que têm número lançado; se uma aba não tiver o mês, o relatório avisa
+- Relatórios: mês anterior em branco conta como zero nos totais e nas listas (antes as listas mostravam "—")
+- Relatórios: trocar de unidade rápido não mistura dados (vale só a última resposta)
+- Relatórios: o coordenador volta ao início antes de qualquer dado ser buscado
+- Relatórios: aviso na tela para imprimir pelo Chrome ou Edge com "Gráficos de plano de fundo" marcado (o timbrado depende dessa opção)
+- Mais testes: janeiro, planilha vazia, aba ausente, mês anterior em branco, nome com HTML e estoque nulo
+
 ## v0.6.4 – 2026-10-26
 ### Ajustado
 - Tela de relatórios: título, descrição, seletores de unidade e mês e botão de imprimir centralizados (as migalhas continuam à esquerda)
