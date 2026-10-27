@@ -162,15 +162,20 @@ function montarHome(painel) {
   document.getElementById('home-intro').textContent = admin
     ? 'Acompanhe o andamento de cada unidade neste mês e defina as metas.'
     : 'Veja o que falta lançar neste mês.';
-  document.getElementById('card-indicadores').textContent = admin
-    ? 'Indicadores de todas as unidades, metas e alertas.'
-    : 'Indicadores clínicos e de logística, com gráficos.';
-  document.getElementById('card-logistica').textContent = admin
-    ? 'Saídas de medicamentos e materiais de cada unidade.'
-    : 'Saídas, CMM e estoque de cada item.';
-  document.getElementById('card-dashboard').hidden = !admin;
-  document.getElementById('card-usuarios').hidden = !admin;
-  document.getElementById('card-relatorios').hidden = !admin;
+  if (window.AtalhosResumo) {
+    // recurso "atalhos com resumo" (visual-atalhos-resumo): monta os atalhos com número e mini gráfico
+    AtalhosResumo.montar(document.querySelector('.home-links'), { admin, mes: nomeMes(painel.mesAberto), unidades: painel.unidades });
+  } else {
+    document.getElementById('card-indicadores').textContent = admin
+      ? 'Indicadores de todas as unidades, metas e alertas.'
+      : 'Indicadores clínicos e de logística, com gráficos.';
+    document.getElementById('card-logistica').textContent = admin
+      ? 'Saídas de medicamentos e materiais de cada unidade.'
+      : 'Saídas, CMM e estoque de cada item.';
+    document.getElementById('card-dashboard').hidden = !admin;
+    document.getElementById('card-usuarios').hidden = !admin;
+    document.getElementById('card-relatorios').hidden = !admin;
+  }
   montarFechamento(painel, admin);
   if (painel.mesAberto.teste) status('Ambiente de teste: o mês aberto está fixo em ' + nomeMes(painel.mesAberto) + '.', 'warn');
   mostrar('home');

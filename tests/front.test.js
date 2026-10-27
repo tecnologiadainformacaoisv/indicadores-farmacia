@@ -195,6 +195,19 @@ const check = (nome, c, extra) => { if (c) ok++; else { falhas++; console.log('F
     const nulo = R.montarRelatorio(plan([aba('MEDICAMENTOS', [3, 4], [['A', [5, 5], null, null]])]), 4);
     check('relatorios: estoque nulo vai para "sem dado" sem cobertura', nulo.itens[0].faixa === 'semdado' && !/undefined|NaN/.test(R.htmlRelatorio(nulo, un, 2026)));
   }
+  // recurso visual "atalhos com resumo"
+  {
+    const A = require('../js/atalhos-resumo.js');
+    const un = (nome, clin, pre, tot) => ({ id: nome, nome, clinica: { lancado: clin }, saidas: tot ? { med: { preenchidos: pre, total: tot }, mat: { preenchidos: pre, total: tot }, por: 'x', em: 'y' } : null });
+    const lista = [un('A', true, 10, 10), un('B', true, 5, 10), un('C', false, 0, 0)];
+    const r = A.resumir(lista);
+    check('atalhos: resumo conta unidades completas e % de saídas', r.completas === 1 && r.total === 3 && r.pctSaidas === 75, r);
+    check('atalhos: sem saídas lançadas não inventa porcentagem', A.resumir([un('C', false, 0, 0)]).pctSaidas === null);
+    const adm = A.atalhos({ admin: true, mes: 'Maio/2026', unidades: lista, resumo: r });
+    check('atalhos: coordenação vê 5 atalhos; Usuários e Dashboard sem número inventado', adm.length === 5 && !adm.find(a => a.id === 'usr').numero && !adm.find(a => a.id === 'dash').numero && adm.find(a => a.id === 'dash').selo === 'Dados de exemplo');
+    const coord = A.atalhos({ admin: false, mes: 'Maio/2026', unidades: [un('A', false, 0, 0)], resumo: A.resumir([un('A', false, 0, 0)]) });
+    check('atalhos: coordenador vê 2 atalhos, sem Usuários nem Relatórios', coord.length === 2 && !coord.some(a => ['usr', 'rel', 'dash'].includes(a.id)));
+  }
   // tela de usuários
   {
     const arm = new Map([['farma_sessao', 'TOKEN1']]);
