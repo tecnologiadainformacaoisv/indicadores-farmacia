@@ -257,14 +257,14 @@ function celulaCobertura(c) {
 let soCriticos = false;
 const CRIT_SR = '<span class="sr-only">Estoque crítico: </span>'; // o ponto vermelho não pode ser só cor
 
-// CMM automático: média das saídas dos meses com dado, do começo da planilha até o mês aberto (célula vazia não conta como zero).
+// CMM automático (trimestral): média das saídas dos 3 últimos meses, o mês aberto e os 2 anteriores (célula vazia não conta como zero).
 // Com menos de 2 meses de dado vale o CMM que já está na planilha. Mesma conta do servidor (recalcularCmm_ em appscript/codigo.js).
 function cmmDoItem(aba, it, saidaAberto) {
   if (it.cmmFormula) return it.cmm;   // fórmula na planilha: o servidor não recalcula
   const ref = planilha.mesAberto.mes;
   const v = [];
   (aba.meses || []).forEach((m, k) => {
-    if (m.mes > ref) return;
+    if (m.mes > ref || m.mes <= ref - 3) return;
     const x = m.mes === ref && saidaAberto !== undefined ? saidaAberto : it.valores[k];
     if (typeof x === 'number' && isFinite(x)) v.push(x);
   });

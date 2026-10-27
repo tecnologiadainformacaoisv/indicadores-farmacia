@@ -201,9 +201,9 @@ check('itens e valores', med.itens.length === 2 && med.itens[0].produto === 'DIP
 r = call('logistica.salvar', { ref: R(), unidade: 'upa-centro', aba: 'MEDICAMENTOS', itens: [{ linha: 6, produto: 'DIPIRONA', saida: 77, estoque: 90 }] }, tC);
 check('salva item', r.ok && r.dados.gravados === 1, r);
 const g = planilhas['ID-CENTRO'].getSheetByName('MEDICAMENTOS').g;
-check('gravou na coluna MAIO e estoque; CMM recalculado (média de jan–mai)', g[5][6] === 77 && g[5][8] === 90 && g[5][7] === 35, g[5]);
+check('gravou na coluna MAIO e estoque; CMM recalculado (trimestral: mar a mai)', g[5][6] === 77 && g[5][8] === 90 && g[5][7] === 49, g[5]);
 r = call('logistica.salvar', { ref: R(), unidade: 'upa-centro', aba: 'MEDICAMENTOS', itens: [{ linha: 6, produto: 'DIPIRONA', saida: 77, cmm: 999 }] }, tC);
-check('CMM enviado pelo cliente é ignorado (o servidor calcula)', r.ok && g[5][7] === 35, g[5]);
+check('CMM enviado pelo cliente é ignorado (o servidor calcula)', r.ok && g[5][7] === 49, g[5]);
 r = call('logistica.salvar', { ref: R(), unidade: 'upa-centro', aba: 'MEDICAMENTOS', itens: [{ linha: 6, produto: 'OUTRO', saida: 1 }] }, tC);
 check('protege contra linha trocada', !r.ok, r);
 r = call('logistica.salvar', { ref: R(), unidade: 'upa-centro', aba: 'MEDICAMENTOS', itens: [{ linha: 2, produto: 'UPA CENTRO', saida: 1 }] }, tC);
@@ -216,6 +216,17 @@ check('não grava em linha de cabeçalho', !r.ok, r);
   check('"*" e célula em branco na planilha viram sem dados (null)', lido.cmm === null && lido.estoque === null, lido);
   gs[5][7] = antes[0]; gs[5][8] = antes[1];
 }
+{
+  // "*" na coluna de saída = item sem saída: vale zero e entra no CMM trimestral
+  const gs = planilhas['ID-CENTRO'].getSheetByName('MEDICAMENTOS').g;
+  const ant = gs[5][5];
+  gs[5][5] = '*';
+  const lido = call('logistica.ler', { unidade: 'upa-centro' }, tT2).dados.abas.find(x => x.nome === 'MEDICAMENTOS').itens[0];
+  check('"*" na saída vira zero (e não "sem dado")', lido.valores[3] === 0, lido.valores);
+  r = call('logistica.salvar', { ref: R(), unidade: 'upa-centro', aba: 'MEDICAMENTOS', itens: [{ linha: 6, produto: 'DIPIRONA', saida: 60 }] }, tC);
+  check('CMM trimestral conta o "*" como zero (mar 30, abr 0, mai 60 = 30)', r.ok && gs[5][7] === 30, gs[5]);
+  gs[5][5] = ant;
+}
 r = call('logistica.ler', { unidade: 'upa-jurema' }, tT2);
 check('tereza lê outra unidade sem editar', r.ok && r.dados.editavel === false);
 r = call('logistica.salvar', { ref: R(), unidade: 'upa-centro', aba: 'MEDICAMENTOS', itens: [{ linha: 6, produto: 'DIPIRONA', saida: 1 }] }, tT2);
@@ -225,7 +236,7 @@ check('tereza não grava planilha', !r.ok);
 planilhas.SIS.getSheetByName('Config').g[1][1] = '2026-06';
 r = call('logistica.salvar', { ref: R(), unidade: 'upa-centro', aba: 'MATERIAIS', itens: [{ linha: 6, produto: 'AGULHA', saida: 600 }] }, tC);
 const gm = planilhas['ID-CENTRO'].getSheetByName('MATERIAIS').g;
-check('cria coluna JUNHO antes do CMM e grava', r.ok && gm[4][7] === 'JUNHO' && gm[5][7] === 600 && gm[4][8] === 'CMM' && gm[5][8] === 350, gm[4].concat(gm[5]));
+check('cria coluna JUNHO antes do CMM e grava', r.ok && gm[4][7] === 'JUNHO' && gm[5][7] === 600 && gm[4][8] === 'CMM' && gm[5][8] === 500, gm[4].concat(gm[5]));
 
 // fórmula na célula: estoque com fórmula é recusado; CMM com fórmula não é tocado (o salvamento segue)
 const gMed = planilhas['ID-CENTRO'].getSheetByName('MEDICAMENTOS').g;
@@ -251,7 +262,7 @@ const grOrig = shM.getRange; const chamadas = [];
 shM.getRange = (a, b, c, d) => { const o = grOrig(a, b, c, d); const sv = o.setValues; if (sv) o.setValues = v => { chamadas.push([a, b, c]); return sv(v); }; return o; };
 r = call('logistica.salvar', { ref: R(), unidade: 'upa-centro', aba: 'MEDICAMENTOS', itens: [{ linha: 6, produto: 'DIPIRONA', saida: 1, estoque: 2 }, { linha: 7, produto: 'CAPTOPRIL', saida: 3, estoque: 4 }] }, tC);
 check('grava 2 itens vizinhos em 1 bloco por coluna (saída, estoque e CMM)', r.ok && chamadas.length === 3 && chamadas.every(c => c[2] === 2), { r, chamadas });
-check('valores corretos nos dois itens', shM.g[5][6] === 1 && shM.g[6][6] === 3 && shM.g[5][9] === 2 && shM.g[6][9] === 4 && shM.g[5][8] === 20, [shM.g[5], shM.g[6]]);
+check('valores corretos nos dois itens', shM.g[5][6] === 1 && shM.g[6][6] === 3 && shM.g[5][9] === 2 && shM.g[6][9] === 4 && shM.g[5][8] === 24, [shM.g[5], shM.g[6]]);
 shM.getRange = grOrig;
 // gravação em trechos contíguos: itens 6 e 7 juntos, sem tocar na célula de fórmula do CMM
 planilhas.SIS.getSheetByName('Config').g[1][1] = '2026-05';

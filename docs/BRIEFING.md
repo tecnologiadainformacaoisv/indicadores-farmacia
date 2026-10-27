@@ -121,3 +121,13 @@ Este documento descreve a regra-alvo. Ainda **não** implementado: pedidos de co
 
 - Fluxo
   coordenador da farmácia
+
+## Respostas da Tereza sobre as planilhas de setembro (2026-10-27)
+
+- **"*" na planilha** (UPA Jurema) = item sem saída. Na coluna de saída vale zero.
+- **Maternidade** não tem CMM nem estoque por um processo específico da unidade: é normal, o relatório sai sem a parte de estoque.
+- **Hospital Municipal:** julho não existe (fica vazio, sem comparação); setembro dos materiais existe e será enviado.
+- **CMM** = média, **trimestral** (últimos 3 meses). Na virada do ano continua mostrando os 3 últimos meses do ano anterior, com os anos separados.
+- **UPA Centro:** os itens com estoque zero são medicamentos muito específicos (ex.: tuberculose) que não tiveram saída: zero esperado.
+- **Texto de análise, Portaria 344 e vencidos:** seguem o fluxo normal trimestral e anual, não o relatório mensal.
+- **Piloto:** só Caucaia; a planilha antiga da UPA Centro (até maio) não vale mais.

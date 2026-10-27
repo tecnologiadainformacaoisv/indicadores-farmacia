@@ -557,7 +557,7 @@ function lerLogistica_(req, u) {
       itens: est.itens.map(r => ({
         linha: r + 1,
         produto: String(valores[r][est.colProd]).trim(),
-        valores: est.meses.map(m => numOuNulo_(valores[r][m.col])),
+        valores: est.meses.map(m => saidaOuNulo_(valores[r][m.col])),
         cmm: est.colCmm >= 0 ? numOuNulo_(valores[r][est.colCmm]) : null,
         cmmFormula: !!(fCmm && fCmm[r][0]),
         estoque: est.colEst >= 0 ? numOuNulo_(valores[r][est.colEst]) : null,
@@ -644,8 +644,9 @@ function gravarTrechos_(sh, escritas) {
   });
 }
 
-// CMM automático: média das saídas dos meses com dado, do começo da planilha até o mês aberto.
-// Célula vazia, "*" ou texto não contam como zero. Com menos de 2 meses de dado o CMM que já estava na planilha é mantido.
+// CMM automático (trimestral): média das saídas dos 3 últimos meses (o mês aberto e os 2 anteriores, dentro do mesmo ano da planilha).
+// Célula vazia ou texto não conta como zero; "*" na saída vale zero. Com menos de 2 meses de dado o CMM que já estava na planilha é mantido
+// (na virada do ano é ele que continua à mostra: o do último trimestre do ano anterior).
 // Célula de CMM com fórmula não é tocada. Serve para a tela de lançamento e para os relatórios (o front repete esta conta, js/logistica.js).
 function cmmAutomatico_(valores) {
   const v = valores.filter(x => typeof x === 'number' && isFinite(x));
@@ -656,11 +657,11 @@ function recalcularCmm_(sh, est, mesAberto, n) {
   if (est.colCmm < 0) return 0;
   const grade = sh.getRange(1, 1, n, sh.getLastColumn()).getValues();
   const formulas = sh.getRange(1, est.colCmm + 1, n, 1).getFormulas();
-  const meses = est.meses.filter(m => m.mes <= mesAberto);
+  const meses = est.meses.filter(m => m.mes <= mesAberto && m.mes > mesAberto - 3);
   const escritas = [];
   est.itens.forEach(r => {
     if (formulas[r][0]) return;
-    const novo = cmmAutomatico_(meses.map(m => numOuNulo_(grade[r][m.col])));
+    const novo = cmmAutomatico_(meses.map(m => saidaOuNulo_(grade[r][m.col])));
     if (novo === null || numOuNulo_(grade[r][est.colCmm]) === novo) return;
     escritas.push([r + 1, est.colCmm + 1, novo]);
   });
@@ -672,7 +673,7 @@ function recalcularCmm_(sh, est, mesAberto, n) {
 function contarPreenchidos_(sh, est, colMes) {
   const col = sh.getRange(1, colMes + 1, sh.getLastRow(), 1).getValues();
   let preenchidos = 0;
-  est.itens.forEach(r => { const v = col[r][0]; if (v !== '' && String(v).trim() !== '' && !isNaN(Number(v))) preenchidos++; });
+  est.itens.forEach(r => { const v = col[r][0]; if (v !== '' && String(v).trim() !== '' && (!isNaN(Number(v)) || String(v).trim() === '*')) preenchidos++; });
   return { preenchidos: preenchidos, total: est.itens.length };
 }
 
@@ -872,6 +873,11 @@ function comTrava_(fn) {
 
 function normalizar_(s) {
   return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toUpperCase();
+}
+
+// Célula de saída com "*" = item sem saída no mês (decisão da coordenação, 27/10/2026): vale zero, e conta como lançado.
+function saidaOuNulo_(v) {
+  return typeof v === 'string' && v.trim() === '*' ? 0 : numOuNulo_(v);
 }
 
 function numOuNulo_(v) {

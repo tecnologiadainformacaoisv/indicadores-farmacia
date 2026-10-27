@@ -52,10 +52,10 @@ function variacao(atual, ant) {
   return (p > 0 ? '+' : p < 0 ? '−' : '') + Math.abs(p) + '%';
 }
 
-// CMM em branco na planilha: média das saídas dos meses COM dado até o mês do relatório (célula vazia ou "*" não conta como zero).
-// Precisa de pelo menos 2 meses com dado; com menos, fica sem CMM.
+// CMM em branco na planilha: média trimestral, ou seja, das saídas dos 3 últimos meses (o do relatório e os 2 anteriores) que têm dado
+// (célula vazia não conta como zero). Precisa de pelo menos 2 meses com dado; com menos, fica sem CMM.
 function cmmAutomatico(aba, it, mesSel) {
-  const v = aba.meses.map((m, k) => (m.mes <= mesSel ? it.valores[k] : null)).filter(x => typeof x === 'number');
+  const v = aba.meses.map((m, k) => (m.mes <= mesSel && m.mes > mesSel - 3 ? it.valores[k] : null)).filter(x => typeof x === 'number');
   return v.length >= 2 ? Math.round(v.reduce((a, b) => a + b, 0) / v.length) : null;
 }
 
@@ -146,20 +146,17 @@ function htmlRelatorio(r, un, ano, analise) {
     out.push(`<p class="r-aviso">Atenção: a planilha não tem a coluna de ${esc(mesTxt)} na aba ${esc(r.ausentes.map(n => ROTULO_ABA[n] || n).join(', '))}; o relatório não inclui esses itens.</p>`);
   }
 
-  if (r.semAnterior && r.semAnterior.length) {
+  if (r.semAnterior && r.semAnterior.length && r.semAnterior.length < r.abas.length) {   // se nenhuma aba tem o mês anterior, a nota da seção 1 já diz
     out.push(`<p class="r-aviso">Atenção: a planilha não tem a coluna do mês anterior (${esc(MESES_REL[r.mes - 1] || '')}) na aba ${esc(r.semAnterior.map(n => ROTULO_ABA[n] || n).join(', '))}; a comparação com o mês anterior não foi feita.</p>`);
   }
   const semEstoque = t.itens > 0 && t.faixas.semdado === t.itens;
-  if (semEstoque) {
-    out.push(`<p class="r-aviso">Atenção: a planilha não traz o estoque disponível de nenhum item; a situação do estoque, a cobertura e a reposição não puderam ser calculadas.</p>`);
-  }
 
   const nCmmAuto = r.itens.filter(i => i.cmmAuto).length;
 
   // capa
   out.push(`<p class="r-kicker">RELATÓRIO MENSAL DE FARMÁCIA · COMPETÊNCIA ${esc(MES)} DE ${ano}</p>
-    <h1 class="r-titulo">Saídas e estoque da farmácia ${/^hospital/i.test(un.nome) ? 'do' : 'da'} ${esc(un.nome)} em ${esc(mesTxt)} de ${ano}</h1>
-    <p class="r-lead">${esc(un.municipio || '')}. Movimento do mês de ${esc(mesTxt)} para ${num(nMed)} medicamentos e ${num(nMat)} materiais médico-hospitalares: saídas${r.temAnterior ? ' comparadas com ' + esc(mesAnt) : ''}, situação do estoque, itens em ruptura ou com cobertura curta e verificações do registro.</p>
+    <h1 class="r-titulo">Saídas ${semEstoque ? '' : 'e estoque '}da farmácia ${/^hospital/i.test(un.nome) ? 'do' : 'da'} ${esc(un.nome)} em ${esc(mesTxt)} de ${ano}</h1>
+    <p class="r-lead">${esc(un.municipio || '')}. Movimento do mês de ${esc(mesTxt)} para ${num(nMed)} medicamentos e ${num(nMat)} materiais médico-hospitalares: saídas${r.temAnterior ? ' comparadas com ' + esc(mesAnt) : ''}${semEstoque ? ' e verificações do registro.' : ', situação do estoque, itens em ruptura ou com cobertura curta e verificações do registro.'}</p>
     <dl class="r-meta"><div><dt>FONTE</dt><dd>Planilha de saídas da unidade (abas Medicamentos e Materiais)</dd></div><div><dt>COMPETÊNCIA</dt><dd>${esc(mesTxt.charAt(0).toUpperCase() + mesTxt.slice(1))}/${ano}</dd></div></dl>`);
 
   // resumo executivo
@@ -168,15 +165,17 @@ function htmlRelatorio(r, un, ano, analise) {
     <div class="r-kpis">
       <div><b>${num(t.atual)}</b><span>unidades dispensadas em ${esc(mesTxt)}</span><small>${num(r.porAba.MEDICAMENTOS ? r.porAba.MEDICAMENTOS.atual : 0)} medicamentos · ${num(r.porAba.MATERIAIS ? r.porAba.MATERIAIS.atual : 0)} materiais</small></div>
       <div><b>${num(t.comSaida)}</b><span>itens com saída no mês</span><small>de ${num(t.itens)} padronizados · ${num(t.itens - t.comSaida)} sem saída</small></div>
-      <div><b>${semEstoque ? '—' : num(zer + t.faixas.critico + t.faixas.baixo)}</b><span>itens zerados ou com menos de 30 dias de estoque</span><small>${semEstoque ? 'estoque não informado na planilha' : num(zer) + ' zerados · ' + num(t.faixas.critico) + ' críticos · ' + num(t.faixas.baixo) + ' baixos'}</small></div>
+      ${semEstoque ? `<div><b>${r.temAnterior ? num(r.itens.filter(i => i.ant !== null && i.atual > i.antN).length) : '—'}</b><span>itens com saída maior que em ${esc(mesAnt || 'mês anterior')}</span><small>${r.temAnterior ? num(r.itens.filter(i => i.ant !== null && i.atual < i.antN).length) + ' com saída menor' : '&nbsp;'}</small></div>` : `<div><b>${num(zer + t.faixas.critico + t.faixas.baixo)}</b><span>itens zerados ou com menos de 30 dias de estoque</span><small>${num(zer)} zerados · ${num(t.faixas.critico)} críticos · ${num(t.faixas.baixo)} baixos</small></div>`}
       <div><b>${esc(varTotal)}</b><span>${r.temAnterior ? 'variação das saídas contra ' + esc(mesAnt) : 'sem mês anterior na planilha'}</span><small>${r.temAnterior ? num(t.ant) + ' em ' + esc(mesAnt) + ' → ' + num(t.atual) + ' em ' + esc(mesTxt) : '&nbsp;'}</small></div>
     </div>
     ${htmlAnalise(analise)}
     <h2 class="r-h2">Como os números foram calculados</h2>
     <p><b>Saída do mês</b> é a quantidade dispensada em ${esc(mesTxt)}, conforme a coluna do mês nas abas Medicamentos e Materiais. Células em branco contam como zero, também no mês anterior.</p>
-    <p><b>Cobertura</b> = estoque disponível ÷ saída de ${esc(mesTxt)}, expressa em dias (abaixo de 1 mês) ou meses. Itens sem saída no mês não têm cobertura calculada. A planilha não informa a data de referência do estoque; considerou-se o estoque do fechamento do mês.</p>
-    ${nCmmAuto ? `<p><b>CMM</b> em branco na planilha foi calculado pelo sistema (${num(nCmmAuto)} ${nCmmAuto === 1 ? 'item' : 'itens'}): média das saídas dos meses com dado até ${esc(mesTxt)}, sem contar célula vazia como zero, e só para itens com pelo menos 2 meses de dado. Aparece com * na lista de itens.</p>` : ''}
-    <p><b>Reposição sugerida</b> = quantidade para atingir 2 meses de cobertura pelo consumo do mês (2 × saída do mês − estoque). É um ponto de partida para o pedido; não considera pedidos em trânsito, prazos de entrega nem picos atípicos do mês.</p>`);
+    ${semEstoque ? '<p>A planilha desta unidade não registra o estoque disponível (processo próprio da unidade); por isso o relatório não traz situação de estoque, cobertura nem reposição.</p>' : ''}
+    ${semEstoque ? '' : `<p><b>Cobertura</b> = estoque disponível ÷ saída de ${esc(mesTxt)}, expressa em dias (abaixo de 1 mês) ou meses. Itens sem saída no mês não têm cobertura calculada. A planilha não informa a data de referência do estoque; considerou-se o estoque do fechamento do mês.</p`}
+
+    ${nCmmAuto ? `<p><b>CMM</b> em branco na planilha foi calculado pelo sistema (${num(nCmmAuto)} ${nCmmAuto === 1 ? 'item' : 'itens'}): média das saídas dos 3 últimos meses até ${esc(mesTxt)} (CMM trimestral), sem contar célula vazia como zero, e só para itens com pelo menos 2 meses de dado. Aparece com * na lista de itens.</p>` : ''}
+    ${semEstoque ? '' : `<p><b>Reposição sugerida</b> = quantidade para atingir 2 meses de cobertura pelo consumo do mês (2 × saída do mês − estoque). É um ponto de partida para o pedido; não considera pedidos em trânsito, prazos de entrega nem picos atípicos do mês.</p>`}`);
 
   // 1. Saídas
   const linhasTot = r.abas.map(n => {
@@ -198,7 +197,8 @@ function htmlRelatorio(r, un, ano, analise) {
     out.push(`<p class="r-nota">A planilha não tem o mês anterior a ${esc(mesTxt)}; a comparação de itens não foi feita.</p>`);
   }
 
-  // 2. Situação do estoque
+  // 2 a 5: só quando a unidade informa estoque
+  if (!semEstoque) {
   const barras = r.abas.map(n => {
     const a = r.porAba[n];
     const segs = FAIXAS.filter(f => a.faixas[f.id]).map(f => `<span style="--w:${a.faixas[f.id]};--c:${f.cor};--t:${f.txt}" title="${esc(f.rotulo)}: ${a.faixas[f.id]}"><i>${a.faixas[f.id]}</i></span>`).join('');
@@ -230,18 +230,20 @@ function htmlRelatorio(r, un, ano, analise) {
     `<h3 class="r-h3">Sem saída no mês: ${num(semGiro.length)} ${semGiro.length === 1 ? 'item' : 'itens'} com estoque${semGiro.length > 15 ? ' (15 de maior estoque)' : ''}</h3>` +
     tabela(['Item', mesAnt ? 'Saída em ' + mesAnt : 'Saída anterior', 'Estoque'], semGiro.slice(0, 15).map(i => `<tr>${linhaItem(i)}<td class="n">${i.ant === null ? '—' : num(i.antN)}</td><td class="n">${num(i.estoque)}</td></tr>`)));
 
+  }
+
   // 6. Verificações do registro (contagens, sem interpretação)
   const semEst = r.itens.filter(i => i.faixa === 'semdado');
   const branco = r.itens.filter(i => i.branco);
   const picos = r.temAnterior ? r.itens.filter(i => i.ant !== null && i.atual >= 100 && i.atual > 5 * Math.max(i.antN, 1)).sort((a, b) => b.atual - a.atual) : [];
   const sumiram = r.temAnterior ? r.itens.filter(i => i.antN > 0 && i.atual === 0) : [];
   const verif = [
-    ['Itens com estoque em branco', semEst.length, semEst],
+    semEstoque ? null : ['Itens com estoque em branco', semEst.length, semEst],
     ['Itens com saída em branco em ' + mesTxt, branco.length, branco],
     r.temAnterior ? ['Itens com saída em ' + mesAnt + ' e nenhuma em ' + mesTxt, sumiram.length, sumiram] : null,
     r.temAnterior ? ['Picos isolados (saída de 100 ou mais, mais de 5 vezes a do mês anterior)', picos.length, picos] : null,
   ].filter(Boolean);
-  out.push(`<h2 class="r-h2">6. Verificações do registro</h2>` + tabela(['Verificação', 'Itens', 'Exemplos'],
+  out.push(`<h2 class="r-h2">${semEstoque ? 2 : 6}. Verificações do registro</h2>` + tabela(['Verificação', 'Itens', 'Exemplos'],
     verif.map(([rot, n, l]) => `<tr><td class="r-item">${esc(rot)}</td><td class="n">${num(n)}</td><td class="r-crit">${n ? esc(l.slice(0, 3).map(i => i.nome).join('; ')) + (n > 3 ? '…' : '') : '—'}</td></tr>`)) +
     `<p class="r-nota">Contagens automáticas da planilha, sem interpretação: servem de roteiro para conferir os lançamentos antes de usar o mês como base de programação.</p>`);
 
@@ -249,8 +251,8 @@ function htmlRelatorio(r, un, ano, analise) {
   out.push(`<h2 class="r-h2 r-quebra">Anexo · Todos os itens em ${esc(mesTxt)}</h2>`);
   r.abas.forEach(n => {
     const l = r.itens.filter(i => i.aba === n);
-    out.push(`<h3 class="r-h3">${esc(ROTULO_ABA[n] || n)} (${num(l.length)})</h3>` + tabela(['Item', mesAnt ? mesAnt.charAt(0).toUpperCase() + mesAnt.slice(1) : 'Anterior', mesTxt.charAt(0).toUpperCase() + mesTxt.slice(1), 'Var.', 'CMM', 'Estoque', 'Cobertura', 'Situação'],
-      l.map(i => `<tr><td class="r-item">${esc(i.nome)}</td><td class="n">${i.ant === null ? '—' : num(i.antN)}</td><td class="n">${num(i.atual)}</td><td class="n">${esc(variacao(i.atual, i.ant === null ? null : i.antN))}</td><td class="n">${i.cmm === null || i.cmm === undefined ? '—' : num(i.cmm) + (i.cmmAuto ? '*' : '')}</td><td class="n">${i.estoque === null || i.estoque === undefined ? '—' : num(i.estoque)}</td><td class="n">${cobertura(i)}</td><td class="r-crit">${esc(POR_FAIXA[i.faixa].rotulo)}</td></tr>`), 'r-anexo'));
+    out.push(`<h3 class="r-h3">${esc(ROTULO_ABA[n] || n)} (${num(l.length)})</h3>` + tabela(['Item', mesAnt ? mesAnt.charAt(0).toUpperCase() + mesAnt.slice(1) : 'Anterior', mesTxt.charAt(0).toUpperCase() + mesTxt.slice(1), 'Var.', 'CMM'].concat(semEstoque ? [] : ['Estoque', 'Cobertura', 'Situação']),
+      l.map(i => `<tr><td class="r-item">${esc(i.nome)}</td><td class="n">${i.ant === null ? '—' : num(i.antN)}</td><td class="n">${num(i.atual)}</td><td class="n">${esc(variacao(i.atual, i.ant === null ? null : i.antN))}</td><td class="n">${i.cmm === null || i.cmm === undefined ? '—' : num(i.cmm) + (i.cmmAuto ? '*' : '')}</td>${semEstoque ? '' : `<td class="n">${i.estoque === null || i.estoque === undefined ? '—' : num(i.estoque)}</td><td class="n">${cobertura(i)}</td><td class="r-crit">${esc(POR_FAIXA[i.faixa].rotulo)}</td>`}</tr>`), 'r-anexo'));
   });
 
   return out.join('\n');

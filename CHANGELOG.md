@@ -1,5 +1,14 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.6.17 – 2026-10-27
+### Alterado (respostas da Tereza)
+- **CMM trimestral**: média das saídas dos 3 últimos meses (o mês aberto e os 2 anteriores), em vez de todos os meses do ano. Vale no servidor, na tela de lançamento e nos relatórios. Mínimo de 2 meses com dado; com menos, fica o CMM que já estava na planilha (na virada do ano continua o do último trimestre do ano anterior, cada ano separado)
+- **"*" na coluna de saída = item sem saída**: vale zero (entra no CMM e conta como lançado). Em CMM e estoque continua sem dado
+- **Relatórios de unidade sem estoque** (ex.: Maternidade, por processo próprio): deixa de ser um aviso de problema; o relatório sai sem as seções de estoque, cobertura, zerados e reposição, com um cartão de itens com saída maior/menor que no mês anterior
+- Relatórios: o aviso de mês anterior ausente não repete a nota da seção 1 quando nenhuma aba tem o mês
+### Atenção
+- Exige publicar o servidor (`clasp push` + versão + `clasp update-deployment`). No primeiro salvamento o CMM de cada aba é recalculado com a janela de 3 meses
+
 ## v0.6.16 – 2026-10-27
 ### Corrigido (revisão das v0.6.10–0.6.15)
 - CMM automático: a tela de lançamento já conta a saída digitada quando a coluna do mês aberto ainda não existe na planilha (antes o CMM mudava depois de salvar)
