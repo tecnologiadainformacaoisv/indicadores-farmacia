@@ -260,6 +260,7 @@ const CRIT_SR = '<span class="sr-only">Estoque crítico: </span>'; // o ponto ve
 // CMM automático: média das saídas dos meses com dado, do começo da planilha até o mês aberto (célula vazia não conta como zero).
 // Com menos de 2 meses de dado vale o CMM que já está na planilha. Mesma conta do servidor (recalcularCmm_ em appscript/codigo.js).
 function cmmDoItem(aba, it, saidaAberto) {
+  if (it.cmmFormula) return it.cmm;   // fórmula na planilha: o servidor não recalcula
   const ref = planilha.mesAberto.mes;
   const v = [];
   (aba.meses || []).forEach((m, k) => {
@@ -267,6 +268,8 @@ function cmmDoItem(aba, it, saidaAberto) {
     const x = m.mes === ref && saidaAberto !== undefined ? saidaAberto : it.valores[k];
     if (typeof x === 'number' && isFinite(x)) v.push(x);
   });
+  // a coluna do mês aberto só nasce no primeiro salvamento: a saída digitada já entra na conta
+  if (!(aba.meses || []).some(m => m.mes === ref) && typeof saidaAberto === 'number' && isFinite(saidaAberto)) v.push(saidaAberto);
   return v.length >= 2 ? Math.round(v.reduce((a, b) => a + b, 0) / v.length) : it.cmm;
 }
 

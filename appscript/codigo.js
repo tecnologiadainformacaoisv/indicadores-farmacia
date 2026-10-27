@@ -550,6 +550,7 @@ function lerLogistica_(req, u) {
     if (!sh.getLastRow() || !sh.getLastColumn()) throw erro_('A aba ' + nome + ' está vazia.', 'configuracao');
     const valores = repetir_(() => sh.getRange(1, 1, sh.getLastRow(), sh.getLastColumn()).getValues());
     const est = estruturaAba_(sh, valores);
+    const fCmm = est.colCmm >= 0 ? sh.getRange(1, est.colCmm + 1, sh.getLastRow(), 1).getFormulas() : null;   // CMM com fórmula não é recalculado
     return {
       nome: nome,
       meses: est.meses.map(m => ({ mes: m.mes, rotulo: MESES_ROTULO[m.mes] })),
@@ -558,6 +559,7 @@ function lerLogistica_(req, u) {
         produto: String(valores[r][est.colProd]).trim(),
         valores: est.meses.map(m => numOuNulo_(valores[r][m.col])),
         cmm: est.colCmm >= 0 ? numOuNulo_(valores[r][est.colCmm]) : null,
+        cmmFormula: !!(fCmm && fCmm[r][0]),
         estoque: est.colEst >= 0 ? numOuNulo_(valores[r][est.colEst]) : null,
       })),
     };
@@ -586,6 +588,7 @@ function salvarLogistica_(req, u) {
 
   let gravados = 0;
   let andamento = null;
+  let cmmsAlterados = 0;
   comTrava_(() => {
     const sh = planilhaDaUnidade_(un).getSheetByName(req.aba);
     if (!sh) throw erro_('A planilha da unidade não tem a aba ' + req.aba + '.', 'configuracao');
@@ -616,11 +619,11 @@ function salvarLogistica_(req, u) {
       gravados++;
     });
     gravarTrechos_(sh, escritas);
-    recalcularCmm_(sh, est, ref.mes, n);
+    cmmsAlterados = recalcularCmm_(sh, est, ref.mes, n);
     andamento = contarPreenchidos_(sh, est, colMes);
   });
   try { gravarFechamento_(un.id, ref, req.aba, andamento, u.login); } catch (e) { console.error(e); } // o painel nunca derruba o salvamento
-  registrar_(u.login, 'logistica.salvar', un.id + ' ' + req.aba + ' ' + (ref.mes + 1) + '/' + ref.ano + ' (' + gravados + ' itens)');
+  registrar_(u.login, 'logistica.salvar', un.id + ' ' + req.aba + ' ' + (ref.mes + 1) + '/' + ref.ano + ' (' + gravados + ' itens, ' + cmmsAlterados + ' CMM recalculados)');
   return { gravados: gravados };
 }
 
@@ -650,7 +653,7 @@ function cmmAutomatico_(valores) {
 }
 
 function recalcularCmm_(sh, est, mesAberto, n) {
-  if (est.colCmm < 0) return;
+  if (est.colCmm < 0) return 0;
   const grade = sh.getRange(1, 1, n, sh.getLastColumn()).getValues();
   const formulas = sh.getRange(1, est.colCmm + 1, n, 1).getFormulas();
   const meses = est.meses.filter(m => m.mes <= mesAberto);
@@ -662,6 +665,7 @@ function recalcularCmm_(sh, est, mesAberto, n) {
     escritas.push([r + 1, est.colCmm + 1, novo]);
   });
   gravarTrechos_(sh, escritas);
+  return escritas.length;
 }
 
 // Quantos itens da aba já têm saída lançada no mês (zero conta como lançado; célula vazia, não).
@@ -871,6 +875,7 @@ function normalizar_(s) {
 }
 
 function numOuNulo_(v) {
+  if (typeof v === 'boolean' || v instanceof Date) return null;
   if (typeof v === 'string') v = v.trim();   // "*", texto e célula só com espaço = sem dados (Number(' ') daria 0)
   return (v === '' || v === null || v === undefined || isNaN(Number(v))) ? null : Number(v);
 }

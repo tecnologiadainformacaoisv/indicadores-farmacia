@@ -107,7 +107,7 @@ function montarRelatorio(planilha, mesSel) {
     comSaida: soma('comSaida'), comSaidaAnt: temAnterior ? soma('comSaidaAnt') : null,
     faixas: Object.fromEntries(FAIXAS.map(f => [f.id, itens.filter(i => i.faixa === f.id).length])),
   };
-  return { mes: mesSel, itens, abas, porAba, total, temAnterior, ausentes, semAnterior };
+  return { mes: mesSel, itens, abas, porAba, total, temAnterior, ausentes, semAnterior: semAnterior.filter(n => abas.includes(n)) };
 }
 
 // ── HTML do relatório ──────────────────────────────────────────
@@ -146,12 +146,12 @@ function htmlRelatorio(r, un, ano, analise) {
     out.push(`<p class="r-aviso">Atenção: a planilha não tem a coluna de ${esc(mesTxt)} na aba ${esc(r.ausentes.map(n => ROTULO_ABA[n] || n).join(', '))}; o relatório não inclui esses itens.</p>`);
   }
 
-  if (r.semAnterior && r.semAnterior.length && r.semAnterior.length < r.abas.length) {
+  if (r.semAnterior && r.semAnterior.length) {
     out.push(`<p class="r-aviso">Atenção: a planilha não tem a coluna do mês anterior (${esc(MESES_REL[r.mes - 1] || '')}) na aba ${esc(r.semAnterior.map(n => ROTULO_ABA[n] || n).join(', '))}; a comparação com o mês anterior não foi feita.</p>`);
   }
   const semEstoque = t.itens > 0 && t.faixas.semdado === t.itens;
   if (semEstoque) {
-    out.push(`<p class="r-aviso">Atenção: a planilha não traz CMM nem estoque disponível; a situação do estoque, a cobertura e a reposição não puderam ser calculadas.</p>`);
+    out.push(`<p class="r-aviso">Atenção: a planilha não traz o estoque disponível de nenhum item; a situação do estoque, a cobertura e a reposição não puderam ser calculadas.</p>`);
   }
 
   const nCmmAuto = r.itens.filter(i => i.cmmAuto).length;

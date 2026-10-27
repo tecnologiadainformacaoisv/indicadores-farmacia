@@ -1,5 +1,16 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.6.16 – 2026-10-27
+### Corrigido (revisão das v0.6.10–0.6.15)
+- CMM automático: a tela de lançamento já conta a saída digitada quando a coluna do mês aberto ainda não existe na planilha (antes o CMM mudava depois de salvar)
+- CMM com fórmula na planilha: a tela mostra o valor da planilha em vez de um cálculo que o servidor não grava (`cmmFormula` em `logistica.ler`)
+- Log: o salvamento registra quantos CMM foram recalculados
+- Servidor: data e verdadeiro/falso numa célula numérica contam como sem dados
+- Relatórios: aviso de mês anterior só considera abas com itens; aviso de estoque ausente diz "estoque disponível" (o CMM agora é automático)
+- Cabeçalho: o link da logo sai da ordem do teclado e do leitor de tela (o do título já leva ao início); foco usa o token existente
+### Atenção
+- Exige publicar o servidor (`clasp push` + versão + `clasp update-deployment`)
+
 ## v0.6.15 – 2026-10-27
 ### Alterado
 - **CMM automático na planilha de saídas.** O campo CMM deixa de ser digitado: a tela mostra o valor calculado na hora (média das saídas dos meses com dado até o mês aberto; vazio não conta como zero; mínimo de 2 meses, senão vale o que já estava na planilha) e o servidor grava o CMM de toda a aba a cada salvamento. CMM com fórmula na planilha não é tocado; valor de CMM enviado pelo navegador é ignorado

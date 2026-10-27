@@ -152,6 +152,8 @@ const check = (nome, c, extra) => { if (c) ok++; else { falhas++; console.log('F
     check('salvar: modelo local atualizado, com o CMM automático (média de abril e maio)', it.includes('"valores":[40,99]') && /"cmm":70/.test(it), it);
     const cm = vm.runInContext("(function () { const aba = { meses: [{ mes: 2 }, { mes: 3 }, { mes: 4 }, { mes: 5 }], itens: [] }; planilha.mesAberto.mes = 4; const a = { valores: [10, null, 30, 99], cmm: 7 }; return JSON.stringify([cmmDoItem(aba, a), cmmDoItem(aba, a, 50), cmmDoItem(aba, a, null), cmmDoItem(aba, { valores: [null, null, 8, 1], cmm: 7 }), cmmDoItem(aba, { valores: [null, null, 8, 1], cmm: 7 }, 6)]); })()", v.ctx);
     check('lançamento: CMM automático = média dos meses com dado até o mês aberto (vazio não conta, mês futuro não entra, campo limpo sai da conta)', cm === '[20,30,7,7,7]', cm);
+    const cm2 = vm.runInContext("(function () { const aba = { meses: [{ mes: 2 }, { mes: 3 }], itens: [] }; planilha.mesAberto.mes = 4; const a = { valores: [10, 30], cmm: 7 }; return JSON.stringify([cmmDoItem(aba, a, 50), cmmDoItem(aba, a), cmmDoItem(aba, { valores: [10, 30], cmm: 7, cmmFormula: true }, 50)]); })()", v.ctx);
+    check('lançamento: mês aberto ainda sem coluna entra na conta pela saída digitada; CMM com fórmula não é recalculado', cm2 === '[30,20,7]', cm2);
     check('salvar: tabela liberada depois de salvar (inert)', v.els['log-wrap'].inert === false, v.els['log-wrap'].inert);
     check('salvar: sem erro', v.erros.length === 0 && !/erro/.test(v.els['log-status'].className), v.els['log-status'].textContent);
     check('salvar: mensagem de salvo permanece', /salvo/.test(v.els['save-info'].textContent), v.els['save-info'].textContent);
@@ -199,8 +201,8 @@ const check = (nome, c, extra) => { if (c) ok++; else { falhas++; console.log('F
     const metade = R.montarRelatorio(plan([aba('MEDICAMENTOS', [3, 5], [['A', [50, 60], 1, 90]]), aba('MATERIAIS', [3, 4, 5], [['B', [10, 20, 30], 1, 90]])]), 5);
     const htmlMetade = R.htmlRelatorio(metade, un, 2026);
     check('relatorios: mês anterior faltando em uma aba desliga a comparação (sem "novo" falso)', metade.temAnterior === false && metade.semAnterior.join() === 'MEDICAMENTOS' && metade.total.ant === null && htmlMetade.includes('não tem a coluna do mês anterior') && !htmlMetade.includes('>novo<'), metade.semAnterior);
-    check('relatorios: sem CMM nem estoque em nenhum item avisa e não mostra "0 zerados"', R.htmlRelatorio(nulo, un, 2026).includes('não traz CMM nem estoque') && R.htmlRelatorio(nulo, un, 2026).includes('estoque não informado na planilha'));
-    check('relatorios: com estoque informado não aparece o aviso de estoque ausente', !R.htmlRelatorio(branco, un, 2026).includes('não traz CMM nem estoque'));
+    check('relatorios: sem CMM nem estoque em nenhum item avisa e não mostra "0 zerados"', R.htmlRelatorio(nulo, un, 2026).includes('não traz o estoque disponível') && R.htmlRelatorio(nulo, un, 2026).includes('estoque não informado na planilha'));
+    check('relatorios: com estoque informado não aparece o aviso de estoque ausente', !R.htmlRelatorio(branco, un, 2026).includes('não traz o estoque disponível'));
     const auto = R.montarRelatorio(plan([aba('MEDICAMENTOS', [2, 3, 4], [['A', [10, null, 30], null, 5], ['B', [null, null, 30], null, 5], ['C', [10, 20, 30], 99, 5]])]), 4);
     check('relatorios: CMM em branco vira a média dos meses com dado (vazio não conta como zero)', auto.itens[0].cmm === 20 && auto.itens[0].cmmAuto === true, auto.itens[0]);
     check('relatorios: com menos de 2 meses de dado o CMM continua vazio; o da planilha é respeitado', auto.itens[1].cmm === null && auto.itens[2].cmm === 99 && auto.itens[2].cmmAuto === false);
