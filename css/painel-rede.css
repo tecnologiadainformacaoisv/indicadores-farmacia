@@ -1,0 +1,79 @@
+/* Recurso visual: PAINEL DA REDE (tag visual-painel-rede)
+   Dentro do painel azul-marinho do fechamento: legenda, filtros por tipo, busca, um cartão por município e a lista
+   de unidades agrupada por situação. Valores fixos sobre azul-marinho (como o resto do painel). */
+
+.rede { color: #e6f0f8; }
+/* o anel do fechamento comporta "77/143": um pouco maior e com número mais justo */
+.fechamento:has(.rede) .fech-ring { width: 78px; height: 78px; }
+.fechamento:has(.rede) .fech-ring::before { inset: 7px; }
+.fechamento:has(.rede) .fech-ring b { font-size: 15px; letter-spacing: -.02em; }
+.rede-leg { list-style: none; display: flex; flex-wrap: wrap; gap: 6px 20px; padding: 10px 24px; font-size: 13.5px; color: #cfe0ee; border-top: 1px solid rgba(255, 255, 255, .1); }
+.rede-leg li { display: flex; align-items: center; gap: 7px; }
+.rede-leg b { color: #fff; }
+
+/* o estado da unidade em quatro formas, para não depender só da cor: cheio, meio, vazado e tracejado */
+.q { display: inline-block; flex: none; width: 12px; height: 12px; border-radius: 3px; }
+.q--g { width: 26px; }
+.q--ok { background: #46e08a; }
+.q--parc { background: linear-gradient(90deg, #f0b44f 50%, transparent 50%); box-shadow: inset 0 0 0 1.5px #f0b44f; }
+.q--pend { background: transparent; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .8); }
+.q--sem { background: transparent; border: 1.5px dashed rgba(255, 255, 255, .5); }
+
+.rede-ferr { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 10px 24px; border-top: 1px solid rgba(255, 255, 255, .1); }
+.rede-chips { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; }
+.rede .ch { font: inherit; font-size: 13.5px; color: #e6f0f8; background: rgba(255, 255, 255, .06); border: 1px solid rgba(255, 255, 255, .5); border-radius: 999px; padding: 4px 13px; min-height: 36px; cursor: pointer; }
+.rede .ch b { color: #fff; margin-left: 3px; }
+.rede .ch[aria-pressed="true"] { background: #e6f0f8; color: #082c47; border-color: #e6f0f8; }
+.rede .ch[aria-pressed="true"] b { color: #082c47; }
+.rede .ch:focus-visible, .rede .mu:focus-visible, .rede-voltar:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+.rede-busca input { width: 260px; max-width: 100%; min-height: 40px; padding: 0 12px; border-radius: 9px; border: 1px solid rgba(255, 255, 255, .55); background: rgba(0, 0, 0, .18); color: #fff; font: inherit; font-size: 14px; }
+.rede-busca input::placeholder { color: #b6cadb; }
+.rede-busca input:focus-visible { outline: 3px solid #fff; outline-offset: 1px; }
+
+.rede-corpo { padding: 12px 24px 16px; border-top: 1px solid rgba(255, 255, 255, .1); }
+.rede-vazio { padding: 18px 4px; color: #cfe0ee; }
+
+/* cartão do município: é um botão */
+.rede-grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+.mu { display: flex; flex-direction: column; gap: 7px; text-align: left; font: inherit; color: inherit; padding: 11px 13px 12px; border-radius: 12px; background: rgba(255, 255, 255, .06); border: 1px solid rgba(255, 255, 255, .25); cursor: pointer; }
+.mu:hover { background: rgba(255, 255, 255, .11); }
+.mu__topo { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.mu__topo b { color: #fff; font-size: 15px; font-family: var(--font-title); }
+.mu__n { color: #e6f0f8; font: 800 14px var(--font-title); font-variant-numeric: tabular-nums; }
+.mu__barra { display: flex; height: 6px; border-radius: 6px; background: rgba(255, 255, 255, .16); overflow: hidden; }
+.mu__barra i.ok { background: #46e08a; } .mu__barra i.parc { background: #f0b44f; }
+.mu__q { display: flex; flex-wrap: wrap; gap: 3px; }
+.mu small { color: #b6cadb; font-size: 12.5px; line-height: 1.35; }
+.mu .mu__t { color: #a8c4da; font-size: 12px; }
+
+/* lista de unidades, agrupada por situação */
+.rede-nav { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
+.rede-nav b { color: #fff; font-family: var(--font-title); font-size: 16px; }
+.rede-voltar { font: inherit; font-size: 14px; font-weight: 700; min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, .55); background: transparent; color: #fff; cursor: pointer; }
+.rg { margin-bottom: 8px; }
+.rg h4 { font-size: 14px; color: #fff; margin: 10px 0 4px; font-family: var(--font-title); }
+.rg h4 span { color: #b6cadb; font-weight: 400; }
+.rl { list-style: none; display: grid; grid-template-columns: 1fr; }
+@media (min-width: 1100px) { .rl { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; } }
+.ru { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 9px 2px; border-bottom: 1px solid rgba(255, 255, 255, .1); }
+.ru__t { min-width: 0; }
+.ru__t b { display: block; color: #fff; font-size: 14.5px; overflow-wrap: anywhere; }
+.ru__t small { display: block; color: #b6cadb; font-size: 12.5px; overflow-wrap: anywhere; }
+.ru__link { color: inherit; text-decoration: none; display: inline-block; padding: 4px 0; }
+.ru__link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.ru__link:focus-visible { outline: 3px solid #fff; outline-offset: 2px; border-radius: 4px; }
+.st { flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px; border-radius: 999px; font-size: 12.5px; font-weight: 700; }
+.st::before { content: ""; width: 8px; height: 8px; border-radius: 2px; background: currentColor; }
+.st--ok { background: rgba(70, 224, 138, .16); color: #6cf0a6; }
+.st--parc { background: rgba(240, 180, 79, .16); color: #f6c566; }
+.st--pend { background: rgba(255, 255, 255, .1); color: #e6f0f8; }
+.st--pend::before { background: transparent; box-shadow: inset 0 0 0 1.5px currentColor; }
+.st--sem { background: transparent; color: #cfe0ee; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .3); }
+.st--sem::before { background: transparent; border: 1.5px dashed currentColor; }
+
+@media (max-width: 720px) {
+  .rede-leg, .rede-ferr, .rede-corpo { padding-left: 14px; padding-right: 14px; }
+  .rede-grade { grid-template-columns: 1fr 1fr; }
+  .rede-busca, .rede-busca input { width: 100%; }
+}
+@media (max-width: 420px) { .rede-grade { grid-template-columns: 1fr; } }

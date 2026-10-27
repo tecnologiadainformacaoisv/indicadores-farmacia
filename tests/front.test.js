@@ -208,6 +208,31 @@ const check = (nome, c, extra) => { if (c) ok++; else { falhas++; console.log('F
     const coord = A.atalhos({ admin: false, mes: 'Maio/2026', unidades: [un('A', false, 0, 0)], resumo: A.resumir([un('A', false, 0, 0)]) });
     check('atalhos: coordenador vê 2 atalhos, sem Usuários nem Relatórios', coord.length === 2 && !coord.some(a => ['usr', 'rel', 'dash'].includes(a.id)));
   }
+  // recurso visual "painel da rede"
+  {
+    const P = require('../js/painel-rede.js');
+    const cat = [{ m: 'Caucaia', u: [{ n: 'UPA Centro (Luiz Nerys)', t: 'UPA', a: ['UPA Centro', 'UPA Luiz Nerys'] }, { n: 'UPA Jurema', t: 'UPA' }, { n: 'Hospital Municipal Abelardo Gadelha da Rocha', t: 'Hospital', a: ['HMAGR'] }] },
+      { m: 'Massapé', u: [{ n: 'CSF Sede I', t: 'UBS' }, { n: 'CAPS', t: 'CAPS' }, { n: 'Hospital Municipal / Hospital Senador Ozires Pontes', t: 'Hospital' }] }];
+    const cheio = { med: { preenchidos: 10, total: 10 }, mat: { preenchidos: 4, total: 4 }, por: 'x', em: 'y' };
+    const meio = { med: { preenchidos: 5, total: 10 }, mat: { preenchidos: 0, total: 4 }, por: 'x', em: 'y' };
+    check('painel-rede: estados da unidade (tudo, andamento, nada)',
+      P.estadoDaUnidade({ clinica: { lancado: true }, saidas: cheio }) === 'ok' && P.estadoDaUnidade({ clinica: { lancado: true }, saidas: null }) === 'parc'
+      && P.estadoDaUnidade({ clinica: { lancado: false }, saidas: meio }) === 'parc' && P.estadoDaUnidade({ clinica: { lancado: false }, saidas: null }) === 'pend');
+    const rede = P.montarRede(cat, [{ id: 'upa-centro', nome: 'UPA Luiz Nerys (UPA Centro)', clinica: { lancado: true }, saidas: cheio }, { id: 'upa-jurema', nome: 'UPA Jurema', clinica: { lancado: false }, saidas: null }]);
+    const un = n => rede.flatMap(m => m.u).find(u => u.n === n);
+    check('painel-rede: casa o painel com o cadastro (apelido e nome igual) e deixa o resto "sem planilha"',
+      un('UPA Centro (Luiz Nerys)').s === 'ok' && un('UPA Centro (Luiz Nerys)').id === 'upa-centro' && un('UPA Jurema').s === 'pend' && un('CAPS').s === 'sem' && un('Hospital Municipal Abelardo Gadelha da Rocha').s === 'sem');
+    const semDupla = P.montarRede(cat, [{ id: 'h', nome: 'Hospital Municipal', clinica: { lancado: false }, saidas: null }]);
+    check('painel-rede: nome ambíguo não casa por engano e vira "Outras unidades"', semDupla[semDupla.length - 1].m === 'Outras unidades' && semDupla.flatMap(m => m.u).filter(u => u.p).length === 1 && semDupla.find(m => m.m === 'Massapé').u.every(u => u.s === 'sem'));
+    const c = P.contar(rede.flatMap(m => m.u));
+    check('painel-rede: contagens separam "nada lançado" de "sem planilha"', c.ok === 1 && c.pend === 1 && c.sem === 4 && c.comPlanilha === 2 && c.total === 6, c);
+    check('painel-rede: filtro por município, tipo e busca', P.filtrar(rede, { municipios: ['Massapé'] }).length === 1 && P.filtrar(rede, { tipos: ['Hospital'] }).flatMap(m => m.u).length === 2
+      && P.filtrar(rede, { busca: 'jurema' }).flatMap(m => m.u).length === 1 && P.filtrar(rede, { unidades: ['Massapé|CAPS'] }).flatMap(m => m.u).length === 1 && P.filtrar(rede, null).length === 2);
+    const r = P.resumir(rede);
+    check('painel-rede: resumo dos atalhos só conta unidades com planilha', r.completas === 1 && r.total === 2 && r.pctSaidas === 100, r);
+    check('painel-rede: município só com unidades sem planilha vai para o fim', P.ordenar(rede)[0].m === 'Caucaia' && P.ordenar(rede)[1].m === 'Massapé');
+    check('painel-rede: catálogo tem 152 equipamentos em 12 municípios', require('../js/rede-catalogo.js').reduce((n, m) => n + m.u.length, 0) === 152 && require('../js/rede-catalogo.js').length === 12);
+  }
   // tela de usuários
   {
     const arm = new Map([['farma_sessao', 'TOKEN1']]);

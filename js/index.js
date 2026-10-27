@@ -6,7 +6,7 @@ function mostrar(view) {
   views.forEach(v => { document.getElementById('view-' + v).hidden = v !== view; });
   document.getElementById('btn-retry').hidden = true;
   // no celular, focar abriria o teclado e esconderia o formulário
-  const primeiro = document.querySelector('#view-' + view + ' input');
+  const primeiro = document.querySelector('#view-' + view + ' input:not([type=search])');   // a busca do painel não ganha foco sozinha
   if (primeiro && window.matchMedia('(min-width: 768px)').matches) primeiro.focus();
 }
 
@@ -116,7 +116,12 @@ function montarFechamento(painel, admin) {
   const lista = document.getElementById('fech-lista');
   let feitos, total;
 
-  if (admin) {
+  if (admin && window.PainelRede) {
+    // recurso "painel da rede" (visual-painel-rede): um cartão por município, lista por situação
+    const r = PainelRede.montar({ painel, raiz: document.querySelector('.fechamento') });
+    feitos = r.feitos; total = r.total;
+    document.getElementById('fech-rodape').textContent = 'Os coordenadores lançam; aqui você acompanha. As metas de cada unidade ficam em Acompanhamento mensal.';
+  } else if (admin) {
     const completas = uns.filter(unidadeCompleta).length;
     feitos = completas; total = uns.length;
     document.getElementById('fech-sub').textContent = `${completas} de ${uns.length} unidades com tudo lançado.`;
