@@ -1,5 +1,9 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.6.12 – 2026-10-27
+### Alterado
+- A logo do cabeçalho também leva à tela inicial, como o título
+
 ## v0.6.11 – 2026-10-27
 ### Alterado
 - Título do cabeçalho: sem sublinhado nem dica ao passar o mouse; é só um clique normal que volta ao início
