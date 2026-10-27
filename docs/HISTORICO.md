@@ -27,6 +27,9 @@ Registro cronológico do que foi decidido e entregue, para quem retomar o projet
 ### Guardado no branch `atualizacao-visual` (não publicado)
 Largura das telas, Usuários (saúde dos acessos, filtros, WhatsApp, desfazer), planilha (tendência, ordenar, sem saída, colar do Excel, revisão antes de salvar), indicadores (mapa de calor, variação, resumo, metas com valor atual, resultado ao vivo, imprimir), letra maior (A+), Ctrl+K, anel do painel, fundo painel de dados e faixa de gráficos. Testes do branch: 95 (front) e 92 (API).
 
+### Domínio (2026-10-26)
+O site passou a responder em **https://farmacia.institutosaovicente.com.br** (guia: `../DOMINIO-GITHUB-PAGES.md`). `http` e o endereço antigo `github.io` redirecionam para o novo, com HTTPS ativo. Como o login fica guardado por endereço, quem estava logado no endereço antigo entra de novo. O Apps Script não mudou (acesso anônimo, sem restrição de origem).
+
 ### Como o fluxo funciona hoje
 - **Coordenador:** login → troca da senha provisória → painel de fechamento → lança a Clínica Geral (formulário) e a planilha de saídas (item por item) do mês que fechou; vê só a própria unidade.
 - **Tereza (coordenação):** login → painel com todas as unidades (selos) → acompanhamento (gráficos, metas por unidade) → planilha de cada unidade em consulta → usuários (cadastrar, redefinir senha, desativar). Não lança dados.

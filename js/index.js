@@ -170,6 +170,7 @@ function montarHome(painel) {
     : 'Saídas, CMM e estoque de cada item.';
   document.getElementById('card-dashboard').hidden = !admin;
   document.getElementById('card-usuarios').hidden = !admin;
+  document.getElementById('card-relatorios').hidden = !admin;
   montarFechamento(painel, admin);
   if (painel.mesAberto.teste) status('Ambiente de teste: o mês aberto está fixo em ' + nomeMes(painel.mesAberto) + '.', 'warn');
   mostrar('home');

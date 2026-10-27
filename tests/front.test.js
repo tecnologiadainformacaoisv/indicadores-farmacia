@@ -1,6 +1,7 @@
 // Testes de fumaça das telas com DOM, fetch e localStorage simulados.
 // Rodar: node tests/front.test.js
 // Teste de fumaça das telas: DOM de mentira + fetch simulado + localStorage compartilhado entre "visitas".
+global.esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); global.MESES_NOME = ['Janeiro'];
 const fs = require('fs');
 const vm = require('vm');
 const root = require('path').resolve(__dirname, '..', 'js') + '/';
@@ -152,6 +153,47 @@ const check = (nome, c, extra) => { if (c) ok++; else { falhas++; console.log('F
     check('salvar: tabela liberada depois de salvar (inert)', v.els['log-wrap'].inert === false, v.els['log-wrap'].inert);
     check('salvar: sem erro', v.erros.length === 0 && !/erro/.test(v.els['log-status'].className), v.els['log-status'].textContent);
     check('salvar: mensagem de salvo permanece', /salvo/.test(v.els['save-info'].textContent), v.els['save-info'].textContent);
+  }
+  // relatórios (só a coordenação): prévia na tela com os números da planilha da unidade
+  {
+    const arm = new Map([['farma_sessao', 'TOKEN1']]);
+    const v = visita('relatorios.js', arm, 'admin');
+    await pausa(80);
+    check('relatorios: carrega sem erro e usa a rota da planilha', v.erros.length === 0 && v.chamadas.join() === 'sessao,logistica.carregar', [v.erros, v.chamadas]);
+    const corpo = v.els['rel-folha-corpo'].innerHTML;
+    check('relatorios: prévia traz título, resumo e anexo', corpo.includes('COMPETÊNCIA MAIO DE 2026') && corpo.includes('Resumo executivo') && corpo.includes('Anexo'), corpo.slice(0, 120));
+    check('relatorios: compara com o mês anterior', corpo.includes('variação das saídas contra abril'), corpo.slice(0, 80));
+    check('relatorios: botão de imprimir liberado e folha visível', v.els['btn-imprimir'].disabled === false && v.els['rel-folha'].hidden === false);
+    const vc = visita('relatorios.js', new Map([['farma_sessao', 'TOKEN1']]), 'coordenador');
+    await pausa(80);
+    check('relatorios: coordenador volta ao início antes de buscar dados (só a coordenação imprime)', vc.ctx.location.href === 'index.html' && vc.chamadas.join() === 'sessao', [vc.ctx.location.href, vc.chamadas]);
+    // regras de cálculo
+    const R = require('../js/relatorios.js');
+    const f = (atual, estoque) => { const it = { atual, estoque }; R.classificar(it); return it.faixa; };
+    check('relatorios: faixas de cobertura', f(100, 0) === 'zerado' && f(0, 0) === 'semsemsaida' && f(100, 10) === 'critico' && f(100, 60) === 'baixo' && f(100, 150) === 'adequado' && f(100, 400) === 'elevado' && f(100, 900) === 'excesso' && f(0, 50) === 'semsaida' && f(100, null) === 'semdado');
+    check('relatorios: variação e reposição', R.variacao(808, 200) === '+304%' && R.variacao(0, 100) === '−100%' && R.variacao(5, 0) === 'novo' && R.reposicao({ atual: 100, estoque: 30 }) === 170 && R.reposicao({ atual: 10, estoque: 99 }) === 0);
+    check('relatorios: limpa códigos do nome', R.limparNome('LANCETA [2779] -   - Unidade') === 'LANCETA - Unidade', R.limparNome('LANCETA [2779] -   - Unidade'));
+
+    // casos de borda do relatório
+    const aba = (nome, meses, itens) => ({ nome, meses: meses.map(m => ({ mes: m, rotulo: '' })), itens: itens.map((x, i) => ({ linha: i + 6, produto: x[0], valores: x[1], cmm: x[2], estoque: x[3] })) });
+    const plan = abas => ({ unidade: 'u', mesAberto: { ano: 2026, mes: 4 }, abas });
+    const un = { nome: 'UPA X', municipio: 'Caucaia' };
+    const jan = R.montarRelatorio(plan([aba('MEDICAMENTOS', [0, 1], [['A', [10, 20], 1, 5]])]), 0);
+    const htmlJan = R.htmlRelatorio(jan, un, 2026);
+    check('relatorios: janeiro (sem mês anterior) não quebra nem escreve undefined', jan.temAnterior === false && !/undefined|NaN/.test(htmlJan) && htmlJan.includes('JANEIRO'), htmlJan.slice(0, 100));
+    const vazia = R.montarRelatorio(plan([]), 4);
+    check('relatorios: planilha sem abas gera relatório vazio sem quebrar', vazia.itens.length === 0 && !/undefined|NaN/.test(R.htmlRelatorio(vazia, un, 2026)));
+    const semMes = R.montarRelatorio(plan([aba('MEDICAMENTOS', [3, 4], [['A', [1, 2], 1, 5]]), aba('MATERIAIS', [3], [['B', [7], 1, 5]])]), 4);
+    check('relatorios: aba sem a coluna do mês é avisada', semMes.ausentes.join() === 'MATERIAIS' && R.htmlRelatorio(semMes, un, 2026).includes('não tem a coluna de maio'), semMes.ausentes);
+    const branco = R.montarRelatorio(plan([aba('MEDICAMENTOS', [3, 4], [['A', [null, 30], 1, 90], ['B', [10, 20], 1, 90]])]), 4);
+    check('relatorios: mês anterior em branco conta como zero nos totais e nas listas', branco.total.ant === 10 && branco.itens[0].ant === 0 && R.variacao(30, branco.itens[0].ant) === 'novo', [branco.total.ant, branco.itens[0].ant]);
+    const xss = R.montarRelatorio(plan([aba('MEDICAMENTOS', [3, 4], [['<img src=x onerror=alert(1)>', [40, 50], 10, 0]])]), 4);
+    check('relatorios: nome de item com HTML é escapado', !R.htmlRelatorio(xss, { nome: '<b>U</b>', municipio: '' }, 2026).includes('<img') && !R.htmlRelatorio(xss, { nome: '<b>U</b>', municipio: '' }, 2026).includes('<b>U</b>'));
+    const comTexto = R.htmlRelatorio(branco, un, 2026, 'Primeiro **destaque** aqui.\n\nSegundo <script>x</script>');
+    check('relatorios: texto de análise entra depois do resumo, com negrito e HTML escapado', comTexto.includes('<p class="r-analise">Primeiro <b>destaque</b> aqui.</p>') && comTexto.includes('&lt;script&gt;') && !comTexto.includes('<script>') && comTexto.indexOf('r-analise') < comTexto.indexOf('Como os números foram calculados'));
+    check('relatorios: sem texto de análise nada é acrescentado', !R.htmlRelatorio(branco, un, 2026, '  ').includes('r-analise') && R.htmlAnalise('') === '');
+    const nulo = R.montarRelatorio(plan([aba('MEDICAMENTOS', [3, 4], [['A', [5, 5], null, null]])]), 4);
+    check('relatorios: estoque nulo vai para "sem dado" sem cobertura', nulo.itens[0].faixa === 'semdado' && !/undefined|NaN/.test(R.htmlRelatorio(nulo, un, 2026)));
   }
   // tela de usuários
   {

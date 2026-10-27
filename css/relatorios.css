@@ -1,0 +1,118 @@
+/* Relatórios: controles na tela (tokens do sistema) e folha A4 em papel branco (valores fixos: o papel não muda com o tema) */
+
+.rel-main { flex: 1; width: 100%; max-width: 980px; margin: 0 auto; padding: 24px 32px 48px; }
+.rel-top { display: flex; flex-direction: column; gap: 14px; align-items: center; text-align: center; margin-bottom: 16px; }
+.rel-title { font-size: 20px; color: var(--title); }
+.rel-sub { font-size: 14px; color: var(--text-soft); margin: 2px auto 0; max-width: 56ch; }
+.rel-filtros { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: flex-end; justify-content: center; text-align: left; }
+.rel-campo { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600; }
+.rel-select {
+  min-height: 44px; padding: 0 12px; min-width: 160px;
+  border: 1px solid var(--input-bd); border-radius: 10px; background: var(--input-bg); color: var(--instituto-text); font: inherit; font-size: 15px;
+}
+.rel-filtros .btn { min-height: 44px; }
+
+/* migalhas (mesmo padrão da planilha de saídas) */
+.migalhas { margin-bottom: 8px; font-size: 13px; }
+.migalhas ol { list-style: none; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 0; }
+.migalhas li + li::before { content: "›"; margin: 0 8px; color: var(--text-soft); }
+.migalhas a { color: var(--instituto-secondary); font-weight: 600; text-decoration: none; padding: 4px 2px; border-radius: 4px; }
+.migalhas a:hover { text-decoration: underline; }
+.migalhas a:focus-visible { outline: 2px solid var(--instituto-secondary); outline-offset: 1px; }
+.migalhas [aria-current="page"] { color: var(--text-soft); font-weight: 700; }
+@media (max-width: 860px) { .migalhas a { display: inline-block; padding: 12px 6px; } }
+
+/* ── folha (prévia e impressão) ── */
+.rel-folha {
+  width: 794px; max-width: 100%; margin: 18px auto 0; background: #fff; color: #1a1a1a;
+  border: 1px solid var(--instituto-border); border-radius: 4px; box-shadow: 0 10px 30px -18px rgba(8, 44, 71, .5);
+  font-family: Georgia, 'Times New Roman', serif; font-size: 13px; line-height: 1.5;
+}
+.rel-folha[hidden] { display: none; }
+.rel-papel { width: 100%; border-collapse: collapse; }
+.rel-papel > thead > tr > td, .rel-papel > tfoot > tr > td, .rel-papel > tbody > tr > td { padding: 0; }
+.rel-corpo { padding: 14px 44px 22px; }
+
+/* papel timbrado do ISV (extraído do relatório da Tereza): topo, marca d'água e rodapé */
+.timbre-topo { aspect-ratio: 990 / 125; background: url("../assets/timbrado-topo.png") 0 0 / 100% 100% no-repeat; }
+.timbre-rod { position: relative; aspect-ratio: 990 / 149; container-type: inline-size; background: url("../assets/timbrado-rodape.png") 0 0 / 100% 100% no-repeat; }
+.timbre-rod span { position: absolute; left: 8.6%; right: 3%; top: var(--y); transform: translateY(-50%); font: 1.2cqw/1.2 'Segoe UI', system-ui, sans-serif; color: #2b3a4a; white-space: nowrap; }
+.rel-corpo { background: url("../assets/timbrado-marca.png") center top / 100% auto repeat-y; }
+
+.r-kicker { font: 600 10.5px 'Segoe UI', system-ui, sans-serif; letter-spacing: .02em; color: #566376; margin-top: 6px; }
+.r-titulo { font-family: Georgia, 'Times New Roman', serif; font-size: 22.7px; line-height: 1.2; font-weight: 700; color: #1f6e73; margin: 6px 0 8px; }
+.r-lead { color: #333f3f; font-size: 14.67px; line-height: 1.45; }
+.r-meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 48px; margin: 14px 0 6px; padding: 10px 16px; background: #f1f4f4; font: 11px/1.4 'Segoe UI', system-ui, sans-serif; }
+.r-meta div { display: flex; align-items: center; gap: 12px; }
+.r-meta dt { color: #5f6b6b; font-weight: 700; letter-spacing: .06em; font-size: 10px; padding-top: 1px; }
+.r-meta dd { margin: 0; max-width: 34ch; }
+
+.rel-corpo h2 { font-family: Georgia, 'Times New Roman', serif; font-size: 18.67px; color: #1f6e73; font-weight: 700; margin: 22px 0 8px; padding-bottom: 3px; border-bottom: 1px solid #1f6e73; break-after: avoid; }
+.rel-corpo h3 { font-family: Georgia, 'Times New Roman', serif; font-size: 15px; color: #1f6e73; margin: 14px 0 6px; break-after: avoid; }
+.rel-corpo p { margin: 6px 0; }
+.rel-corpo p:not([class]) { font-size: 14.67px; line-height: 1.45; color: #1a1a1a; }
+.rel-corpo p b { color: #1f6e73; }
+.rel-corpo p.r-analise { margin-top: 8px; font-size: 14.67px; line-height: 1.45; color: #1a1a1a; }
+.r-aviso { padding: 6px 10px; border: 1px solid #e6b800; background: #fff8e0; font: 11px/1.4 'Segoe UI', system-ui, sans-serif; margin: 8px 0; }
+.rel-dica { font-size: 12.5px; color: var(--text-soft); max-width: 70ch; margin: 0 auto 12px; text-align: center; }
+.rel-analise { width: min(720px, 100%); text-align: left; font-weight: 600; }
+.rel-analise small { font-weight: 400; color: var(--text-soft); font-size: 12.5px; }
+.rel-texto { width: 100%; padding: 10px 12px; border: 1px solid var(--input-bd); border-radius: 10px; background: var(--input-bg); color: var(--instituto-text); font: inherit; font-size: 14px; font-weight: 400; line-height: 1.45; resize: vertical; }
+.r-nota { font-size: 11.5px; color: #566376; }
+.r-vazio { font: italic 12px 'Segoe UI', system-ui, sans-serif; color: #566376; }
+
+.r-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin: 10px 0 6px; font-family: 'Segoe UI', system-ui, sans-serif; }
+.r-kpis b { display: block; font: 700 28px/1.1 Georgia, 'Times New Roman', serif; color: #1f6e73; font-variant-numeric: tabular-nums; }
+.r-kpis span { display: block; font-size: 11.5px; line-height: 1.3; margin-top: 3px; }
+.r-kpis small { display: block; font-size: 10.5px; color: #7a8794; margin-top: 3px; }
+
+/* tabelas */
+.r-tab { width: 100%; border-collapse: collapse; margin: 6px 0 10px; font: 10.5px/1.25 'Segoe UI', system-ui, sans-serif; font-variant-numeric: tabular-nums; }
+.r-tab th { text-align: left; font-size: 9px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: #7a8794; padding: 3px 6px; border-bottom: 1px solid #c9d2db; }
+.r-tab td { padding: 2px 6px; border-bottom: 1px solid #e6ebf0; vertical-align: top; }
+.r-tab th.n, .r-tab td.n { text-align: right; white-space: nowrap; }
+.r-tab tr { break-inside: avoid; }
+.r-tab thead { display: table-header-group; }
+.r-tab .tot td { font-weight: 700; border-top: 1px solid #c9d2db; }
+.r-item small { display: inline; margin-left: 6px; font-size: 8.5px; color: #7a8794; text-transform: capitalize; white-space: nowrap; }
+.r-crit { color: #44566a; }
+.r-quad { display: inline-block; width: 8px; height: 8px; margin-right: 6px; background: var(--c); border-radius: 1px; }
+.r-anexo td, .r-anexo th { font-size: 9.5px; padding: 1.5px 5px; }
+
+/* barras de situação do estoque: o número dentro do trecho; a cor só reforça */
+.r-barras { display: grid; gap: 8px; margin: 8px 0 10px; font-family: 'Segoe UI', system-ui, sans-serif; }
+.r-barra { display: grid; grid-template-columns: 84px minmax(0, 1fr); align-items: center; gap: 10px; font-size: 11px; }
+.r-segs { display: flex; height: 22px; border-radius: 3px; overflow: hidden; }
+.r-segs span { flex: var(--w) 1 0; background: var(--c); display: grid; place-items: center; min-width: 0; }
+.r-segs i { font: normal 700 10px 'Segoe UI', system-ui, sans-serif; color: var(--t, #1d2733); }
+
+@media screen and (max-width: 860px) {
+  .rel-main { padding: 16px 14px 40px; }
+  .rel-folha { width: 100%; overflow-x: auto; }
+  .rel-corpo { padding: 6px 16px 18px; }
+  .r-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .rel-filtros { width: 100%; }
+  .rel-campo { flex: 1; }
+  .rel-filtros .btn { width: 100%; }
+}
+
+/* ── impressão: só a folha, em A4; o topo se repete em cada página e o rodapé fica fixo no pé de todas ── */
+@page { size: A4; margin: 0; }
+@media print {
+  html { background: #fff !important; }
+  body { background: transparent !important; }
+  .page-header, .migalhas, .rel-top, .rel-dica, .notice, .app-footer, .aviso-lento { display: none !important; }
+  .rel-main { max-width: none; padding: 0; margin: 0; }
+  .rel-folha { width: auto; margin: 0; border: 0; border-radius: 0; box-shadow: none; background: transparent; }
+  .rel-papel > thead { display: table-header-group; }
+  .rel-papel > tfoot { display: table-footer-group; }
+  .rel-papel > tfoot td { height: 34mm; }
+  .timbre-rod { position: fixed; left: 0; bottom: 0; width: 210mm; }
+  .rel-corpo { background: none; padding: 4mm 12mm 0; }
+  body::before { content: ""; position: fixed; left: 0; top: 24mm; width: 210mm; height: 237mm; z-index: -1; background: url("../assets/timbrado-marca.png") center / 100% 100% no-repeat; }
+  .timbre-topo, .timbre-rod, .r-segs span, .r-quad, .rel-corpo h2 { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .r-quebra { break-before: page; }
+}
+
+/* link da trilha com contraste de texto (4,5:1) nos dois temas */
+.rel-main .migalhas a { color: var(--title); }

@@ -10,7 +10,7 @@ const fs = require('fs');
 const path = require('path');
 
 const BASES = process.argv.slice(2).length ? process.argv.slice(2) : ['http://localhost:5510/'];
-const PAGINAS = ['index.html', 'indicadores.html', 'logistica.html', 'usuarios.html', 'dashboard.html', 'ajuda.html'];
+const PAGINAS = ['index.html', 'indicadores.html', 'logistica.html', 'usuarios.html', 'relatorios.html', 'dashboard.html', 'ajuda.html'];
 const PERFIS = ['admin', 'coordenador'];
 const TEMAS = ['light', 'dark'];
 const LARGURAS = [390, 1280];

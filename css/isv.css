@@ -18,7 +18,7 @@
   --borda-controle: var(--input-bd);
   --instituto-border: #c5d3e1;  /* cartões e divisórias: visíveis sem pesar */
   --c-ok: #17683a;   --ok-bg: #e6f4ec;
-  --c-warn: #8f5d09; --warn-bg: #fef5e7; --warn-bd: #f8d9a0;
+  --c-warn: #8f5d09; --warn-bg: #fef5e7; --warn-bd: #e8c07a;
   --c-err: #c0392b;  --err-bg: #fdecea;  --err-bd: #f5c6c0;
   --alert-err-text: #922b21;
   --alert-warn-text: #6f4607;

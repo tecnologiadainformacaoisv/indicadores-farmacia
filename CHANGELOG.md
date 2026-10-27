@@ -1,5 +1,65 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.6.9 – 2026-10-27
+### Adicionado
+- Relatórios: campo opcional de **texto de análise** (parágrafos separados por linha em branco; `**assim**` vira negrito). O texto entra logo depois do resumo executivo, só aparece se for preenchido e fica guardado apenas no navegador de quem digitou, por unidade e mês
+
+### Corrigido
+- Borda do alerta amarelo no tema claro (1,23:1 → acima de 1,3:1); a auditoria de bordas fecha com 0 achados
+
+## v0.6.8 – 2026-10-27
+### Corrigido
+- Relatório: rótulos "Fonte" e "Competência" com contraste de texto (cinza mais escuro, 5,2:1); a v0.6.7 os deixou em 3,4:1
+
+## v0.6.7 – 2026-10-27
+### Ajustado
+- Relatório mensal mais próximo do modelo da Tereza: Fonte e Competência centralizadas em um quadro cinza-claro; títulos, números e destaques em verde-azulado (#1f6e73); texto em 11 pt e cinza muito escuro
+
+## v0.6.6 – 2026-10-27
+### Corrigido
+- Relatórios: contraste do número dentro das barras de situação do estoque (texto escuro nos trechos claros) e do link "Início" da trilha, que ficavam abaixo de 4,5:1
+- A bateria visual (`tools/visual/bateria-visual.js`) passa a incluir a tela de relatórios; resultado: 52 telas, 0 erros, 0 rolagem horizontal, 0 alvos pequenos, 0 de contraste
+
+## v0.6.5 – 2026-10-27
+### Corrigido
+- Relatórios: planilha sem abas ou sem mês lançado mostra mensagem em vez de um relatório zerado
+- Relatórios: só aparecem meses que existem em todas as abas, que não são futuros e que têm número lançado; se uma aba não tiver o mês, o relatório avisa
+- Relatórios: mês anterior em branco conta como zero nos totais e nas listas (antes as listas mostravam "—")
+- Relatórios: trocar de unidade rápido não mistura dados (vale só a última resposta)
+- Relatórios: o coordenador volta ao início antes de qualquer dado ser buscado
+- Relatórios: aviso na tela para imprimir pelo Chrome ou Edge com "Gráficos de plano de fundo" marcado (o timbrado depende dessa opção)
+- Mais testes: janeiro, planilha vazia, aba ausente, mês anterior em branco, nome com HTML e estoque nulo
+
+## v0.6.4 – 2026-10-26
+### Ajustado
+- Tela de relatórios: título, descrição, seletores de unidade e mês e botão de imprimir centralizados (as migalhas continuam à esquerda)
+
+## v0.6.3 – 2026-10-26
+### Ajustado
+- Relatório mensal: tabelas mais compactas (tipo do item na mesma linha do nome, menos espaço entre linhas); o relatório da UPA Centro/maio caiu de 21 para 14 páginas
+
+## v0.6.2 – 2026-10-26
+### Ajustado
+- Relatório mensal usa o **papel timbrado oficial do ISV** (extraído do relatório da Tereza): topo com logo e faixas, marca d'água e rodapé com contatos, em todas as páginas impressas e na prévia
+
+## v0.6.1 – 2026-10-26
+### Ajustado
+- "Relatório mensal" no menu lateral do acompanhamento (só a coordenação), abrindo na unidade que ela está vendo; `relatorios.html?unidade=` inválida abre a unidade padrão
+
+## v0.6.0 – 2026-10-26
+### Adicionado
+- Nova tela **Relatórios** (só a coordenação do Instituto): escolhe a unidade e o mês, vê a prévia do relatório mensal de farmácia e imprime ou salva em PDF (papel timbrado do ISV, A4, cabeçalho e rodapé em todas as páginas)
+- O relatório segue o modelo da Tereza (hospital de Pacatuba, setembro/2026): resumo executivo, saídas contra o mês anterior (maiores altas e quedas), situação do estoque por faixa de cobertura, itens zerados, cobertura crítica e baixa com reposição sugerida, excesso e itens sem saída, verificações do registro e anexo com todos os itens
+- Os números vêm da planilha de saídas da unidade (mesma leitura da tela "Planilha de saídas"); nada é gravado e não há mudança no servidor
+- Ficam de fora por enquanto: textos de análise e recomendações, Portaria 344 e vencidos (o sistema ainda não tem essas abas)
+- Cartão "Relatórios" na tela inicial da coordenação
+
+## v0.5.12 – 2026-10-26
+### Corrigido
+- Celular: a seta de voltar do cabeçalho tem área de toque de 44 px de largura
+- Indicadores de limite máximo (PRM) dizem "Acima do limite" em vez de "Abaixo da meta"
+- Alertas do acompanhamento com ponto colorido em vez de emoji
+
 ## v0.5.11 – 2026-10-23
 ### Corrigido
 - Acompanhamento mensal: se a troca de unidade falhar (rede instável), a tela volta para a unidade anterior; antes "Salvar metas" podia gravar os valores de uma unidade na outra
