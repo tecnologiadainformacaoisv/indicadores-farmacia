@@ -1,5 +1,12 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.6.9 – 2026-10-27
+### Adicionado
+- Relatórios: campo opcional de **texto de análise** (parágrafos separados por linha em branco; `**assim**` vira negrito). O texto entra logo depois do resumo executivo, só aparece se for preenchido e fica guardado apenas no navegador de quem digitou, por unidade e mês
+
+### Corrigido
+- Borda do alerta amarelo no tema claro (1,23:1 → acima de 1,3:1); a auditoria de bordas fecha com 0 achados
+
 ## v0.6.8 – 2026-10-27
 ### Corrigido
 - Relatório: rótulos "Fonte" e "Competência" com contraste de texto (cinza mais escuro, 5,2:1); a v0.6.7 os deixou em 3,4:1

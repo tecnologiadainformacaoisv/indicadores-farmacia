@@ -189,6 +189,9 @@ const check = (nome, c, extra) => { if (c) ok++; else { falhas++; console.log('F
     check('relatorios: mês anterior em branco conta como zero nos totais e nas listas', branco.total.ant === 10 && branco.itens[0].ant === 0 && R.variacao(30, branco.itens[0].ant) === 'novo', [branco.total.ant, branco.itens[0].ant]);
     const xss = R.montarRelatorio(plan([aba('MEDICAMENTOS', [3, 4], [['<img src=x onerror=alert(1)>', [40, 50], 10, 0]])]), 4);
     check('relatorios: nome de item com HTML é escapado', !R.htmlRelatorio(xss, { nome: '<b>U</b>', municipio: '' }, 2026).includes('<img') && !R.htmlRelatorio(xss, { nome: '<b>U</b>', municipio: '' }, 2026).includes('<b>U</b>'));
+    const comTexto = R.htmlRelatorio(branco, un, 2026, 'Primeiro **destaque** aqui.\n\nSegundo <script>x</script>');
+    check('relatorios: texto de análise entra depois do resumo, com negrito e HTML escapado', comTexto.includes('<p class="r-analise">Primeiro <b>destaque</b> aqui.</p>') && comTexto.includes('&lt;script&gt;') && !comTexto.includes('<script>') && comTexto.indexOf('r-analise') < comTexto.indexOf('Como os números foram calculados'));
+    check('relatorios: sem texto de análise nada é acrescentado', !R.htmlRelatorio(branco, un, 2026, '  ').includes('r-analise') && R.htmlAnalise('') === '');
     const nulo = R.montarRelatorio(plan([aba('MEDICAMENTOS', [3, 4], [['A', [5, 5], null, null]])]), 4);
     check('relatorios: estoque nulo vai para "sem dado" sem cobertura', nulo.itens[0].faixa === 'semdado' && !/undefined|NaN/.test(R.htmlRelatorio(nulo, un, 2026)));
   }

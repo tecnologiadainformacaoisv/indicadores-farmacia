@@ -114,7 +114,14 @@ function tabela(cab, linhas, classe) {
   return `<table class="r-tab ${classe || ''}"><thead><tr>${cab.map((c, k) => `<th class="${k && !COLUNAS_TEXTO.includes(c) ? 'n' : ''}">${esc(c)}</th>`).join('')}</tr></thead><tbody>${linhas.join('')}</tbody></table>`;
 }
 
-function htmlRelatorio(r, un, ano) {
+// Texto digitado pela coordenação: parágrafos separados por linha em branco; **assim** vira negrito.
+function htmlAnalise(texto) {
+  const t = String(texto || '').trim();
+  if (!t) return '';
+  return t.split(/\n\s*\n/).map(p => `<p class="r-analise">${esc(p.trim()).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>')}</p>`).join('');
+}
+
+function htmlRelatorio(r, un, ano, analise) {
   const mesTxt = MESES_REL[r.mes];
   const mesAnt = r.temAnterior ? MESES_REL[r.mes - 1] : null;
   const MES = mesTxt.toUpperCase();
@@ -142,6 +149,7 @@ function htmlRelatorio(r, un, ano) {
       <div><b>${num(zer + t.faixas.critico + t.faixas.baixo)}</b><span>itens zerados ou com menos de 30 dias de estoque</span><small>${num(zer)} zerados · ${num(t.faixas.critico)} críticos · ${num(t.faixas.baixo)} baixos</small></div>
       <div><b>${esc(varTotal)}</b><span>${r.temAnterior ? 'variação das saídas contra ' + esc(mesAnt) : 'sem mês anterior na planilha'}</span><small>${r.temAnterior ? num(t.ant) + ' em ' + esc(mesAnt) + ' → ' + num(t.atual) + ' em ' + esc(mesTxt) : '&nbsp;'}</small></div>
     </div>
+    ${htmlAnalise(analise)}
     <h2 class="r-h2">Como os números foram calculados</h2>
     <p><b>Saída do mês</b> é a quantidade dispensada em ${esc(mesTxt)}, conforme a coluna do mês nas abas Medicamentos e Materiais. Células em branco contam como zero, também no mês anterior.</p>
     <p><b>Cobertura</b> = estoque disponível ÷ saída de ${esc(mesTxt)}, expressa em dias (abaixo de 1 mês) ou meses. Itens sem saída no mês não têm cobertura calculada. A planilha não informa a data de referência do estoque; considerou-se o estoque do fechamento do mês.</p>
@@ -262,11 +270,17 @@ if (typeof document !== 'undefined' && typeof module === 'undefined') (function 
     }));
   }
 
+  // o texto de análise fica neste navegador, por unidade e mês, só para não se perder ao recarregar
+  const chaveAnalise = () => 'farma_rel_analise_' + unidadeSel + '_' + $('mesSel').value;
+  function lerAnalise() {
+    try { $('analise').value = localStorage.getItem(chaveAnalise()) || ''; } catch (e) { $('analise').value = ''; }
+  }
+
   function desenhar() {
     const mes = +$('mesSel').value;
     const un = info.unidades.find(u => u.id === unidadeSel) || { nome: unidadeSel, municipio: '' };
     const r = montarRelatorio(planilha, mes);
-    $('rel-folha-corpo').innerHTML = htmlRelatorio(r, un, planilha.mesAberto.ano);
+    $('rel-folha-corpo').innerHTML = htmlRelatorio(r, un, planilha.mesAberto.ano, $('analise').value);
     $('rel-folha').hidden = false;
     $('btn-imprimir').disabled = false;
     document.title = 'Relatório de farmácia · ' + un.nome + ' · ' + MESES_REL[mes] + ' de ' + planilha.mesAberto.ano;
@@ -306,6 +320,7 @@ if (typeof document !== 'undefined' && typeof module === 'undefined') (function 
       sel.innerHTML = lista.map(m => `<option value="${m}">${esc(MESES_NOME[m])}/${planilha.mesAberto.ano}</option>`).join('');
       sel.value = String(lista.indexOf(planilha.mesAberto.mes) >= 0 ? planilha.mesAberto.mes : lista[lista.length - 1]);
       setStatus('');
+      lerAnalise();
       desenhar();
     } catch (e) {
       if (meu !== pedido) return;
@@ -315,9 +330,13 @@ if (typeof document !== 'undefined' && typeof module === 'undefined') (function 
   }
 
   $('unitSel').addEventListener('change', () => { unidadeSel = $('unitSel').value; carregar(); });
-  $('mesSel').addEventListener('change', desenhar);
+  $('mesSel').addEventListener('change', () => { lerAnalise(); desenhar(); });
+  $('analise').addEventListener('input', () => {
+    try { localStorage.setItem(chaveAnalise(), $('analise').value); } catch (e) { /* sem armazenamento: segue sem rascunho */ }
+    if (planilha) desenhar();
+  });
   $('btn-imprimir').addEventListener('click', () => window.print());
   carregar();
 })();
 
-if (typeof module !== 'undefined') module.exports = { montarRelatorio, classificar, htmlRelatorio, limparNome, variacao, reposicao, FAIXAS };
+if (typeof module !== 'undefined') module.exports = { htmlAnalise, montarRelatorio, classificar, htmlRelatorio, limparNome, variacao, reposicao, FAIXAS };
