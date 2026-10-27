@@ -1,5 +1,9 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.6.8 – 2026-10-27
+### Corrigido
+- Relatório: rótulos "Fonte" e "Competência" com contraste de texto (cinza mais escuro, 5,2:1); a v0.6.7 os deixou em 3,4:1
+
 ## v0.6.7 – 2026-10-27
 ### Ajustado
 - Relatório mensal mais próximo do modelo da Tereza: Fonte e Competência centralizadas em um quadro cinza-claro; títulos, números e destaques em verde-azulado (#1f6e73); texto em 11 pt e cinza muito escuro

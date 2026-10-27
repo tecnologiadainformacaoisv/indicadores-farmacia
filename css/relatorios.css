@@ -44,7 +44,7 @@
 .r-lead { color: #333f3f; font-size: 14.67px; line-height: 1.45; }
 .r-meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 48px; margin: 14px 0 6px; padding: 10px 16px; background: #f1f4f4; font: 11px/1.4 'Segoe UI', system-ui, sans-serif; }
 .r-meta div { display: flex; align-items: center; gap: 12px; }
-.r-meta dt { color: #7a8686; font-weight: 700; letter-spacing: .06em; font-size: 10px; padding-top: 1px; }
+.r-meta dt { color: #5f6b6b; font-weight: 700; letter-spacing: .06em; font-size: 10px; padding-top: 1px; }
 .r-meta dd { margin: 0; max-width: 34ch; }
 
 .rel-corpo h2 { font-family: Georgia, 'Times New Roman', serif; font-size: 18.67px; color: #1f6e73; font-weight: 700; margin: 22px 0 8px; padding-bottom: 3px; border-bottom: 1px solid #1f6e73; break-after: avoid; }
