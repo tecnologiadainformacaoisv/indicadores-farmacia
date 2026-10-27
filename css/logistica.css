@@ -70,6 +70,8 @@
 .log-table th:first-child { z-index: 3; }
 .log-table tr:hover td.produto { background: var(--soft); }
 .log-table td.col-aberto { background: var(--tint); }
+/* CMM automático: só leitura, alinhado como os campos numéricos */
+.log-table td.cmm-auto { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; padding-right: 14px; }
 .log-table tr:hover td { background: var(--soft); }
 .log-table tr:hover td.col-aberto { background: var(--tint); }
 .log-table tr.alterado td.produto { box-shadow: inset 4px 0 0 var(--c-warn); }

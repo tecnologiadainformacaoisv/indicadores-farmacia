@@ -1,9 +1,9 @@
 // Planilha de saídas: lê a planilha da unidade na nuvem e grava, item por item,
-// as saídas do mês aberto, o CMM e o estoque disponível.
+// as saídas do mês aberto e o estoque disponível.
 
 const MESES_CURTO = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 const MESES_ANTERIORES = 3;           // quantos meses fechados mostrar ao lado do mês aberto
-const CAMPOS = ['saida', 'cmm', 'estoque'];
+const CAMPOS = ['saida', 'estoque'];   // o CMM não é digitado: é calculado (cmmDoItem)
 
 let info = null;
 // atalho da tela inicial da coordenação: logistica.html?unidade=<id> abre direto a planilha de uma unidade
@@ -12,7 +12,7 @@ let unidadeSel = unidadeDoEndereco && /^[A-Za-z0-9_.-]+$/.test(unidadeDoEndereco
 let tentouEndereco = false;   // o ?unidade= do endereço só é tentado uma vez
 let planilha = null;                  // resposta de logistica.ler
 let abaAtual = '';
-const alteracoes = new Map();         // "aba|linha" -> { aba, linha, produto, saida, cmm, estoque }
+const alteracoes = new Map();         // "aba|linha" -> { aba, linha, produto, saida, estoque }
 
 // ── Mensagens ──────────────────────────────────────────────────
 function setStatus(texto, tipo) {
@@ -102,7 +102,7 @@ function exibirPlanilha(r, rascunho) {
   montarSeletorUnidade();
   const ref = planilha.mesAberto;
   document.getElementById('log-sub').textContent = planilha.editavel
-    ? `Lance as saídas de ${nomeMes(ref)}, o CMM e o estoque disponível de cada item.`
+    ? `Lance as saídas de ${nomeMes(ref)} e o estoque disponível de cada item. O CMM é calculado sozinho.`
     : `Consulta. Mês aberto para as unidades: ${nomeMes(ref)}.`;
 
   // alterações digitadas que não batem com a planilha nova (produto mudou de linha) são descartadas com aviso
@@ -257,10 +257,23 @@ function celulaCobertura(c) {
 let soCriticos = false;
 const CRIT_SR = '<span class="sr-only">Estoque crítico: </span>'; // o ponto vermelho não pode ser só cor
 
+// CMM automático: média das saídas dos meses com dado, do começo da planilha até o mês aberto (célula vazia não conta como zero).
+// Com menos de 2 meses de dado vale o CMM que já está na planilha. Mesma conta do servidor (recalcularCmm_ em appscript/codigo.js).
+function cmmDoItem(aba, it, saidaAberto) {
+  const ref = planilha.mesAberto.mes;
+  const v = [];
+  (aba.meses || []).forEach((m, k) => {
+    if (m.mes > ref) return;
+    const x = m.mes === ref && saidaAberto !== undefined ? saidaAberto : it.valores[k];
+    if (typeof x === 'number' && isFinite(x)) v.push(x);
+  });
+  return v.length >= 2 ? Math.round(v.reduce((a, b) => a + b, 0) / v.length) : it.cmm;
+}
+
 // valores exibidos no momento (o que foi digitado vale mais que o que veio da planilha)
 function valoresDaLinha(aba, it) {
   const alt = alteracoes.get(aba.nome + '|' + it.linha) || {};
-  return { cmm: alt.cmm !== undefined ? alt.cmm : it.cmm, estoque: alt.estoque !== undefined ? alt.estoque : it.estoque };
+  return { cmm: cmmDoItem(aba, it, alt.saida), estoque: alt.estoque !== undefined ? alt.estoque : it.estoque };
 }
 
 function atualizarCriticos() {
@@ -305,7 +318,7 @@ function render() {
     const alt = alteracoes.get(abaAtual + '|' + it.linha);
     const v = alt && alt[campo] !== undefined ? alt[campo] : valor;
     const rotulo = campo === 'saida' ? 'Saídas de ' + MESES_NOME[planilha.mesAberto.mes].toLowerCase() : campo === 'cmm' ? 'CMM' : 'Estoque';
-    if (!ed) return `<td class="col-aberto" data-label="${rotulo}">${fmt(v)}</td>`;
+    if (!ed || campo === 'cmm') return `<td class="col-aberto${campo === 'cmm' ? ' cmm-auto' : ''}" data-label="${rotulo}"${campo === 'cmm' ? ' title="Calculado automaticamente: média das saídas dos meses com dado"' : ''}>${fmt(campo === 'cmm' ? cmmDoItem(abaAtualObj(), it, alt ? alt.saida : undefined) : v)}</td>`;
     const mudou = alt && alt[campo] !== undefined;
     return `<td class="col-aberto" data-label="${rotulo}"><input class="num-input${mudou ? ' ' + classeMudanca(valor, alt[campo]) : ''}" type="number" min="0" step="1" inputmode="numeric" enterkeyhint="next"
       data-linha="${it.linha}" data-campo="${campo}" value="${v === null || v === undefined || v === '' ? '' : v}"
@@ -333,6 +346,8 @@ function render() {
   atualizarBarra();
 }
 
+function abaAtualObj() { return planilha.abas.find(a => a.nome === abaAtual); }
+
 function filtrar() {
   const q = normalizar(document.getElementById('busca').value.trim());
   let visiveis = 0;
@@ -358,7 +373,6 @@ function classeMudanca(orig, novo) {
 }
 
 function valorOriginal(aba, it, campo) {
-  if (campo === 'cmm') return it.cmm;
   if (campo === 'estoque') return it.estoque;
   const idx = aba.meses.findIndex(m => m.mes === planilha.mesAberto.mes);
   return idx >= 0 ? it.valores[idx] : null;
@@ -388,6 +402,8 @@ function aoEditar(input) {
   const tr = input.closest('tr');
   tr.classList.toggle('alterado', alteracoes.has(chave));
   const v = valoresDaLinha(aba, it);
+  const tdCmm = tr.querySelector('.cmm-auto');
+  if (tdCmm) tdCmm.textContent = fmt(v.cmm);
   const cob = cobertura(v.estoque, v.cmm);
   tr.dataset.critico = cob.critico ? '1' : '0';
   const tdProd = tr.querySelector('.produto');
@@ -434,7 +450,7 @@ async function salvar() {
     let total = 0;
     for (const aba of Object.keys(porAba)) {
       setStatus(`Salvando ${aba.toLowerCase()}…`);
-      const itens = porAba[aba].map(a => ({ linha: a.linha, produto: a.produto, saida: a.saida, cmm: a.cmm, estoque: a.estoque }));
+      const itens = porAba[aba].map(a => ({ linha: a.linha, produto: a.produto, saida: a.saida, estoque: a.estoque }));
       const r = await api('logistica.salvar', { unidade: unidadeSel, aba, itens, ref: { ano: planilha.mesAberto.ano, mes: planilha.mesAberto.mes } });
       total += r.gravados;
       // aba gravada sai das pendências: se a próxima falhar, só ela fica para salvar
@@ -472,9 +488,10 @@ function aplicarSalvos(porAba) {
       const it = aba.itens.find(x => x.linha === alt.linha);
       if (!it) return;
       if (alt.saida !== undefined && idx >= 0) it.valores[idx] = alt.saida;
-      if (alt.cmm !== undefined) it.cmm = alt.cmm;
       if (alt.estoque !== undefined) it.estoque = alt.estoque;
     });
+    // o servidor recalcula o CMM da aba inteira: o modelo local acompanha
+    aba.itens.forEach(it => { it.cmm = cmmDoItem(aba, it); });
   });
 }
 

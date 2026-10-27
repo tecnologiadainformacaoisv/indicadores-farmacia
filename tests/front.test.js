@@ -42,7 +42,7 @@ function respostaServidor(body, perfil) {
     case 'usuarios.redefinirSenha': return { login: req.login, nome: 'Alguém', senhaProvisoria: 'nova456abc' };
     case 'usuarios.definirAtivo': usuariosSim.find(u => u.login === req.login).ativo = req.ativo; return true;
     case 'usuarios.atualizar': Object.assign(usuariosSim.find(u => u.login === req.login), { nome: req.nome, unidade: req.unidade }); return true;
-    case 'logistica.salvar': req.itens.forEach(i => { if (i.saida !== undefined) estadoItem.valores[1] = i.saida; if (i.cmm !== undefined) estadoItem.cmm = i.cmm; if (i.estoque !== undefined) estadoItem.estoque = i.estoque; }); return { gravados: req.itens.length };
+    case 'logistica.salvar': req.itens.forEach(i => { if (i.saida !== undefined) estadoItem.valores[1] = i.saida; if (i.estoque !== undefined) estadoItem.estoque = i.estoque; }); estadoItem.cmm = Math.round(estadoItem.valores.reduce((x, y) => x + y, 0) / estadoItem.valores.length); return { gravados: req.itens.length };
     default: throw new Error('ação não simulada: ' + req.action);
   }
 }
@@ -144,12 +144,14 @@ const check = (nome, c, extra) => { if (c) ok++; else { falhas++; console.log('F
     let escondida = false;
     Object.defineProperty(wrap, 'hidden', { get: () => escondida, set: x => { if (x) esconderam.push(1); escondida = x; }, configurable: true });
     v.chamadas.length = 0;
-    vm.runInContext("alteracoes.set('MEDICAMENTOS|6', { aba: 'MEDICAMENTOS', linha: 6, produto: 'DIPIRONA', saida: 99, cmm: 30 }); salvar();", v.ctx);
+    vm.runInContext("alteracoes.set('MEDICAMENTOS|6', { aba: 'MEDICAMENTOS', linha: 6, produto: 'DIPIRONA', saida: 99 }); salvar();", v.ctx);
     await pausa(200);
     check('salvar: tabela nunca foi escondida', esconderam.length === 0, esconderam);
     check('salvar: gravou e confirmou em segundo plano', v.chamadas[0] === 'logistica.salvar' && v.chamadas.includes('logistica.carregar'), v.chamadas);
     const it = vm.runInContext("JSON.stringify(planilha.abas[0].itens[0])", v.ctx);
-    check('salvar: modelo local atualizado', it.includes('"valores":[40,99]') && /"cmm":30/.test(it), it);
+    check('salvar: modelo local atualizado, com o CMM automático (média de abril e maio)', it.includes('"valores":[40,99]') && /"cmm":70/.test(it), it);
+    const cm = vm.runInContext("(function () { const aba = { meses: [{ mes: 2 }, { mes: 3 }, { mes: 4 }, { mes: 5 }], itens: [] }; planilha.mesAberto.mes = 4; const a = { valores: [10, null, 30, 99], cmm: 7 }; return JSON.stringify([cmmDoItem(aba, a), cmmDoItem(aba, a, 50), cmmDoItem(aba, a, null), cmmDoItem(aba, { valores: [null, null, 8, 1], cmm: 7 }), cmmDoItem(aba, { valores: [null, null, 8, 1], cmm: 7 }, 6)]); })()", v.ctx);
+    check('lançamento: CMM automático = média dos meses com dado até o mês aberto (vazio não conta, mês futuro não entra, campo limpo sai da conta)', cm === '[20,30,7,7,7]', cm);
     check('salvar: tabela liberada depois de salvar (inert)', v.els['log-wrap'].inert === false, v.els['log-wrap'].inert);
     check('salvar: sem erro', v.erros.length === 0 && !/erro/.test(v.els['log-status'].className), v.els['log-status'].textContent);
     check('salvar: mensagem de salvo permanece', /salvo/.test(v.els['save-info'].textContent), v.els['save-info'].textContent);

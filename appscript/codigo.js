@@ -574,7 +574,7 @@ function salvarLogistica_(req, u) {
 
   const ref = mesAberto_();
   exigirMesAberto_(req, ref);
-  const campos = ['saida', 'cmm', 'estoque'];
+  const campos = ['saida', 'estoque'];   // o CMM não é digitado: o servidor calcula (ver recalcularCmm_)
   const erros = [];
   itens.forEach(it => campos.forEach(c => {
     const v = it[c];
@@ -593,8 +593,8 @@ function salvarLogistica_(req, u) {
     const colMes = est.meses.find(m => m.mes === ref.mes).col;
     const n = sh.getLastRow();
     const produtos = sh.getRange(1, est.colProd + 1, n, 1).getValues();
-    const cols = { saida: colMes, cmm: est.colCmm, estoque: est.colEst };
-    const nomes = { saida: 'saídas', cmm: 'CMM', estoque: 'estoque disponível' };
+    const cols = { saida: colMes, estoque: est.colEst };
+    const nomes = { saida: 'saídas', estoque: 'estoque disponível' };
     const formulas = {};
     campos.forEach(c => { if (cols[c] >= 0) formulas[c] = sh.getRange(1, cols[c] + 1, n, 1).getFormulas(); });
 
@@ -615,25 +615,53 @@ function salvarLogistica_(req, u) {
       });
       gravados++;
     });
-    // grava só as células alteradas: linhas vizinhas da mesma coluna vão juntas (uma chamada por trecho),
-    // e nada fora delas é reescrito
-    const porColuna = {};
-    escritas.forEach(([lin, col, v]) => { (porColuna[col] = porColuna[col] || []).push({ lin: lin, v: v }); });
-    Object.keys(porColuna).forEach(col => {
-      const cel = porColuna[col].sort((a, b) => a.lin - b.lin);
-      let ini = 0;
-      for (let i = 1; i <= cel.length; i++) {
-        if (i < cel.length && cel[i].lin === cel[i - 1].lin + 1) continue;
-        const trecho = cel.slice(ini, i);
-        sh.getRange(trecho[0].lin, +col, trecho.length, 1).setValues(trecho.map(x => [x.v]));
-        ini = i;
-      }
-    });
+    gravarTrechos_(sh, escritas);
+    recalcularCmm_(sh, est, ref.mes, n);
     andamento = contarPreenchidos_(sh, est, colMes);
   });
   try { gravarFechamento_(un.id, ref, req.aba, andamento, u.login); } catch (e) { console.error(e); } // o painel nunca derruba o salvamento
   registrar_(u.login, 'logistica.salvar', un.id + ' ' + req.aba + ' ' + (ref.mes + 1) + '/' + ref.ano + ' (' + gravados + ' itens)');
   return { gravados: gravados };
+}
+
+// Grava só as células alteradas: linhas vizinhas da mesma coluna vão juntas (uma chamada por trecho),
+// e nada fora delas é reescrito. escritas = [[linha, coluna, valor]] (base 1).
+function gravarTrechos_(sh, escritas) {
+  const porColuna = {};
+  escritas.forEach(([lin, col, v]) => { (porColuna[col] = porColuna[col] || []).push({ lin: lin, v: v }); });
+  Object.keys(porColuna).forEach(col => {
+    const cel = porColuna[col].sort((a, b) => a.lin - b.lin);
+    let ini = 0;
+    for (let i = 1; i <= cel.length; i++) {
+      if (i < cel.length && cel[i].lin === cel[i - 1].lin + 1) continue;
+      const trecho = cel.slice(ini, i);
+      sh.getRange(trecho[0].lin, +col, trecho.length, 1).setValues(trecho.map(x => [x.v]));
+      ini = i;
+    }
+  });
+}
+
+// CMM automático: média das saídas dos meses com dado, do começo da planilha até o mês aberto.
+// Célula vazia, "*" ou texto não contam como zero. Com menos de 2 meses de dado o CMM que já estava na planilha é mantido.
+// Célula de CMM com fórmula não é tocada. Serve para a tela de lançamento e para os relatórios (o front repete esta conta, js/logistica.js).
+function cmmAutomatico_(valores) {
+  const v = valores.filter(x => typeof x === 'number' && isFinite(x));
+  return v.length >= 2 ? Math.round(v.reduce((a, b) => a + b, 0) / v.length) : null;
+}
+
+function recalcularCmm_(sh, est, mesAberto, n) {
+  if (est.colCmm < 0) return;
+  const grade = sh.getRange(1, 1, n, sh.getLastColumn()).getValues();
+  const formulas = sh.getRange(1, est.colCmm + 1, n, 1).getFormulas();
+  const meses = est.meses.filter(m => m.mes <= mesAberto);
+  const escritas = [];
+  est.itens.forEach(r => {
+    if (formulas[r][0]) return;
+    const novo = cmmAutomatico_(meses.map(m => numOuNulo_(grade[r][m.col])));
+    if (novo === null || numOuNulo_(grade[r][est.colCmm]) === novo) return;
+    escritas.push([r + 1, est.colCmm + 1, novo]);
+  });
+  gravarTrechos_(sh, escritas);
 }
 
 // Quantos itens da aba já têm saída lançada no mês (zero conta como lançado; célula vazia, não).

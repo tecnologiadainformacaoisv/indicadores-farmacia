@@ -1,5 +1,12 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.6.15 – 2026-10-27
+### Alterado
+- **CMM automático na planilha de saídas.** O campo CMM deixa de ser digitado: a tela mostra o valor calculado na hora (média das saídas dos meses com dado até o mês aberto; vazio não conta como zero; mínimo de 2 meses, senão vale o que já estava na planilha) e o servidor grava o CMM de toda a aba a cada salvamento. CMM com fórmula na planilha não é tocado; valor de CMM enviado pelo navegador é ignorado
+- Ajuda e CLAUDE.md atualizados
+### Atenção
+- Exige publicar o servidor: `clasp push` + nova versão do Web App + `clasp update-deployment`
+
 ## v0.6.14 – 2026-10-27
 ### Adicionado
 - Relatórios: **CMM automático**. Quando o CMM está em branco na planilha, o relatório calcula a média das saídas dos meses com dado até o mês do relatório (célula vazia não conta como zero; mínimo de 2 meses). O valor aparece com * e uma nota explica. O CMM preenchido na planilha é sempre respeitado
