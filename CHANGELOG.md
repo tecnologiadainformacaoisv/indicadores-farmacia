@@ -1,5 +1,9 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.6.7 – 2026-10-27
+### Ajustado
+- Relatório mensal mais próximo do modelo da Tereza: Fonte e Competência centralizadas em um quadro cinza-claro; títulos, números e destaques em verde-azulado (#1f6e73); texto em 11 pt e cinza muito escuro
+
 ## v0.6.6 – 2026-10-27
 ### Corrigido
 - Relatórios: contraste do número dentro das barras de situação do estoque (texto escuro nos trechos claros) e do link "Início" da trilha, que ficavam abaixo de 4,5:1
