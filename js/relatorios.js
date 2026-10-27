@@ -8,15 +8,15 @@ const MESES_REL = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', '
 
 // Faixas de situação do estoque (cobertura = estoque ÷ saída do mês)
 const FAIXAS = [
-  { id: 'zerado', rotulo: 'Zerado', criterio: 'Estoque zero, com saída no mês', cor: '#a93226' },
-  { id: 'semsemsaida', rotulo: 'Sem estoque e sem saída', criterio: 'Estoque zero e nenhuma saída no mês', cor: '#d98880' },
-  { id: 'critico', rotulo: 'Crítico', criterio: 'Cobre menos de 15 dias', cor: '#e67e22' },
-  { id: 'baixo', rotulo: 'Baixo', criterio: 'Cobre de 15 a 30 dias', cor: '#c9971c' },
-  { id: 'adequado', rotulo: 'Adequado', criterio: 'Cobre de 1 a 3 meses', cor: '#27ae60' },
-  { id: 'elevado', rotulo: 'Elevado', criterio: 'Cobre de 3 a 6 meses', cor: '#6fa8dc' },
-  { id: 'excesso', rotulo: 'Excesso', criterio: 'Cobre mais de 6 meses', cor: '#2f6db5' },
-  { id: 'semsaida', rotulo: 'Sem saída no mês', criterio: 'Tem estoque, mas nenhuma saída no mês', cor: '#9aa5b1' },
-  { id: 'semdado', rotulo: 'Sem dado de estoque', criterio: 'Coluna de estoque vazia', cor: '#cfd6dd' },
+  { id: 'zerado', rotulo: 'Zerado', criterio: 'Estoque zero, com saída no mês', cor: '#a93226', txt: '#fff' },
+  { id: 'semsemsaida', rotulo: 'Sem estoque e sem saída', criterio: 'Estoque zero e nenhuma saída no mês', cor: '#d98880', txt: '#2e0f0b' },
+  { id: 'critico', rotulo: 'Crítico', criterio: 'Cobre menos de 15 dias', cor: '#e67e22', txt: '#2b1500' },
+  { id: 'baixo', rotulo: 'Baixo', criterio: 'Cobre de 15 a 30 dias', cor: '#c9971c', txt: '#2a1f00' },
+  { id: 'adequado', rotulo: 'Adequado', criterio: 'Cobre de 1 a 3 meses', cor: '#27ae60', txt: '#04210e' },
+  { id: 'elevado', rotulo: 'Elevado', criterio: 'Cobre de 3 a 6 meses', cor: '#6fa8dc', txt: '#08233b' },
+  { id: 'excesso', rotulo: 'Excesso', criterio: 'Cobre mais de 6 meses', cor: '#2f6db5', txt: '#fff' },
+  { id: 'semsaida', rotulo: 'Sem saída no mês', criterio: 'Tem estoque, mas nenhuma saída no mês', cor: '#9aa5b1', txt: '#16202b' },
+  { id: 'semdado', rotulo: 'Sem dado de estoque', criterio: 'Coluna de estoque vazia', cor: '#cfd6dd', txt: '#1d2733' },
 ];
 const POR_FAIXA = Object.fromEntries(FAIXAS.map(f => [f.id, f]));
 
@@ -170,7 +170,7 @@ function htmlRelatorio(r, un, ano) {
   // 2. Situação do estoque
   const barras = r.abas.map(n => {
     const a = r.porAba[n];
-    const segs = FAIXAS.filter(f => a.faixas[f.id]).map(f => `<span style="--w:${a.faixas[f.id]};--c:${f.cor}" title="${esc(f.rotulo)}: ${a.faixas[f.id]}"><i>${a.faixas[f.id]}</i></span>`).join('');
+    const segs = FAIXAS.filter(f => a.faixas[f.id]).map(f => `<span style="--w:${a.faixas[f.id]};--c:${f.cor};--t:${f.txt}" title="${esc(f.rotulo)}: ${a.faixas[f.id]}"><i>${a.faixas[f.id]}</i></span>`).join('');
     return `<div class="r-barra"><b>${esc(ROTULO_ABA[n] || n)}</b><div class="r-segs">${segs}</div></div>`;
   }).join('');
   const colunas = r.abas.map(n => ROTULO_ABA[n] || n);

@@ -1,5 +1,10 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.6.6 – 2026-10-27
+### Corrigido
+- Relatórios: contraste do número dentro das barras de situação do estoque (texto escuro nos trechos claros) e do link "Início" da trilha, que ficavam abaixo de 4,5:1
+- A bateria visual (`tools/visual/bateria-visual.js`) passa a incluir a tela de relatórios; resultado: 52 telas, 0 erros, 0 rolagem horizontal, 0 alvos pequenos, 0 de contraste
+
 ## v0.6.5 – 2026-10-27
 ### Corrigido
 - Relatórios: planilha sem abas ou sem mês lançado mostra mensagem em vez de um relatório zerado

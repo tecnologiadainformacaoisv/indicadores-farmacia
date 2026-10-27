@@ -78,7 +78,7 @@
 .r-barra { display: grid; grid-template-columns: 84px minmax(0, 1fr); align-items: center; gap: 10px; font-size: 11px; }
 .r-segs { display: flex; height: 22px; border-radius: 3px; overflow: hidden; }
 .r-segs span { flex: var(--w) 1 0; background: var(--c); display: grid; place-items: center; min-width: 0; }
-.r-segs i { font: normal 700 10px 'Segoe UI', system-ui, sans-serif; color: #fff; text-shadow: 0 0 2px rgba(0, 0, 0, .45); }
+.r-segs i { font: normal 700 10px 'Segoe UI', system-ui, sans-serif; color: var(--t, #1d2733); }
 
 @media screen and (max-width: 860px) {
   .rel-main { padding: 16px 14px 40px; }
@@ -107,3 +107,6 @@
   .timbre-topo, .timbre-rod, .r-segs span, .r-quad, .rel-corpo h2 { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .r-quebra { break-before: page; }
 }
+
+/* link da trilha com contraste de texto (4,5:1) nos dois temas */
+.rel-main .migalhas a { color: var(--title); }
