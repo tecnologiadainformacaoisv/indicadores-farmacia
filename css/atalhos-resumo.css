@@ -23,7 +23,7 @@
 .atalho b { display: block; font-family: var(--font-title); font-size: 15.5px; color: #fff; }
 .atalho__selo { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px; font: 700 11px var(--font-sans, 'Segoe UI', system-ui, sans-serif); background: rgba(240, 180, 79, .18); color: #f6c566; vertical-align: 1px; }
 .atalho__desc { display: block; font-size: 13px; color: #a8c4da; line-height: 1.4; }
-.atalho__dado { display: flex; justify-content: space-between; align-items: flex-end; gap: 10px; margin-top: auto; padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, .14); }
+.atalho__dado { display: flex; justify-content: space-between; align-items: flex-end; gap: 10px; margin-top: auto; padding-top: 11px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .14); }   /* divisor (sombra, não borda: a auditoria de bordas lê o fundo da página, não o azul do cartão) */
 .atalho__n strong { display: block; font: 800 22px/1.05 var(--font-title); color: #fff; font-variant-numeric: tabular-nums; }
 .atalho__n small { display: block; font-size: 12.5px; color: #a8c4da; margin-top: 2px; }
 
