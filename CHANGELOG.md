@@ -1,5 +1,9 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.6.11 – 2026-10-27
+### Alterado
+- Título do cabeçalho: sem sublinhado nem dica ao passar o mouse; é só um clique normal que volta ao início
+
 ## v0.6.10 – 2026-10-27
 ### Alterado
 - O título "Indicadores da Farmácia" no topo das telas internas agora é um link que volta à tela inicial
