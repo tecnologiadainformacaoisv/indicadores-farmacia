@@ -334,3 +334,7 @@ a.fech-selo:hover { filter: brightness(1.25); text-decoration: underline; text-u
 body:has(#view-login:not([hidden])) .page-header .theme-toggle { display: none; }
 
 @media (max-width: 860px) { .v-divisao .login-previa__kicker { font: 800 1.6rem/1.1 var(--font-title); color: #fff; letter-spacing: -.02em; margin: 0 0 6px; } .v-divisao .login-previa__titulo { font-size: 1rem; font-weight: 600; color: #a8c4da; margin: 0; } }
+
+/* a proposta de login só aparece na tela de login */
+.lg-seletor { display: none; }
+body:has(#view-login:not([hidden])) .lg-seletor { display: grid; }
