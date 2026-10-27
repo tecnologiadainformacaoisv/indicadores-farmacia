@@ -75,6 +75,7 @@
   .rede-leg, .rede-ferr, .rede-corpo { padding-left: 14px; padding-right: 14px; }
   .rede-grade { grid-template-columns: 1fr 1fr; }
   .rede-busca, .rede-busca input { width: 100%; }
+  .rede .ch, .rede-busca input { min-height: 44px; }   /* alvo de toque no celular */
 }
 @media (max-width: 420px) { .rede-grade { grid-template-columns: 1fr; } }
 
