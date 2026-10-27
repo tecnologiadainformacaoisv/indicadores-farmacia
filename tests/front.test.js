@@ -194,6 +194,12 @@ const check = (nome, c, extra) => { if (c) ok++; else { falhas++; console.log('F
     check('relatorios: sem texto de análise nada é acrescentado', !R.htmlRelatorio(branco, un, 2026, '  ').includes('r-analise') && R.htmlAnalise('') === '');
     const nulo = R.montarRelatorio(plan([aba('MEDICAMENTOS', [3, 4], [['A', [5, 5], null, null]])]), 4);
     check('relatorios: estoque nulo vai para "sem dado" sem cobertura', nulo.itens[0].faixa === 'semdado' && !/undefined|NaN/.test(R.htmlRelatorio(nulo, un, 2026)));
+    const metade = R.montarRelatorio(plan([aba('MEDICAMENTOS', [3, 5], [['A', [50, 60], 1, 90]]), aba('MATERIAIS', [3, 4, 5], [['B', [10, 20, 30], 1, 90]])]), 5);
+    const htmlMetade = R.htmlRelatorio(metade, un, 2026);
+    check('relatorios: mês anterior faltando em uma aba desliga a comparação (sem "novo" falso)', metade.temAnterior === false && metade.semAnterior.join() === 'MEDICAMENTOS' && metade.total.ant === null && htmlMetade.includes('não tem a coluna do mês anterior') && !htmlMetade.includes('>novo<'), metade.semAnterior);
+    check('relatorios: sem CMM nem estoque em nenhum item avisa e não mostra "0 zerados"', R.htmlRelatorio(nulo, un, 2026).includes('não traz CMM nem estoque') && R.htmlRelatorio(nulo, un, 2026).includes('estoque não informado na planilha'));
+    check('relatorios: com estoque informado não aparece o aviso de estoque ausente', !R.htmlRelatorio(branco, un, 2026).includes('não traz CMM nem estoque'));
+    check('relatorios: título usa "do" para hospital e "da" para as demais', R.htmlRelatorio(branco, { nome: 'Hospital Municipal', municipio: '' }, 2026).includes('farmácia do Hospital Municipal') && R.htmlRelatorio(branco, un, 2026).includes('farmácia da '));
   }
   // tela de usuários
   {

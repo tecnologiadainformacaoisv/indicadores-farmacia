@@ -57,11 +57,12 @@ function montarRelatorio(planilha, mesSel) {
   const itens = [];
   const ausentes = [];   // abas sem a coluna do mês escolhido
   let temAnterior = false;
+  const semAnterior = [];   // abas que têm o mês escolhido mas não o anterior
   planilha.abas.forEach(aba => {
     const iAt = aba.meses.findIndex(m => m.mes === mesSel);
     if (iAt < 0) { ausentes.push(aba.nome); return; }
     const iAn = aba.meses.findIndex(m => m.mes === mesSel - 1);
-    if (iAn >= 0) temAnterior = true;
+    if (iAn >= 0) temAnterior = true; else semAnterior.push(aba.nome);
     aba.itens.forEach(it => {
       const bruto = it.valores[iAt];
       const ant = iAn >= 0 ? it.valores[iAn] : null;
@@ -75,6 +76,9 @@ function montarRelatorio(planilha, mesSel) {
       itens.push(o);
     });
   });
+
+  // comparação só vale se todas as abas têm o mês anterior; com uma só faltando, o total ficaria inflado ("novo")
+  if (temAnterior && semAnterior.length) { temAnterior = false; itens.forEach(i => { i.ant = null; i.antN = 0; }); }
 
   const abas = planilha.abas.map(a => a.nome).filter(n => itens.some(i => i.aba === n));
   const porAba = {};
@@ -95,7 +99,7 @@ function montarRelatorio(planilha, mesSel) {
     comSaida: soma('comSaida'), comSaidaAnt: temAnterior ? soma('comSaidaAnt') : null,
     faixas: Object.fromEntries(FAIXAS.map(f => [f.id, itens.filter(i => i.faixa === f.id).length])),
   };
-  return { mes: mesSel, itens, abas, porAba, total, temAnterior, ausentes };
+  return { mes: mesSel, itens, abas, porAba, total, temAnterior, ausentes, semAnterior };
 }
 
 // ── HTML do relatório ──────────────────────────────────────────
@@ -134,9 +138,17 @@ function htmlRelatorio(r, un, ano, analise) {
     out.push(`<p class="r-aviso">Atenção: a planilha não tem a coluna de ${esc(mesTxt)} na aba ${esc(r.ausentes.map(n => ROTULO_ABA[n] || n).join(', '))}; o relatório não inclui esses itens.</p>`);
   }
 
+  if (r.semAnterior && r.semAnterior.length && r.semAnterior.length < r.abas.length) {
+    out.push(`<p class="r-aviso">Atenção: a planilha não tem a coluna do mês anterior (${esc(MESES_REL[r.mes - 1] || '')}) na aba ${esc(r.semAnterior.map(n => ROTULO_ABA[n] || n).join(', '))}; a comparação com o mês anterior não foi feita.</p>`);
+  }
+  const semEstoque = t.itens > 0 && t.faixas.semdado === t.itens;
+  if (semEstoque) {
+    out.push(`<p class="r-aviso">Atenção: a planilha não traz CMM nem estoque disponível; a situação do estoque, a cobertura e a reposição não puderam ser calculadas.</p>`);
+  }
+
   // capa
   out.push(`<p class="r-kicker">RELATÓRIO MENSAL DE FARMÁCIA · COMPETÊNCIA ${esc(MES)} DE ${ano}</p>
-    <h1 class="r-titulo">Saídas e estoque da farmácia da ${esc(un.nome)} em ${esc(mesTxt)} de ${ano}</h1>
+    <h1 class="r-titulo">Saídas e estoque da farmácia ${/^hospital/i.test(un.nome) ? 'do' : 'da'} ${esc(un.nome)} em ${esc(mesTxt)} de ${ano}</h1>
     <p class="r-lead">${esc(un.municipio || '')}. Movimento do mês de ${esc(mesTxt)} para ${num(nMed)} medicamentos e ${num(nMat)} materiais médico-hospitalares: saídas${r.temAnterior ? ' comparadas com ' + esc(mesAnt) : ''}, situação do estoque, itens em ruptura ou com cobertura curta e verificações do registro.</p>
     <dl class="r-meta"><div><dt>FONTE</dt><dd>Planilha de saídas da unidade (abas Medicamentos e Materiais)</dd></div><div><dt>COMPETÊNCIA</dt><dd>${esc(mesTxt.charAt(0).toUpperCase() + mesTxt.slice(1))}/${ano}</dd></div></dl>`);
 
@@ -146,7 +158,7 @@ function htmlRelatorio(r, un, ano, analise) {
     <div class="r-kpis">
       <div><b>${num(t.atual)}</b><span>unidades dispensadas em ${esc(mesTxt)}</span><small>${num(r.porAba.MEDICAMENTOS ? r.porAba.MEDICAMENTOS.atual : 0)} medicamentos · ${num(r.porAba.MATERIAIS ? r.porAba.MATERIAIS.atual : 0)} materiais</small></div>
       <div><b>${num(t.comSaida)}</b><span>itens com saída no mês</span><small>de ${num(t.itens)} padronizados · ${num(t.itens - t.comSaida)} sem saída</small></div>
-      <div><b>${num(zer + t.faixas.critico + t.faixas.baixo)}</b><span>itens zerados ou com menos de 30 dias de estoque</span><small>${num(zer)} zerados · ${num(t.faixas.critico)} críticos · ${num(t.faixas.baixo)} baixos</small></div>
+      <div><b>${semEstoque ? '—' : num(zer + t.faixas.critico + t.faixas.baixo)}</b><span>itens zerados ou com menos de 30 dias de estoque</span><small>${semEstoque ? 'estoque não informado na planilha' : num(zer) + ' zerados · ' + num(t.faixas.critico) + ' críticos · ' + num(t.faixas.baixo) + ' baixos'}</small></div>
       <div><b>${esc(varTotal)}</b><span>${r.temAnterior ? 'variação das saídas contra ' + esc(mesAnt) : 'sem mês anterior na planilha'}</span><small>${r.temAnterior ? num(t.ant) + ' em ' + esc(mesAnt) + ' → ' + num(t.atual) + ' em ' + esc(mesTxt) : '&nbsp;'}</small></div>
     </div>
     ${htmlAnalise(analise)}

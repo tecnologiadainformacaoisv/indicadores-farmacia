@@ -1,5 +1,11 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.6.13 – 2026-10-27
+### Corrigido
+- Relatórios: se o mês anterior falta em **só uma** das abas (ex.: julho sem coluna em Medicamentos), a comparação com o mês anterior é desligada e um aviso aparece; antes, o total mostrava um aumento falso (itens "novos")
+- Relatórios: se a planilha não traz CMM nem estoque em nenhum item, aparece o aviso e o quadro de zerados/críticos mostra "—" em vez de "0" (que parecia estoque em dia)
+- Relatórios: o título usa "do" para hospitais ("farmácia do Hospital…")
+
 ## v0.6.12 – 2026-10-27
 ### Alterado
 - A logo do cabeçalho também leva à tela inicial, como o título
