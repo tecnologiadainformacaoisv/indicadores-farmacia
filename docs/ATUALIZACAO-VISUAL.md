@@ -48,6 +48,8 @@ Cada recurso tem **tag**, arquivos próprios e um gancho mínimo em `index.html`
 | `visual-painel-rede` | Fechamento por município: cartão (botão) por município, quatro estados com formas distintas (tudo lançado, em andamento, nada lançado, **sem planilha ainda**), filtro por tipo, busca, lista por situação | `js/painel-rede.js`, `css/painel-rede.css`, `js/rede-catalogo.js` | nada |
 | `visual-seletor-unidades` | Seletor no topo (só coordenação): janela modal acessível, filtro por município e equipamento, faixa de filtro ativo, folha em dois passos no celular; no celular os atalhos vêm antes dos municípios | `js/seletor-unidades.js`, `css/seletor-unidades.css` | `visual-painel-rede` |
 
+Correções posteriores, a levar junto com o recurso (commits `fix(visual/<recurso>)`): `visual-painel-rede` ← "alvos de toque de 44 px nos filtros e na busca no celular"; `visual-atalhos-resumo` ← "divisor do atalho como sombra interna". Use `git log --oneline --grep="visual/<recurso>"` para listá-las.
+
 Ordem para trazer ao `main`: `visual-home-larga`, `visual-atalhos-resumo`, `visual-painel-rede`, `visual-seletor-unidades`. Cada um sobe `js/version.js` e o `CHANGELOG.md` no `main`.
 
 ### Decisões e limites
