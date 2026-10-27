@@ -233,6 +233,25 @@ const check = (nome, c, extra) => { if (c) ok++; else { falhas++; console.log('F
     check('painel-rede: município só com unidades sem planilha vai para o fim', P.ordenar(rede)[0].m === 'Caucaia' && P.ordenar(rede)[1].m === 'Massapé');
     check('painel-rede: catálogo tem 152 equipamentos em 12 municípios', require('../js/rede-catalogo.js').reduce((n, m) => n + m.u.length, 0) === 152 && require('../js/rede-catalogo.js').length === 12);
   }
+  // recurso visual "seletor de unidades"
+  {
+    const Sel = require('../js/seletor-unidades.js');
+    const rede = [{ m: 'Caucaia', u: [{ n: 'UPA Jurema', t: 'UPA' }, { n: 'HMST', t: 'Hospital' }] }, { m: 'Massapé', u: [{ n: 'CSF Sede I', t: 'UBS' }, { n: 'CAPS', t: 'CAPS' }, { n: 'CES', t: 'Outros' }] }];
+    const ROT = { Hospital: 'Hospitais', UPA: 'UPAs', UBS: 'UBS', CAPS: 'CAPS', Outros: 'Outros' };
+    check('seletor: sem filtro o rótulo é "Todas as unidades"', Sel.rotulo(null, rede, ROT).texto === 'Todas as unidades' && Sel.rotulo(null, rede, ROT).qtd === 5 && !Sel.rotulo({ busca: 'x' }, rede, ROT).ativo);
+    const um = Sel.rotulo({ municipios: ['Massapé'], unidades: null, tipos: null }, rede, ROT);
+    check('seletor: um município dá o nome e a contagem, com texto de escopo', um.texto === 'Massapé' && um.qtd === 3 && um.ativo && /só Massapé: 3 de 5 unidades/.test(um.descricao), um);
+    check('seletor: vários municípios e só um tipo', Sel.rotulo({ municipios: ['Caucaia', 'Massapé'], unidades: null, tipos: null }, rede, ROT).texto === '2 municípios' && Sel.rotulo({ municipios: null, unidades: null, tipos: ['UBS'] }, rede, ROT).texto === 'UBS' && Sel.rotulo({ municipios: null, unidades: null, tipos: ['UBS'] }, rede, ROT).qtd === 1);
+    const sel = Sel.filtroParaSelecao(null, rede);
+    check('seletor: sem filtro, tudo vem marcado e volta para "sem filtro"', sel.get('Massapé').size === 3 && Sel.selecaoParaFiltro(sel, rede, null, '').municipios === null && Sel.selecaoParaFiltro(sel, rede, null, '').unidades === null);
+    sel.set('Caucaia', new Set());
+    const so = Sel.selecaoParaFiltro(sel, rede, null, '');
+    check('seletor: desmarcar um município inteiro filtra os demais', so.municipios.join() === 'Massapé' && so.unidades === null, so);
+    sel.get('Massapé').delete('CES');
+    const parcial = Sel.selecaoParaFiltro(sel, rede, 'UBS', 'x');
+    check('seletor: unidades soltas viram lista "município|nome", com tipo e busca preservados', parcial.unidades.join() === 'Massapé|CSF Sede I,Massapé|CAPS' && parcial.tipos.join() === 'UBS' && parcial.busca === 'x', parcial);
+    check('seletor: filtro volta para a seleção da janela', Sel.filtroParaSelecao({ municipios: ['Caucaia'], unidades: ['Caucaia|UPA Jurema'] }, rede).get('Caucaia').size === 1 && Sel.filtroParaSelecao({ municipios: ['Caucaia'], unidades: null }, rede).get('Massapé').size === 0);
+  }
   // tela de usuários
   {
     const arm = new Map([['farma_sessao', 'TOKEN1']]);

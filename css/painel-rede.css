@@ -77,3 +77,13 @@
   .rede-busca, .rede-busca input { width: 100%; }
 }
 @media (max-width: 420px) { .rede-grade { grid-template-columns: 1fr; } }
+
+/* celular: os atalhos vêm antes da lista de municípios (que é longa) */
+@media (max-width: 720px) {
+  #view-home:has(.rede) { display: flex; flex-direction: column; }
+  #view-home:has(.rede) .home-hello { order: 0; }
+  #view-home:has(.rede) .filtro-ativo { order: 1; }
+  #view-home:has(.rede) .home-links-titulo { order: 2; margin-top: 16px; }
+  #view-home:has(.rede) .home-links { order: 3; }
+  #view-home:has(.rede) .fechamento { order: 4; margin-top: 20px; }
+}

@@ -1,0 +1,89 @@
+/* Recurso visual: SELETOR DE UNIDADES (tag visual-seletor-unidades)
+   Botão no cabeçalho, janela modal (folha no celular) e faixa "filtro ativo" abaixo da saudação.
+   A janela usa os tokens do tema; "filtro ativo" usa o âmbar de aviso (verde já significa "tudo lançado"). */
+
+.sel-un { display: inline-flex; align-items: center; gap: 9px; min-height: 44px; padding: 3px 11px 3px 10px; margin-right: 10px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, .5); background: rgba(255, 255, 255, .08); color: #fff; font: inherit; cursor: pointer; text-align: left; }
+.sel-un:hover { background: rgba(255, 255, 255, .16); }
+.sel-un:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+.sel-un__t { display: flex; flex-direction: column; line-height: 1.15; }
+.sel-un__t small { font-size: 11.5px; opacity: .85; }
+.sel-un__t b { font-size: 14px; white-space: nowrap; max-width: 190px; overflow: hidden; text-overflow: ellipsis; }
+.sel-un__n { font: 800 12.5px var(--font-title); background: rgba(255, 255, 255, .18); border-radius: 999px; padding: 2px 8px; font-variant-numeric: tabular-nums; }
+.sel-un--ativo { border-color: #f6c566; }
+.sel-un--ativo .sel-un__n { background: #f6c566; color: #2a1c00; }
+@media (max-width: 720px) { .sel-un__t { display: none; } .sel-un { margin-right: 6px; padding: 3px 9px; } }
+
+/* faixa de filtro ativo */
+.filtro-ativo { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 12px 0 0; padding: 8px 12px; border-radius: 12px; background: var(--warn-bg); border: 1px solid var(--warn-bd); color: var(--alert-warn-text); font-size: 14px; }
+.filtro-ativo[hidden] { display: none; }
+.filtro-ativo__txt { flex: 1; min-width: 220px; font-weight: 600; }
+.filtro-ativo__btn { min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid currentColor; background: transparent; color: inherit; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+.filtro-ativo__btn:focus-visible { outline: 3px solid currentColor; outline-offset: 2px; }
+
+/* janela */
+.sj-fundo { position: fixed; inset: 0; z-index: 70; background: rgba(4, 14, 24, .55); }
+.sj-fundo[hidden], .sj[hidden] { display: none; }
+.sj { position: fixed; top: 74px; right: 24px; z-index: 80; width: min(800px, calc(100vw - 32px)); max-height: calc(100vh - 96px); display: flex; flex-direction: column; background: var(--instituto-surface); color: var(--instituto-text); border: 1px solid var(--instituto-border); border-radius: 16px; box-shadow: 0 24px 60px -18px rgba(0, 0, 0, .55); overflow: hidden; overscroll-behavior: contain; }
+.sj-top { display: flex; justify-content: space-between; gap: 12px; padding: 16px 18px 6px; }
+.sj-top h2 { font-size: 18px; color: var(--title); }
+.sj-top p { font-size: 13.5px; color: var(--text-soft); margin-top: 1px; }
+.sj-x { flex: none; width: 44px; height: 44px; border-radius: 10px; border: 1px solid var(--borda-controle); background: transparent; color: var(--text-soft); font-size: 24px; line-height: 1; cursor: pointer; }
+.sj-ferr { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding: 8px 18px 12px; border-bottom: 1px solid var(--instituto-border); }
+.sj-busca input { width: 280px; max-width: 100%; min-height: 44px; padding: 0 12px; border: 1px solid var(--input-bd); border-radius: 10px; background: var(--input-bg); color: var(--instituto-text); font: inherit; font-size: 14px; }
+.sj-tp { display: flex; flex-wrap: wrap; gap: 6px; }
+.sj-tp button { font: inherit; font-size: 13.5px; min-height: 44px; padding: 0 13px; border-radius: 999px; border: 1px solid var(--borda-controle); background: transparent; color: var(--instituto-text); cursor: pointer; }
+.sj-tp button[aria-pressed="true"] { background: var(--title); color: var(--instituto-surface); border-color: var(--title); }
+.sj button:focus-visible, .sj input:focus-visible { outline: 3px solid var(--instituto-secondary); outline-offset: 2px; }
+
+.sj-corpo { display: grid; grid-template-columns: 270px minmax(0, 1fr); min-height: 0; flex: 1; }
+.sj-col { overflow: auto; padding: 10px 12px 12px; max-height: 380px; overscroll-behavior: contain; }
+.sj-ml { border-right: 1px solid var(--instituto-border); background: var(--soft); }
+.sj-linha { display: flex; align-items: stretch; border-radius: 10px; }
+.sj-linha.foco { background: var(--tint); }
+.sj-m { flex: 1; display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 8px; border-radius: 10px; cursor: pointer; font-size: 14.5px; }
+.sj-m input, .sj-u input { width: 18px; height: 18px; accent-color: #0a3d62; flex: none; }
+.sj-nm { flex: 1; }
+.sj-q { font: 700 12.5px var(--font-title); color: var(--text-soft); font-variant-numeric: tabular-nums; }
+.sj-todos { font-weight: 700; border-bottom: 1px solid var(--instituto-border); border-radius: 0; margin-bottom: 4px; }
+.sj-ver { flex: none; width: 44px; border: 0; background: transparent; color: var(--text-soft); font-size: 22px; cursor: pointer; border-radius: 10px; }
+.sj-ver:hover { background: rgba(0, 0, 0, .06); }
+
+.sj-cab { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding: 2px 4px 8px; }
+.sj-cab b { font-size: 16px; color: var(--title); font-family: var(--font-title); }
+.sj-cab span { flex: 1; font-size: 13.5px; color: var(--text-soft); }
+.sj-volta { display: none; min-height: 44px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--borda-controle); background: transparent; color: var(--title); font: inherit; font-weight: 700; cursor: pointer; }
+.sj-link { min-height: 44px; background: none; border: 0; color: var(--title); font: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.sj-g { margin-bottom: 10px; }
+.sj-g h5 { font-size: 13.5px; font-weight: 700; color: var(--text-soft); margin: 4px 4px; }
+.sj-g h5 span { font-weight: 400; }
+.sj-us { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 10px; }
+.sj-u { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 4px 6px; border-radius: 8px; font-size: 14px; cursor: pointer; }
+.sj-u span:not(.sr-only) { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.sj-u .q { margin-left: auto; }
+.sj-u .q--ok { background: #1f9d55; } .sj-u .q--parc { background: linear-gradient(90deg, #b7791f 50%, transparent 50%); box-shadow: inset 0 0 0 1.5px #b7791f; }
+.sj-u .q--pend { box-shadow: inset 0 0 0 2px #5b6b7c; } .sj-u .q--sem { border-color: #6b7a8a; }
+.sj-vazio { padding: 16px 6px; color: var(--text-soft); }
+
+.sj-rod { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 14px; padding: 12px 18px calc(12px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--instituto-border); background: var(--soft); font-size: 14px; }
+.sj-acoes { display: flex; flex-wrap: wrap; gap: 8px; }
+.sj-sec, .sj-pri { font: inherit; font-size: 14px; font-weight: 700; min-height: 44px; padding: 0 16px; border-radius: 10px; cursor: pointer; }
+.sj-sec { background: transparent; border: 1px solid var(--borda-controle); color: var(--title); }
+.sj-pri { background: var(--title); color: var(--instituto-surface); border: 1px solid var(--title); }
+.sj-pri:disabled { background: var(--soft); border-color: var(--instituto-border); color: var(--text-soft); cursor: not-allowed; }
+
+/* celular: folha que sobe de baixo, em dois passos (municípios, depois unidades) */
+@media (max-width: 720px) {
+  .sj { top: auto; right: 0; left: 0; bottom: 0; width: auto; max-height: 92vh; border-radius: 18px 18px 0 0; animation: sj-sobe .22s ease-out; }
+  @keyframes sj-sobe { from { transform: translateY(24px); opacity: .6; } to { transform: none; opacity: 1; } }
+  .sj-corpo { grid-template-columns: 1fr; }
+  .sj-col { max-height: none; }
+  .sj-ul { display: none; }
+  .sj--passo2 .sj-ml { display: none; }
+  .sj--passo2 .sj-ul { display: block; }
+  .sj-volta { display: inline-flex; align-items: center; }
+  .sj-us { grid-template-columns: 1fr; }
+  .sj-ml { border-right: 0; }
+  .sj-tp { flex-wrap: nowrap; overflow-x: auto; width: 100%; padding-bottom: 2px; }
+  .sj-tp button { flex: none; }
+}
+@media (prefers-reduced-motion: reduce) { .sj { animation: none; } }

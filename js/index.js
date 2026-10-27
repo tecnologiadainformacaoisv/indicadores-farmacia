@@ -182,6 +182,7 @@ function montarHome(painel) {
     document.getElementById('card-relatorios').hidden = !admin;
   }
   montarFechamento(painel, admin);
+  if (admin && window.SeletorUnidades) SeletorUnidades.montar({ login: u.login });   // recurso visual-seletor-unidades
   if (painel.mesAberto.teste) status('Ambiente de teste: o mês aberto está fixo em ' + nomeMes(painel.mesAberto) + '.', 'warn');
   mostrar('home');
 }
