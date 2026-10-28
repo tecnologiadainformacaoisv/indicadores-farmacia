@@ -460,7 +460,7 @@ async function saveEntry() {
 }
 
 // ── Metas modal ────────────────────────────────────────────────
-// Todos veem; só a coordenação do Instituto altera, e sempre de uma unidade específica.
+// Só a coordenação do Instituto vê e altera metas, e altera sempre de uma unidade específica.
 function podeEditarMetas() {
   return info.usuario.perfil === 'admin' && unidadeSel !== '';
 }
@@ -468,11 +468,9 @@ function podeEditarMetas() {
 function openMetas() {
   if (info.usuario.perfil !== 'admin') return;   // só a coordenação vê e altera metas
   const editavel = podeEditarMetas();
-  const intro = info.usuario.perfil !== 'admin'
-    ? 'Metas da sua unidade, definidas pela coordenação farmacêutica do Instituto.'
-    : editavel
-      ? `Metas de ${nomeUnidade(unidadeSel)}. O sistema alerta quando o valor fica abaixo (ou acima) da meta.`
-      : 'Metas de referência. Para alterar, escolha uma unidade no topo da página.';
+  const intro = editavel
+    ? `Metas de ${nomeUnidade(unidadeSel)}. O sistema alerta quando o valor fica abaixo (ou acima) da meta.`
+    : 'Metas de referência. Para alterar, escolha uma unidade no topo da página.';
   document.getElementById('metas-intro').textContent = intro;
   document.getElementById('metas-list').innerHTML = Object.entries(metas).map(([key, m]) => `
     <div class="meta-row">
@@ -490,6 +488,7 @@ function closeMetas() {
 }
 
 async function saveMetas() {
+  if (info.usuario.perfil !== 'admin') return;   // defesa em profundidade: o servidor também recusa
   const novas = {};
   Object.keys(metas).forEach(key => {
     const el = document.getElementById('meta-' + key);
@@ -579,6 +578,7 @@ async function carregarDados(unidadeReq) {
     if (emCache) e.message += ' Mostrando os dados da última visita.';
     throw e;
   }
+  if (r.sessao.usuario.perfil !== 'admin') r.metas = {};   // o coordenador não guarda metas nem no cache do navegador
   cacheGravar('ind:' + (r.unidade || 'todas'), r);
   if (unidadeReq === undefined) cacheGravar('ind:inicial', r);
   if (minhaCarga !== cargaId) return;  // chegou uma carga mais nova

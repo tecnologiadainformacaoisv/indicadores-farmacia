@@ -1,5 +1,12 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.6.20 – 2026-10-29
+### Corrigido (revisão da v0.6.19)
+- O coordenador não guarda mais as metas no cache do navegador (a resposta é guardada já sem elas)
+- Selo "Média do ano" sem meta (coordenador) ganha cor neutra
+- `saveMetas` também confere o perfil; texto morto e comentário de `openMetas` removidos
+- Teste novo com a resposta do servidor já sem metas para o coordenador
+
 ## v0.6.19 – 2026-10-28
 ### Alterado
 - **Metas e alertas só aparecem para a coordenação (Tereza).** O coordenador da unidade deixa de ver: o botão "⚙ Metas" e o item de menu "Metas e alertas", a linha e a mensagem de meta nos cartões e gráficos, os selos de status (meta atingida, fora da meta), as faixas de alerta e a coloração por meta na tabela. Os cartões e gráficos continuam mostrando os valores

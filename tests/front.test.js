@@ -318,11 +318,18 @@ const check = (nome, c, extra) => { if (c) ok++; else { falhas++; console.log('F
     check('coordenador: botão "Metas", item de menu e título "Configuração" escondidos', vc.els['btn-metas'].hidden === true && vc.els['nav-metas'].hidden === true && vc.els['nav-config-titulo'].hidden === true);
     vm.runInContext('openMetas()', vc.ctx);
     check('coordenador: openMetas não monta nem abre o painel de metas', !(vc.els['metas-list'] && vc.els['metas-list'].innerHTML) && !vc.els['overlay-metas'], vc.els['metas-list'] && vc.els['metas-list'].innerHTML);
+    // resposta real do servidor depois do deploy: metas vazias para o coordenador
+    vm.runInContext("exibirCarga({ sessao: info, unidade: unidadeSel, lancamentos: todosLanc, metas: {} })", vc.ctx);
+    await pausa(60);
+    const kc2 = vc.els['kpi-clinica'].innerHTML + vc.els['kpi-logistica'].innerHTML;
+    check('coordenador com metas vazias vindas do servidor: sem erro e sem meta na tela', vc.erros.length === 0 && kc2.includes('kpi-card') && !/Meta:|Meta atingida|Fora da meta/.test(kc2), vc.erros);
+    check('coordenador: sem metas, valor da tabela fica neutro (c-na), nunca vermelho', vm.runInContext("statusClass('conciliacoes', 30)", vc.ctx) === 'c-na' && vm.runInContext("status('prm', 30)", vc.ctx) === 'na');
     const va = visita('indicadores.js', new Map([['farma_sessao', 'TOKEN1']]), 'admin');
     await pausa(120);
     const ka = va.els['kpi-clinica'].innerHTML + va.els['kpi-logistica'].innerHTML;
     check('Tereza: cartões com a meta e o selo de status, como antes', /Meta:/.test(ka) && /kpi-badge/.test(ka), ka.slice(0, 160));
     check('Tereza: botão "Metas", item de menu e título "Configuração" visíveis', va.els['btn-metas'].hidden === false && va.els['nav-metas'].hidden === false && va.els['nav-config-titulo'].hidden === false);
+    check('Tereza: valor fora da meta continua vermelho e dentro da meta, verde na tabela', vm.runInContext("statusClass('conciliacoes', 30)", va.ctx) === 'c-err' && vm.runInContext("statusClass('conciliacoes', 95)", va.ctx) === 'c-ok');
   }
   // troca de unidade que falha não pode deixar as metas apontando para a unidade nova
   {
