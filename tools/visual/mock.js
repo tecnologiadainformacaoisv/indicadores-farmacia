@@ -71,6 +71,7 @@ function responder(req, perfil) {
     case 'indicadores.carregar': { const un = perfil === 'admin' ? (req.unidade === undefined ? '' : req.unidade) : 'upa-centro'; return { sessao: sessao(perfil), unidade: un, lancamentos: un ? lancamentos.filter(l => l.unidade === un) : lancamentos, metas: METAS }; }
     case 'logistica.carregar': return { sessao: sessao(perfil), logistica: { ...logistica(perfil), unidade: perfil === 'admin' && req.unidade ? req.unidade : 'upa-centro' } };
     case 'usuarios.carregar': return { sessao: sessao('admin'), usuarios };
+    case 'dashboard.carregar': { const metas = {}; sessao(perfil).unidades.forEach(u => { metas[u.id] = METAS; }); return { sessao: sessao(perfil), lancamentos, metas }; }
     case 'painel.carregar': return painel(perfil);
     default: return null;
   }

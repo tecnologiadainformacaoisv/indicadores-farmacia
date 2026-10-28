@@ -123,6 +123,7 @@ const ROTAS = {
   'lancamentos.salvar': { fn: salvarLancamento_ },
   'painel.carregar':    { fn: carregarPainel_, semSenhaDefinitiva: true },
   'indicadores.carregar': { fn: carregarIndicadores_ },
+  'dashboard.carregar': { fn: carregarDashboard_ },
   'logistica.carregar': { fn: carregarLogistica_ },
   'metas.salvar':       { fn: salvarMetas_ },
   'logistica.salvar':   { fn: salvarLogistica_ },
@@ -487,6 +488,20 @@ function carregarIndicadores_(req, u) {
     lancamentos: listarLancamentos_({ unidade: unidade }, u),
     metas: listarMetas_({ unidade: unidade }, u),
   };
+}
+
+// Dashboard comparativo (só coordenação): lançamentos de todas as unidades e as metas de cada uma
+function carregarDashboard_(req, u) {
+  exigirAdmin_(u);
+  const tabela = lerTabela_(ABAS.METAS);
+  const metas = {};
+  unidadesVisiveis_(u).forEach(un => {
+    const m = {};
+    METAS_PADRAO.forEach(([k, v, d, r]) => { m[k] = { val: v, dir: d, label: r }; });
+    tabela.filter(x => x.unidade === un.id).forEach(x => { if (m[x.indicador]) m[x.indicador].val = Number(x.valor); });
+    metas[un.id] = m;
+  });
+  return { sessao: sessao_(req, u), lancamentos: listarLancamentos_({}, u), metas: metas };
 }
 
 // unidade: indefinida = a primeira que o usuário enxerga

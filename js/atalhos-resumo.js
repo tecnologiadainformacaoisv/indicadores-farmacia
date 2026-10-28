@@ -59,7 +59,7 @@
       { id: 'rel', icone: 'rel', titulo: 'Relatórios', desc: 'Veja e imprima o relatório mensal de cada unidade.', href: 'relatorios.html',
         numero: ctx.mes, rotulo: 'último mês fechado' },
       { id: 'usr', icone: 'usr', titulo: 'Usuários', desc: 'Cadastre coordenadores, redefina senhas e desative acessos.', href: 'usuarios.html' },
-      { id: 'dash', icone: 'dash', titulo: 'Dashboard', desc: 'Visão geral das unidades. Ainda não usa os lançamentos reais.', href: 'dashboard.html', selo: 'Dados de exemplo', discreto: true },
+      { id: 'dash', icone: 'dash', titulo: 'Dashboard', desc: 'Compare as unidades, indicador por indicador, com os lançamentos reais.', href: 'dashboard.html' },
     ];
   }
 

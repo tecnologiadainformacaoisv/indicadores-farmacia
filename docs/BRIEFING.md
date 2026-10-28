@@ -115,7 +115,7 @@ Expansão: **Caucaia** (piloto) → **Maracanaú** → demais municípios.
 
 ## Estado de implementação (2026-10-21)
 
-Este documento descreve a regra-alvo. Ainda **não** implementado: pedidos de correção de mês fechado (hoje o administrador não lança em nenhum caso) e dashboard com dados reais (usa dados de exemplo). Implementado: login e perfis, lançamento da Clínica Geral na nuvem, metas por unidade, planilha de saídas item por item, mês aberto e virada automática do mês, cadastro de coordenadores pela tela e backup diário.
+Este documento descreve a regra-alvo. Ainda **não** implementado: pedidos de correção de mês fechado (hoje o administrador não lança em nenhum caso) (o dashboard comparativo já lê os lançamentos reais desde a v0.8.0). Implementado: login e perfis, lançamento da Clínica Geral na nuvem, metas por unidade, planilha de saídas item por item, mês aberto e virada automática do mês, cadastro de coordenadores pela tela e backup diário.
 
 ## Anotações soltas do desenvolvedor (movidas do CHANGELOG)
 
