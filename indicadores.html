@@ -49,8 +49,8 @@
   <a class="nav-item" href="relatorios.html" id="nav-rel" hidden>
     <span class="dot" style="background:var(--amber)"></span> Relatório mensal
   </a>
-  <p class="sidebar-section">Configuração</p>
-  <button class="nav-item" onclick="openMetas()">
+  <p class="sidebar-section" id="nav-config-titulo" hidden>Configuração</p>
+  <button class="nav-item" id="nav-metas" onclick="openMetas()" hidden>
     <span class="dot" style="background:var(--txt3)"></span> Metas e alertas
   </button>
 </nav>
@@ -77,7 +77,7 @@
         <option value="8">Setembro</option><option value="9">Outubro</option>
         <option value="10">Novembro</option><option value="11">Dezembro</option>
       </select>
-      <button class="btn btn-ghost" onclick="openMetas()">⚙ Metas</button>
+      <button class="btn btn-ghost" id="btn-metas" onclick="openMetas()" hidden>⚙ Metas</button>
       <button class="btn btn-primary" id="btnAdd" onclick="openEntry()" hidden>+ Lançar dados</button>
     </div>
   </div>

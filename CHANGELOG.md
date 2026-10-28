@@ -1,5 +1,13 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.6.19 – 2026-10-28
+### Alterado
+- **Metas e alertas só aparecem para a coordenação (Tereza).** O coordenador da unidade deixa de ver: o botão "⚙ Metas" e o item de menu "Metas e alertas", a linha e a mensagem de meta nos cartões e gráficos, os selos de status (meta atingida, fora da meta), as faixas de alerta e a coloração por meta na tabela. Os cartões e gráficos continuam mostrando os valores
+- Servidor: `indicadores.carregar` não envia mais as metas ao coordenador (permissão conferida no Apps Script). Edição de metas já era só da coordenação
+- Ajuda: o passo do lançamento não fala mais em metas
+### Atenção
+- A parte do servidor só vale depois de `clasp push` + versão + `clasp update-deployment`. Sem isso, o servidor ainda envia as metas ao navegador do coordenador, mas a tela já não as mostra
+
 ## v0.6.18 – 2026-10-28
 ### Corrigido (revisão da v0.6.17)
 - Relatórios com estoque: uma tag `</p` sem `>` embaralhava o parágrafo de cobertura e o do CMM calculado; corrigido, com teste que confere `<p>` e `</p>`

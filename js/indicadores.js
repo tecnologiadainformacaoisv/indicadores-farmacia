@@ -206,8 +206,8 @@ function renderClinica() {
       <div class="kpi-card" style="--c:var(${corStatus(st)})">
         <div class="kpi-label">${k.label}</div>
         <div class="kpi-val">${fmtVal(val)}</div>
-        <div class="kpi-sub">Meta: ${m.val}% · ${m.dir === 'min' ? '↑ mínimo' : '↓ máximo'}</div>
-        ${val !== null ? `<span class="kpi-badge ${st}">${st === 'ok' ? '✓ Meta atingida' : st === 'warn' ? '⚠ Atenção' : (m.dir === 'max' ? '✗ Acima do limite' : '✗ Abaixo da meta')}</span>` : '<span class="kpi-badge warn">Sem dados</span>'}
+        ${m ? `<div class="kpi-sub">Meta: ${m.val}% · ${m.dir === 'min' ? '↑ mínimo' : '↓ máximo'}</div>` : ''}
+        ${val !== null && !m ? '' : val !== null ? `<span class="kpi-badge ${st}">${st === 'ok' ? '✓ Meta atingida' : st === 'warn' ? '⚠ Atenção' : (m.dir === 'max' ? '✗ Acima do limite' : '✗ Abaixo da meta')}</span>` : '<span class="kpi-badge warn">Sem dados</span>'}
       </div>`;
   });
 
@@ -226,7 +226,7 @@ function renderClinica() {
   const labels = MONTHS;
   const cg = document.getElementById('charts-clinica');
   cg.innerHTML = `
-    <div class="card"><div class="card-header"><div><div class="card-title">Conciliações Medicamentosas</div><div class="card-sub">% sobre admissões · linha de meta</div></div><span class="badge ${status('conciliacoes', avg(byMonth('conciliacoes').filter(v=>v!==null)))}">Média do ano ${fmtVal(avg(byMonth('conciliacoes').filter(v=>v!==null)))}</span></div><canvas id="c-conc" height="190"></canvas></div>
+    <div class="card"><div class="card-header"><div><div class="card-title">Conciliações Medicamentosas</div><div class="card-sub">% sobre admissões${info.usuario.perfil === 'admin' ? ' · linha de meta' : ''}</div></div><span class="badge ${status('conciliacoes', avg(byMonth('conciliacoes').filter(v=>v!==null)))}">Média do ano ${fmtVal(avg(byMonth('conciliacoes').filter(v=>v!==null)))}</span></div><canvas id="c-conc" height="190"></canvas></div>
     <div class="card"><div class="card-header"><div><div class="card-title">Prescrições Analisadas</div><div class="card-sub">% sobre prescrições atendidas</div></div><span class="badge ${status('prescricoes', avg(byMonth('prescricoes').filter(v=>v!==null)))}">Média do ano ${fmtVal(avg(byMonth('prescricoes').filter(v=>v!==null)))}</span></div><canvas id="c-presc" height="190"></canvas></div>
     <div class="card"><div class="card-header"><div><div class="card-title">PRM Identificados</div><div class="card-sub">% sobre prescrições analisadas</div></div><span class="badge ${status('prm', avg(byMonth('prm').filter(v=>v!==null)))}">Média do ano ${fmtVal(avg(byMonth('prm').filter(v=>v!==null)))}</span></div><canvas id="c-prm" height="190"></canvas></div>
     <div class="card"><div class="card-header"><div><div class="card-title">Intervenções Farmacêuticas Aceitas</div><div class="card-sub">% sobre intervenções realizadas</div></div><span class="badge ${status('intervencoes', avg(byMonth('intervencoes').filter(v=>v!==null)))}">Média do ano ${fmtVal(avg(byMonth('intervencoes').filter(v=>v!==null)))}</span></div><canvas id="c-interv" height="190"></canvas></div>
@@ -250,7 +250,7 @@ function renderClinica() {
     tbody.innerHTML += `<tr>
       <td>${MONTHS[r.mes]}</td>
       <td>${esc(nomeUnidade(r.unidade))}</td>
-      <td class="mono ${status('conciliacoes', c.conciliacoes) === 'ok' ? 'c-ok' : status('conciliacoes', c.conciliacoes) === 'warn' ? 'c-warn' : c.conciliacoes !== null ? 'c-err' : 'c-na'}">${fmtVal(c.conciliacoes)}</td>
+      <td class="mono ${statusClass('conciliacoes', c.conciliacoes)}">${fmtVal(c.conciliacoes)}</td>
       <td class="mono ${statusClass('prescricoes', c.prescricoes)}">${fmtVal(c.prescricoes)}</td>
       <td class="mono ${statusClass('prm', c.prm)}">${fmtVal(c.prm)}</td>
       <td class="mono ${statusClass('intervencoes', c.intervencoes)}">${fmtVal(c.intervencoes)}</td>
@@ -268,7 +268,7 @@ function textoVazio() {
 
 function statusClass(key, val) {
   const st = status(key, val);
-  return st === 'ok' ? 'c-ok' : st === 'warn' ? 'c-warn' : val !== null ? 'c-err' : 'c-na';
+  return st === 'ok' ? 'c-ok' : st === 'warn' ? 'c-warn' : st === 'err' ? 'c-err' : 'c-na';
 }
 
 // ── LOGÍSTICA ──────────────────────────────────────────────────
@@ -296,8 +296,8 @@ function renderLogistica() {
       <div class="kpi-card" style="--c:var(${corStatus(st)})">
         <div class="kpi-label">${k.label}</div>
         <div class="kpi-val">${fmtVal(val)}</div>
-        <div class="kpi-sub">Meta: ${m.val}% · ${m.dir === 'min' ? '↑ mínimo' : '↓ máximo'}</div>
-        ${val !== null ? `<span class="kpi-badge ${st}">${st === 'ok' ? '✓ OK' : st === 'warn' ? '⚠ Atenção' : '✗ Fora da meta'}</span>` : '<span class="kpi-badge warn">Sem dados</span>'}
+        ${m ? `<div class="kpi-sub">Meta: ${m.val}% · ${m.dir === 'min' ? '↑ mínimo' : '↓ máximo'}</div>` : ''}
+        ${val !== null && !m ? '' : val !== null ? `<span class="kpi-badge ${st}">${st === 'ok' ? '✓ OK' : st === 'warn' ? '⚠ Atenção' : '✗ Fora da meta'}</span>` : '<span class="kpi-badge warn">Sem dados</span>'}
       </div>`;
   });
 
@@ -466,6 +466,7 @@ function podeEditarMetas() {
 }
 
 function openMetas() {
+  if (info.usuario.perfil !== 'admin') return;   // só a coordenação vê e altera metas
   const editavel = podeEditarMetas();
   const intro = info.usuario.perfil !== 'admin'
     ? 'Metas da sua unidade, definidas pela coordenação farmacêutica do Instituto.'
@@ -538,7 +539,8 @@ function aplicarCarga(r) {
   unidadeSel = r.unidade;
   todosLanc = r.lancamentos;
   data = r.lancamentos.filter(x => x.ano === info.mesAberto.ano);
-  metas = r.metas;
+  // metas e alertas só para a coordenação (Tereza): o coordenador da unidade não vê meta, faixa de status nem alerta
+  metas = info.usuario.perfil === 'admin' ? r.metas : {};
 }
 
 function exibirCarga(r) {
@@ -549,6 +551,7 @@ function exibirCarga(r) {
   // o relatório é só da coordenação do Instituto e abre na unidade que ela está vendo
   const admin = info.usuario.perfil === 'admin';
   document.getElementById('nav-rel').hidden = !admin;
+  ['nav-config-titulo', 'nav-metas', 'btn-metas'].forEach(id => { document.getElementById(id).hidden = !admin; });
   document.getElementById('nav-rel-titulo').hidden = !admin;
   document.getElementById('nav-rel').href = 'relatorios.html' + q;
   if (!unidadesProntas) {

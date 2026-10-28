@@ -308,6 +308,22 @@ const check = (nome, c, extra) => { if (c) ok++; else { falhas++; console.log('F
     check('aviso lento: some quando não há chamada pendente', R('avisoLentoEl') === null);
     check('lote ajuda: sem erro de execução', v.erros.length === 0, v.erros);
   }
+  // metas e alertas só para a coordenação (o servidor simulado manda as metas também ao coordenador: a tela precisa esconder mesmo assim)
+  {
+    const vc = visita('indicadores.js', new Map([['farma_sessao', 'TOKEN1']]), 'coordenador');
+    await pausa(120);
+    const kc = vc.els['kpi-clinica'].innerHTML + vc.els['kpi-logistica'].innerHTML;
+    check('coordenador: cartões de indicador sem meta e sem selo de meta atingida/fora da meta', kc.includes('kpi-card') && !/Meta:|Meta atingida|Fora da meta|Abaixo da meta|Acima do limite|✓ OK/.test(kc), kc.slice(0, 200));
+    check('coordenador: nenhum alerta de meta', !vc.els['alerts-clinica'].innerHTML && !vc.els['alerts-logistica'].innerHTML);
+    check('coordenador: botão "Metas", item de menu e título "Configuração" escondidos', vc.els['btn-metas'].hidden === true && vc.els['nav-metas'].hidden === true && vc.els['nav-config-titulo'].hidden === true);
+    vm.runInContext('openMetas()', vc.ctx);
+    check('coordenador: openMetas não monta nem abre o painel de metas', !(vc.els['metas-list'] && vc.els['metas-list'].innerHTML) && !vc.els['overlay-metas'], vc.els['metas-list'] && vc.els['metas-list'].innerHTML);
+    const va = visita('indicadores.js', new Map([['farma_sessao', 'TOKEN1']]), 'admin');
+    await pausa(120);
+    const ka = va.els['kpi-clinica'].innerHTML + va.els['kpi-logistica'].innerHTML;
+    check('Tereza: cartões com a meta e o selo de status, como antes', /Meta:/.test(ka) && /kpi-badge/.test(ka), ka.slice(0, 160));
+    check('Tereza: botão "Metas", item de menu e título "Configuração" visíveis', va.els['btn-metas'].hidden === false && va.els['nav-metas'].hidden === false && va.els['nav-config-titulo'].hidden === false);
+  }
   // troca de unidade que falha não pode deixar as metas apontando para a unidade nova
   {
     const v = visita('indicadores.js', new Map([['farma_sessao', 'TOKEN1']]), 'admin');

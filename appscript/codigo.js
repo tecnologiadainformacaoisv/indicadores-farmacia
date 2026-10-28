@@ -486,7 +486,7 @@ function carregarIndicadores_(req, u) {
     sessao: sessao_(req, u),
     unidade: unidade,
     lancamentos: listarLancamentos_({ unidade: unidade }, u),
-    metas: listarMetas_({ unidade: unidade }, u),
+    metas: ehAdmin_(u) ? listarMetas_({ unidade: unidade }, u) : {},   // metas e alertas só para a coordenação
   };
 }
 
