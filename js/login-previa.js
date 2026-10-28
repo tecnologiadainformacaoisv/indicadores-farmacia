@@ -1,15 +1,14 @@
-// Painel decorativo do login: telas que giram (carrossel ou pilha). Só enfeite: fica fora do leitor de tela.
+// Painel decorativo do login: telas que giram. Só enfeite: fica fora do leitor de tela.
 (function () {
   const raiz = document.getElementById('login-previa');
   if (!raiz) return;
   const slides = Array.from(raiz.querySelectorAll('.lp-slide'));
   const trilho = raiz.querySelector('.lp-trilho');
   const pontos = raiz.querySelector('.lp-pontos');
-  const pilha = /[?&]estilo=pilha\b/.test(location.search);
   const parado = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let atual = 0, voltas = 0, timer = null;
 
-  raiz.classList.add(pilha ? 'lp--pilha' : 'lp--carrossel');
+  raiz.classList.add('lp--carrossel');
   slides.forEach((_, i) => {
     const b = document.createElement('button');
     b.type = 'button'; b.tabIndex = -1;
@@ -24,7 +23,7 @@
       s.style.setProperty('--o', o);
       s.classList.toggle('ativo', o === 0);
     });
-    if (!pilha) trilho.style.transform = 'translateX(' + (-100 * atual) + '%)';
+    trilho.style.transform = 'translateX(' + (-100 * atual) + '%)';
     Array.from(pontos.children).forEach((b, k) => b.classList.toggle('on', k === atual));
   }
   function reiniciar() {

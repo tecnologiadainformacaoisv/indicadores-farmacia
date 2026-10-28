@@ -1,5 +1,11 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.7.0 – 2026-10-28
+### Adicionado (do branch de atualização visual, escolhidos para a versão 1.0)
+- **Tela de login nova:** fundo azul-marinho inteiro, nome "Indicadores da Farmácia" em destaque, carrossel de telas do sistema, cartão com a logo, olho com traço na senha, botão com indicador de carregamento, aviso de Caps Lock e entrada suave. Sem botão de tema (tema único). O seletor temporário de propostas foi removido
+- **Atalhos com resumo** na tela inicial: cartões azul-marinho com número e mini gráfico só onde há dado real (coordenação: andamento do acompanhamento, saídas, relatório do mês, usuários e dashboard; coordenador: acompanhamento e saídas)
+- **Tela inicial larga:** usa a largura toda (até 1680 px) e mostra as unidades do fechamento em duas colunas
+
 ## v0.6.18 – 2026-10-28
 ### Corrigido (revisão da v0.6.17)
 - Relatórios com estoque: uma tag `</p` sem `>` embaralhava o parágrafo de cobertura e o do CMM calculado; corrigido, com teste que confere `<p>` e `</p>`
