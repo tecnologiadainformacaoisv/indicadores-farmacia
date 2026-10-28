@@ -85,7 +85,6 @@ function responder(req, perfil) {
     case 'indicadores.carregar': return { sessao: sessao(perfil), unidade: perfil === 'admin' ? '' : 'upa-centro', lancamentos: perfil === 'admin' ? lancamentos : lancamentos.filter(l => l.unidade === 'upa-centro'), metas: METAS };
     case 'logistica.carregar': return { sessao: sessao(perfil), logistica: logistica(perfil) };
     case 'usuarios.carregar': return { sessao: sessao('admin'), usuarios };
-    case 'dashboard.carregar': { const metas = {}; sessao(perfil).unidades.forEach(u => { metas[u.id] = METAS; }); return { sessao: sessao(perfil), lancamentos, metas }; }
     case 'painel.carregar': return painel(perfil);
     default: return null;
   }

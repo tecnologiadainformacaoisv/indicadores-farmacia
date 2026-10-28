@@ -219,42 +219,6 @@ const check = (nome, c, extra) => { if (c) ok++; else { falhas++; console.log('F
     check('relatorios: nota e asterisco do CMM automático só aparecem quando houve cálculo', R.htmlRelatorio(auto, un, 2026).includes('foi calculado pelo sistema (1 item)') && R.htmlRelatorio(auto, un, 2026).includes('20*') && !R.htmlRelatorio(branco, un, 2026).includes('foi calculado pelo sistema'));
     check('relatorios: título usa "do" para hospital e "da" para as demais', R.htmlRelatorio(branco, { nome: 'Hospital Municipal', municipio: '' }, 2026).includes('farmácia do Hospital Municipal') && R.htmlRelatorio(branco, un, 2026).includes('farmácia da '));
   }
-  // recurso visual "atalhos com resumo"
-  {
-    const A = require('../js/atalhos-resumo.js');
-    const un = (nome, clin, pre, tot) => ({ id: nome, nome, clinica: { lancado: clin }, saidas: tot ? { med: { preenchidos: pre, total: tot }, mat: { preenchidos: pre, total: tot }, por: 'x', em: 'y' } : null });
-    const lista = [un('A', true, 10, 10), un('B', true, 5, 10), un('C', false, 0, 0)];
-    const r = A.resumir(lista);
-    check('atalhos: resumo conta unidades completas e % de saídas', r.completas === 1 && r.total === 3 && r.pctSaidas === 75, r);
-    check('atalhos: sem saídas lançadas não inventa porcentagem', A.resumir([un('C', false, 0, 0)]).pctSaidas === null);
-    const adm = A.atalhos({ admin: true, mes: 'Maio/2026', unidades: lista, resumo: r });
-    check('atalhos: coordenação vê 5 atalhos; Usuários e Dashboard sem número inventado e sem selo de exemplo', adm.length === 5 && !adm.find(a => a.id === 'usr').numero && !adm.find(a => a.id === 'dash').numero && !adm.find(a => a.id === 'dash').selo);
-    const coord = A.atalhos({ admin: false, mes: 'Maio/2026', unidades: [un('A', false, 0, 0)], resumo: A.resumir([un('A', false, 0, 0)]) });
-    check('atalhos: coordenador vê 2 atalhos, sem Usuários nem Relatórios', coord.length === 2 && !coord.some(a => ['usr', 'rel', 'dash'].includes(a.id)));
-  }
-  // dashboard comparativo
-  {
-    const Dsh = require('../js/dashboard.js');
-    const L = (unidade, mes, extra) => Object.assign({ unidade, ano: 2026, mes }, extra);
-    const sessao = { mesAberto: { ano: 2026, mes: 4 }, unidades: [{ id: 'a', nome: 'UPA A' }, { id: 'b', nome: 'UPA B' }] };
-    const metasA = { conciliacoes: { val: 80, dir: 'min', label: 'Conciliações Medicamentosas (%)' }, prm: { val: 5, dir: 'max', label: 'PRM Identificados (%)' } };
-    const metasB = { conciliacoes: { val: 70, dir: 'min', label: 'Conciliações Medicamentosas (%)' }, prm: { val: 5, dir: 'max', label: 'PRM Identificados (%)' } };
-    const dados = { sessao, metas: { a: metasA, b: metasB }, lancamentos: [
-      L('a', 3, { admissoes: 100, conciliacoes: 70 }), L('a', 4, { admissoes: 100, conciliacoes: 85, 'presc-anal': 100, prm: 6 }),
-      L('b', 4, { admissoes: 50, conciliacoes: 30, 'presc-anal': 40, prm: 1 }), L('a', 4 - 4, { admissoes: 10, conciliacoes: 10 }), { unidade: 'a', ano: 2025, mes: 4, admissoes: 10, conciliacoes: 1 }] };
-    const c = Dsh.montarIndicador(dados, 'conciliacoes', 4);
-    check('dashboard: valor do mês por unidade e situação pela meta da própria unidade', c.linhas[0].valor === 85 && c.linhas[0].sit === 'ok' && c.linhas[1].valor === 60 && c.linhas[1].sit === 'warn', c.linhas.map(l => [l.valor, l.sit]));
-    check('dashboard: lançamento de outro ano não entra; série traz o mês anterior', c.linhas[0].serie[3] === 70 && c.linhas[0].serie[4] === 85 && c.linhas[0].serie[0] === 100, c.linhas[0].serie);
-    check('dashboard: metas diferentes entre unidades = sem meta única e média sem situação', c.metaUnica === null && c.media.valor === 72.5 && c.media.sit === 'na' && /diferentes/.test(Dsh.textoMeta(c.metaUnica)), c.media);
-    const p = Dsh.montarIndicador(dados, 'prm', 4);
-    check('dashboard: indicador de limite máximo e meta única com situação na média', p.metaUnica && p.metaUnica.dir === 'max' && p.linhas[0].sit === 'warn' && p.linhas[1].sit === 'ok' && p.media.valor === 4.3 && p.media.sit === 'ok', p.media);
-    check('dashboard: mês sem dado fica sem valor e sem situação (nunca zero inventado)', Dsh.montarIndicador(dados, 'altas', 4).linhas.every(l => l.valor === null && l.sit === 'na') && !Dsh.montarIndicador(dados, 'altas', 4).temDado);
-    check('dashboard: meses com dado só até o mês aberto, sem repetir', JSON.stringify(Dsh.mesesComDado(dados)) === '[0,3,4]', Dsh.mesesComDado(dados));
-    const html = Dsh.htmlCartao(Dsh.montarIndicador(dados, 'conciliacoes', 4), 4, 'Mai/2026');
-    check('dashboard: cartão com situação em texto, tabela e gráfico; HTML bem formado', html.includes('Dentro da meta') && html.includes('Atenção') && html.includes('<canvas id="g-conciliacoes"') && html.includes('Média das unidades') && (html.match(/<tr>/g) || []).length === (html.match(/<\/tr>/g) || []).length && !/undefined|NaN/.test(html));
-    const xss = Dsh.htmlCartao(Dsh.montarIndicador({ sessao: { mesAberto: { ano: 2026, mes: 4 }, unidades: [{ id: 'x', nome: '<img src=x onerror=alert(1)>' }] }, metas: { x: metasA }, lancamentos: [] }, 'conciliacoes', 4), 4, 'Mai/2026');
-    check('dashboard: nome de unidade é escapado e unidade única não mostra a linha de média', !xss.includes('<img src=x') && xss.includes('&lt;img') && !xss.includes('Média das unidades'));
-  }
   // tela de usuários
   {
     const arm = new Map([['farma_sessao', 'TOKEN1']]);

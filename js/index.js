@@ -161,20 +161,15 @@ function montarHome(painel) {
   document.getElementById('home-intro').textContent = admin
     ? 'Acompanhe o andamento de cada unidade neste mês e defina as metas.'
     : 'Veja o que falta lançar neste mês.';
-  if (window.AtalhosResumo) {
-    // recurso "atalhos com resumo" (visual-atalhos-resumo): monta os atalhos com número e mini gráfico
-    AtalhosResumo.montar(document.querySelector('.home-links'), { admin, mes: nomeMes(painel.mesAberto), unidades: painel.unidades });
-  } else {
-    document.getElementById('card-indicadores').textContent = admin
-      ? 'Indicadores de todas as unidades, metas e alertas.'
-      : 'Indicadores clínicos e de logística, com gráficos.';
-    document.getElementById('card-logistica').textContent = admin
-      ? 'Saídas de medicamentos e materiais de cada unidade.'
-      : 'Saídas, CMM e estoque de cada item.';
-    document.getElementById('card-dashboard').hidden = !admin;
-    document.getElementById('card-usuarios').hidden = !admin;
-    document.getElementById('card-relatorios').hidden = !admin;
-  }
+  document.getElementById('card-indicadores').textContent = admin
+    ? 'Indicadores de todas as unidades, metas e alertas.'
+    : 'Indicadores clínicos e de logística, com gráficos.';
+  document.getElementById('card-logistica').textContent = admin
+    ? 'Saídas de medicamentos e materiais de cada unidade.'
+    : 'Saídas, CMM e estoque de cada item.';
+  document.getElementById('card-dashboard').hidden = !admin;
+  document.getElementById('card-usuarios').hidden = !admin;
+  document.getElementById('card-relatorios').hidden = !admin;
   montarFechamento(painel, admin);
   if (painel.mesAberto.teste) status('Ambiente de teste: o mês aberto está fixo em ' + nomeMes(painel.mesAberto) + '.', 'warn');
   mostrar('home');
@@ -187,7 +182,6 @@ document.getElementById('form-login').addEventListener('submit', async ev => {
   const senha = document.getElementById('login-senha').value;
   if (!login || !senha) { msg('login-msg', 'Informe usuário e senha.', 'erro'); return; }
   btn.disabled = true;
-  btn.classList.add('carregando');
   msg('login-msg', 'Entrando…');
   try {
     const r = await api('login', { login, senha });
@@ -199,36 +193,8 @@ document.getElementById('form-login').addEventListener('submit', async ev => {
     msg('login-msg', e.message + (/incorretos/.test(e.message) ? ' Se esqueceu a senha, peça à coordenação farmacêutica para redefinir.' : ''), 'erro');
   } finally {
     btn.disabled = false;
-    btn.classList.remove('carregando');
   }
 });
-
-// "Esqueceu a senha?": mostra a orientação (não há redefinição automática; é a coordenação que redefine)
-(function () {
-  const b = document.getElementById('login-esqueceu');
-  const aj = document.getElementById('login-ajuda');
-  if (!b || !aj) return;
-  b.setAttribute('aria-expanded', 'false');
-  b.addEventListener('click', () => { b.setAttribute('aria-expanded', String(aj.classList.toggle('aberta'))); });
-})();
-
-// botão "olho" dentro do campo de senha e aviso de Caps Lock
-(function () {
-  const senha = document.getElementById('login-senha');
-  const olho = document.getElementById('login-olho');
-  const caps = document.getElementById('login-caps');
-  if (!senha || !olho || !caps) return;
-  olho.addEventListener('click', () => {
-    const ver = senha.type === 'password';
-    senha.type = ver ? 'text' : 'password';
-    olho.setAttribute('aria-pressed', String(ver));
-    olho.setAttribute('aria-label', ver ? 'Ocultar senha' : 'Mostrar senha');
-  });
-  const checar = ev => { caps.hidden = !(ev.getModifierState && ev.getModifierState('CapsLock')); };
-  senha.addEventListener('keydown', checar);
-  senha.addEventListener('keyup', checar);
-  senha.addEventListener('blur', () => { caps.hidden = true; });
-})();
 
 document.getElementById('form-senha').addEventListener('submit', async ev => {
   ev.preventDefault();

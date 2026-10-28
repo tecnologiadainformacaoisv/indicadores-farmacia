@@ -26,7 +26,7 @@ projeto-indicadores-farmacia/
 ├── usuarios.html           ← cadastro de coordenadores (só admin)
 ├── relatorios.html         ← relatório mensal de farmácia por unidade: prévia + imprimir/PDF (só admin; lê a planilha de saídas)
 ├── ajuda.html              ← "Como usar": passo a passo curto (sem login)
-├── dashboard.html          ← dashboard comparativo entre unidades (só admin; lê os lançamentos reais pela rota `dashboard.carregar`)
+├── dashboard.html          ← dashboard (só admin; dados de EXEMPLO fixos, ainda não ligado à base)
 ├── .clasp.json             ← ID do projeto Apps Script (a conta logada no clasp precisa ser a da TI)
 ├── appscript/
 │   ├── appsscript.json     ← manifesto (Web App: executa como a TI, acesso anônimo)
