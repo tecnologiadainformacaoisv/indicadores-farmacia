@@ -171,9 +171,8 @@ function htmlRelatorio(r, un, ano, analise) {
     ${htmlAnalise(analise)}
     <h2 class="r-h2">Como os números foram calculados</h2>
     <p><b>Saída do mês</b> é a quantidade dispensada em ${esc(mesTxt)}, conforme a coluna do mês nas abas Medicamentos e Materiais. Células em branco contam como zero, também no mês anterior.</p>
-    ${semEstoque ? '<p>A planilha desta unidade não registra o estoque disponível (processo próprio da unidade); por isso o relatório não traz situação de estoque, cobertura nem reposição.</p>' : ''}
-    ${semEstoque ? '' : `<p><b>Cobertura</b> = estoque disponível ÷ saída de ${esc(mesTxt)}, expressa em dias (abaixo de 1 mês) ou meses. Itens sem saída no mês não têm cobertura calculada. A planilha não informa a data de referência do estoque; considerou-se o estoque do fechamento do mês.</p`}
-
+    ${semEstoque ? '<p>A planilha desta unidade não traz o estoque disponível de nenhum item; por isso o relatório não traz situação de estoque, cobertura nem reposição.</p>' : ''}
+    ${semEstoque ? '' : `<p><b>Cobertura</b> = estoque disponível ÷ saída de ${esc(mesTxt)}, expressa em dias (abaixo de 1 mês) ou meses. Itens sem saída no mês não têm cobertura calculada. A planilha não informa a data de referência do estoque; considerou-se o estoque do fechamento do mês.</p>`}
     ${nCmmAuto ? `<p><b>CMM</b> em branco na planilha foi calculado pelo sistema (${num(nCmmAuto)} ${nCmmAuto === 1 ? 'item' : 'itens'}): média das saídas dos 3 últimos meses até ${esc(mesTxt)} (CMM trimestral), sem contar célula vazia como zero, e só para itens com pelo menos 2 meses de dado. Aparece com * na lista de itens.</p>` : ''}
     ${semEstoque ? '' : `<p><b>Reposição sugerida</b> = quantidade para atingir 2 meses de cobertura pelo consumo do mês (2 × saída do mês − estoque). É um ponto de partida para o pedido; não considera pedidos em trânsito, prazos de entrega nem picos atípicos do mês.</p>`}`);
 

@@ -1,5 +1,11 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.6.18 – 2026-10-28
+### Corrigido (revisão da v0.6.17)
+- Relatórios com estoque: uma tag `</p` sem `>` embaralhava o parágrafo de cobertura e o do CMM calculado; corrigido, com teste que confere `<p>` e `</p>`
+- Relatórios de unidade sem estoque: o texto diz só que a planilha não traz o estoque de nenhum item (não afirma o motivo)
+- Testes do aviso de mês anterior parcial; CLAUDE.md com as contagens e a versão atuais
+
 ## v0.6.17 – 2026-10-27
 ### Alterado (respostas da Tereza)
 - **CMM trimestral**: média das saídas dos 3 últimos meses (o mês aberto e os 2 anteriores), em vez de todos os meses do ano. Vale no servidor, na tela de lançamento e nos relatórios. Mínimo de 2 meses com dado; com menos, fica o CMM que já estava na planilha (na virada do ano continua o do último trimestre do ano anterior, cada ano separado)
