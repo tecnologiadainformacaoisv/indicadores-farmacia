@@ -121,3 +121,15 @@ Commit + push → o GitHub Pages atualiza.
 | Desativar coordenador | Tela **Usuários** → Desativar acesso (conta da coordenação: aba `Usuarios`, coluna `ativo` = `FALSE`) |
 | Sair do modo de teste | aba `Config`, apagar o valor de `MES_ABERTO_TESTE` → passa a valer o mês que fechou |
 | Ver quem fez o quê | aba `Log` da planilha Sistema |
+
+## Unidade nova: Hospital São Vicente Ferrer (Lavras da Mangabeira)
+
+Passo a passo para colocar a unidade no ar quando a data for definida. Tudo no editor do Apps Script (conta da TI), exceto o envio da planilha.
+
+1. **Planilha:** usar a cópia preparada (`data/PRONTA Hospital Lavras.xlsx`, fora do git) ou a original com os ajustes: coluna do CMM chamada "CMM" ou "C-MÉDIA" (sem C-MEDIANA), números em texto convertidos em número, fórmulas de CMM viradas em valores. Enviar para a pasta "Indicadores Farmácia" do Drive da TI e **copiar o ID** da planilha. Conferir que a pasta e a planilha **não** estão com "qualquer pessoa com o link".
+2. **Unidade:** `criarUnidade('hsvf', 'Hospital São Vicente Ferrer', 'Lavras da Mangabeira', 'Hospital', '<ID da planilha>')`. A unidade nasce com as metas padrão.
+3. **Coordenador:** `criarUsuario('<login>', '<Nome>', 'coordenador', 'hsvf')` (a senha provisória aparece no registro de execução; entregar por canal privado). A Tereza também cadastra pela tela Usuários.
+4. **Diagnóstico:** rodar `diagnosticarPlanilhas()` e conferir que as duas abas mostram as colunas de mês, CMM e estoque.
+5. **Mês aberto:** apagar `MES_ABERTO_TESTE` na aba `Config` (passa a valer o mês que fechou). Limpar os lançamentos de teste da aba `Lancamentos` e rodar `recalcularFechamento`.
+6. **Backup:** rodar `backupAgora` e conferir a cópia da planilha na pasta "Backup".
+7. **Conferência:** entrar como o coordenador, lançar um item de teste, salvar, conferir a coluna do mês e o CMM na planilha e desfazer; entrar como a Tereza e abrir o relatório do mês fechado.

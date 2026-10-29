@@ -264,6 +264,10 @@ check('não grava em linha de cabeçalho', !r.ok, r);
   check('saída negativa e acima do limite são recusadas', !enviar(-1).ok && !enviar(100000001).ok);
   check('saída 0, 25 e "30" são aceitas', enviar(0).ok && enviar(25).ok && enviar('30').ok);
 }
+check('CMM: média dos 3 últimos meses (de 5 meses, os 3 finais)', ctx.cmmAutomatico_([1, 2, 3, 4, 5]) === 4);
+check('CMM: mês aberto vazio pula para o trimestre anterior (últimos 3 COM dado)', ctx.cmmAutomatico_([1, 2, 3, 4, null]) === 3 && ctx.cmmAutomatico_([10, null, 30, null, 20]) === 20);
+check('CMM: com menos de 2 meses de dado não calcula (mantém o da planilha)', ctx.cmmAutomatico_([null, null, 7]) === null && ctx.cmmAutomatico_([5, null, 7]) === 6);
+check('CMM: zero digitado conta como dado', ctx.cmmAutomatico_([30, 30, 0]) === 20);
 r = call('logistica.ler', { unidade: 'upa-jurema' }, tT2);
 check('tereza lê outra unidade sem editar', r.ok && r.dados.editavel === false);
 r = call('logistica.salvar', { ref: R(), unidade: 'upa-centro', aba: 'MEDICAMENTOS', itens: [{ linha: 6, produto: 'DIPIRONA', saida: 1 }] }, tT2);

@@ -261,20 +261,22 @@ function celulaCobertura(c) {
 let soCriticos = false;
 const CRIT_SR = '<span class="sr-only">Estoque crítico: </span>'; // o ponto vermelho não pode ser só cor
 
-// CMM automático (trimestral): média das saídas dos 3 últimos meses, o mês aberto e os 2 anteriores (célula vazia não conta como zero).
-// Com menos de 2 meses de dado vale o CMM que já está na planilha. Mesma conta do servidor (recalcularCmm_ em appscript/codigo.js).
+// CMM automático (trimestral): média das saídas dos 3 últimos meses COM DADO, do mês aberto para trás (vazio não conta como zero).
+// Enquanto o mês aberto está vazio, vale o trimestre anterior. Com menos de 2 meses de dado vale o CMM que já está na planilha.
+// Mesma conta do servidor (recalcularCmm_ em appscript/codigo.js).
 function cmmDoItem(aba, it, saidaAberto) {
   if (it.cmmFormula) return it.cmm;   // fórmula na planilha: o servidor não recalcula
   const ref = planilha.mesAberto.mes;
   const v = [];
   (aba.meses || []).forEach((m, k) => {
-    if (m.mes > ref || m.mes <= ref - 3) return;
+    if (m.mes > ref) return;
     const x = m.mes === ref && saidaAberto !== undefined ? saidaAberto : it.valores[k];
     if (typeof x === 'number' && isFinite(x)) v.push(x);
   });
   // a coluna do mês aberto só nasce no primeiro salvamento: a saída digitada já entra na conta
   if (!(aba.meses || []).some(m => m.mes === ref) && typeof saidaAberto === 'number' && isFinite(saidaAberto)) v.push(saidaAberto);
-  return v.length >= 2 ? Math.round(v.reduce((a, b) => a + b, 0) / v.length) : it.cmm;
+  const u = v.slice(-3);
+  return u.length >= 2 ? Math.round(u.reduce((a, b) => a + b, 0) / u.length) : it.cmm;
 }
 
 // valores exibidos no momento (o que foi digitado vale mais que o que veio da planilha)

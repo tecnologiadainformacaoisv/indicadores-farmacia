@@ -39,3 +39,12 @@ O site passou a responder em **https://farmacia.institutosaovicente.com.br** (gu
 - Aguardando o retorno da Tereza sobre a estrutura; depois, trocar para as planilhas reais (checklist em `docs/IMPLANTACAO.md`).
 - Decisões em aberto: virada de ano, regra de "crítico" da cobertura, logística no formulário, pedidos de correção de mês fechado, regra oficial do CMM.
 - Mapa de calor e demais itens do branch visual: aguardam a decisão de quais ativar.
+
+## 2026-10-28 e 2026-10-29
+
+- **Apresentação** (28/10) na v0.6.18; versão 1.0.0 e entrada em produção em 2/11 **adiadas sem data**. Piloto passou para **Lavras da Mangabeira** (Hospital São Vicente Ferrer); Caucaia vira dado de teste e depois fica arquivada.
+- **v0.6.10 a 0.6.12:** título e logo do cabeçalho voltam ao início. **v0.6.13 a 0.6.17:** relatórios (comparação parcial, planilha sem estoque, CMM automático), CMM automático e trimestral na planilha de saídas, "*" como zero.
+- **v0.6.18:** tag `</p` sem `>` no relatório. **v0.6.19 e 0.6.20:** metas e alertas só para a Tereza. **v0.6.21:** números em texto no formato brasileiro, cabeçalho C-MÉDIA, validação do que o navegador envia. **v0.6.22:** CMM com os 3 últimos meses com dado.
+- **Guardado fora da `main`:** login novo, atalhos com resumo, tela larga (tag `v0.7.0`), dashboard com dados reais (tag `v0.8.0`), prévia de preços na Planilha de saídas (worktree local, sem commit).
+- **Planilha de Lavras** recebida, preparada e testada com o código do servidor; relatório de setembro gerado.
+- **Brainstormings registrados** (memória do projeto): dashboard de prazos (dia 5), registros de preço, colunas de preço e variações, tipos de relatórios. Preços aguardam a Compras.

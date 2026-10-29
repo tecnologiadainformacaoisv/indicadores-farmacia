@@ -154,6 +154,8 @@ const check = (nome, c, extra) => { if (c) ok++; else { falhas++; console.log('F
     check('lançamento: CMM automático trimestral (vazio não conta, mês futuro não entra, campo limpo sai da conta)', cm === '[20,30,7,7,7]', cm);
     const cm3 = vm.runInContext("(function () { const aba = { meses: [0, 1, 2, 3, 4, 5].map(mes => ({ mes })), itens: [] }; planilha.mesAberto.mes = 5; return cmmDoItem(aba, { valores: [100, 100, 100, 10, 20, 30], cmm: 7 }); })()", v.ctx);
     check('lançamento: só os 3 últimos meses entram no CMM', cm3 === 20, cm3);
+    const cm4 = vm.runInContext("(function () { const aba = { meses: [0, 1, 2, 3, 4, 5].map(mes => ({ mes })), itens: [] }; planilha.mesAberto.mes = 5; const a = { valores: [100, 100, 100, 10, 20, null], cmm: 7 }; return JSON.stringify([cmmDoItem(aba, a), cmmDoItem(aba, a, 60), cmmDoItem(aba, { valores: [null, null, null, null, 20, null], cmm: 7 })]); })()", v.ctx);
+    check('lançamento: mês aberto vazio usa os 3 últimos COM dado (100,10,20 = 43); ao digitar 60 passa a 10,20,60 = 30; com 1 mês só, fica o da planilha', cm4 === '[43,30,7]', cm4);
     const cm2 = vm.runInContext("(function () { const aba = { meses: [{ mes: 2 }, { mes: 3 }], itens: [] }; planilha.mesAberto.mes = 4; const a = { valores: [10, 30], cmm: 7 }; return JSON.stringify([cmmDoItem(aba, a, 50), cmmDoItem(aba, a), cmmDoItem(aba, { valores: [10, 30], cmm: 7, cmmFormula: true }, 50)]); })()", v.ctx);
     check('lançamento: mês aberto ainda sem coluna entra na conta pela saída digitada; CMM com fórmula não é recalculado', cm2 === '[30,20,7]', cm2);
     check('salvar: tabela liberada depois de salvar (inert)', v.els['log-wrap'].inert === false, v.els['log-wrap'].inert);
@@ -214,6 +216,8 @@ const check = (nome, c, extra) => { if (c) ok++; else { falhas++; console.log('F
     const auto = R.montarRelatorio(plan([aba('MEDICAMENTOS', [2, 3, 4], [['A', [10, null, 30], null, 5], ['B', [null, null, 30], null, 5], ['C', [10, 20, 30], 99, 5]])]), 4);
     const tri = R.montarRelatorio(plan([aba('MEDICAMENTOS', [0, 1, 2, 3, 4, 5], [['T', [100, 100, 100, 10, 20, 30], null, 5]])]), 5);
     check('relatorios: CMM automático é trimestral (só os 3 últimos meses entram)', tri.itens[0].cmm === 20 && tri.itens[0].cmmAuto === true, tri.itens[0]);
+    const tri2 = R.montarRelatorio(plan([aba('MEDICAMENTOS', [0, 1, 2, 3, 4, 5], [['T', [100, 100, 100, 10, 20, null], null, 5]])]), 5);
+    check('relatorios: mês do relatório vazio no CMM usa os 3 últimos COM dado', tri2.itens[0].cmm === 43, tri2.itens[0].cmm);
     check('relatorios: CMM em branco vira a média dos meses com dado (vazio não conta como zero)', auto.itens[0].cmm === 20 && auto.itens[0].cmmAuto === true, auto.itens[0]);
     check('relatorios: com menos de 2 meses de dado o CMM continua vazio; o da planilha é respeitado', auto.itens[1].cmm === null && auto.itens[2].cmm === 99 && auto.itens[2].cmmAuto === false);
     check('relatorios: nota e asterisco do CMM automático só aparecem quando houve cálculo', R.htmlRelatorio(auto, un, 2026).includes('foi calculado pelo sistema (1 item)') && R.htmlRelatorio(auto, un, 2026).includes('20*') && !R.htmlRelatorio(branco, un, 2026).includes('foi calculado pelo sistema'));

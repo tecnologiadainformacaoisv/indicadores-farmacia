@@ -9,7 +9,8 @@
 Sistema para os **coordenadores farmacêuticos das unidades de saúde** lançarem, todo mês, os indicadores da farmácia, e para a **coordenação farmacêutica do Instituto (Tereza)** acompanhar todas as unidades. Regras completas em [docs/BRIEFING.md](docs/BRIEFING.md).
 
 - **Perfis:** `admin` (Tereza: vê tudo, define metas, não lança) e `coordenador` (lança e vê só a própria unidade).
-- **Piloto:** Caucaia, começando pelas UPAs (modelo de planilha UPA). Unidades e apelidos em [`../UNIDADES-ISV.md`](../UNIDADES-ISV.md).
+- **Piloto (decisão de 2026-10-28):** **só Lavras da Mangabeira**, começando pelo **Hospital São Vicente Ferrer**. A planilha dele chegou em 28/10 (`data/`, fora do git), foi analisada e testada; os dados de **Caucaia** (setembro/2026) servem só de teste e ficam **arquivados** até um possível retorno. Unidades e apelidos em [`../UNIDADES-ISV.md`](../UNIDADES-ISV.md).
+- **Método de trabalho:** desenvolvimento **por etapas** (ver "Etapas" abaixo): uma etapa de cada vez, sem ramificar para assuntos de outra etapa, com planejamento e foco.
 - **Mês de referência:** sempre o mês que fechou. Só ele fica aberto; os anteriores ficam visíveis e bloqueados.
 
 **Stack:** front estático (HTML/CSS/JS vanilla + Chart.js 4.4.1, GitHub Pages) em **https://farmacia.institutosaovicente.com.br** (CNAME no DNS da HostGator → `tecnologiadainformacaoisv.github.io`; arquivo `CNAME` na raiz; o endereço antigo `github.io` redireciona para o novo) + API em **Google Apps Script** (Web App na conta da TI) + **Planilhas Google** como base.
@@ -87,7 +88,7 @@ Tudo na pasta **"Indicadores Farmácia"** do Drive da **conta da TI** (ID na pro
   - `Log` (quem fez o quê)
   - `Fechamento` (andamento da planilha de saídas por unidade/mês: itens com saída lançada; alimenta o painel da tela inicial; criada sozinha)
 - **Pasta "Backup"** (dentro da pasta do projeto): `backupDiario` (gatilho das 2h; `backupAgora` à mão) copia a planilha Sistema e as planilhas de saídas das unidades, uma cópia por dia com nome "nome — AAAA-MM-DD", e apaga as com mais de 30 dias. As cópias da planilha Sistema contêm os hashes de senha: a pasta não pode estar com "qualquer pessoa com o link".
-- **Planilha de saídas de cada unidade** (modelo UPA): abas `MEDICAMENTOS` e `MATERIAIS`; produto · colunas de mês · CMM · estoque. O script acha cabeçalho/colunas pelo texto (`estruturaAba_`) e cria a coluna do mês antes do CMM (`garantirColunaDoMes_`). O estoque é digitado; o **CMM é automático e trimestral** (v0.6.17): média das saídas dos 3 últimos meses (o aberto e os 2 anteriores, no mesmo ano da planilha), mínimo de 2 meses com dado (senão fica o que já estava, e é esse valor que atravessa a virada do ano); "*" na saída vale zero, gravado pelo servidor em `recalcularCmm_` a cada salvamento; célula de CMM com fórmula não é tocada. O front repete a conta em `cmmDoItem` (`js/logistica.js`).
+- **Planilha de saídas de cada unidade** (modelo UPA): abas `MEDICAMENTOS` e `MATERIAIS`; produto · colunas de mês · CMM · estoque. O script acha cabeçalho/colunas pelo texto (`estruturaAba_`) e cria a coluna do mês antes do CMM (`garantirColunaDoMes_`). O estoque é digitado; o **CMM é automático e trimestral**: média das saídas dos **3 últimos meses com dado**, do mês aberto para trás, no mesmo ano da planilha (mês vazio é pulado, não conta como zero; enquanto o mês aberto está vazio vale o trimestre anterior), mínimo de 2 meses com dado (senão fica o que já estava, e é esse valor que atravessa a virada do ano); "*" na saída vale zero; gravado pelo servidor em `recalcularCmm_` a cada salvamento; célula de CMM com fórmula não é tocada. O front repete a conta em `cmmDoItem` (`js/logistica.js`) e `cmmAutomatico` (`js/relatorios.js`). O cabeçalho da coluna pode ser "CMM" ou "C-MÉDIA" ("C-MEDIANA" não vale); sem coluna de CMM a tela avisa. Célula com **número escrito como texto** só vale no formato brasileiro ("1.020" = 1020, "1,5" = 1,5); outro texto é "sem dado" (`numOuNulo_`).
 - Sessão: token no `localStorage` (`farma_sessao`), validado no servidor (CacheService, 6 h). Tema: `farma_theme`.
 
 ---
@@ -119,23 +120,32 @@ Tudo na pasta **"Indicadores Farmácia"** do Drive da **conta da TI** (ID na pro
 
 ## Estado atual do desenvolvimento
 
-> Última atualização: 2026-10-23 (histórico do dia em `docs/HISTORICO.md`)
+> Última atualização: 2026-10-28 (histórico do dia em `docs/HISTORICO.md`)
 
 - **Painel de fechamento:** tela inicial mostra o andamento do mês (rota `painel.carregar`, aba `Fechamento`); depois de publicar versões com ele, rode `recalcularFechamento` no editor.
 - **Relatórios (v0.6.0):** `relatorios.html` usa a rota `logistica.carregar` e calcula tudo no navegador (`js/relatorios.js`); sem mudança no servidor. Modelo: relatório da Tereza (hospital de Pacatuba, set/2026) em `data/`. Faltam: textos de análise (aguardando planilhas novas da Tereza), Portaria 344 e vencidos.
-- **Versão:** v0.6.18 (`js/version.js`), em teste com a Tereza. **Regra: toda mudança sobe a versão** (PATCH para correções e ajustes, MINOR para nova etapa do fluxo), alterando `js/version.js` e o `CHANGELOG.md` no mesmo commit, com tag `vX.Y.Z`.
+- **Versão:** v0.6.22 (`js/version.js`), em teste com a Tereza. A **versão 1.0.0 e a entrada em produção (antes marcada para 2/11/2026) foram adiadas por tempo indeterminado**: a nova data depende da planilha de Lavras e dos ajustes de dados. **Regra: toda mudança sobe a versão** (PATCH para correções e ajustes, MINOR para nova etapa do fluxo), alterando `js/version.js` e o `CHANGELOG.md` no mesmo commit, com tag `vX.Y.Z`.
 - **Implantado e em teste:** API (Web App na conta da TI), planilha "Sistema", usuário `tereza` e usuários de teste de coordenador, login, Clínica Geral na nuvem, metas por unidade e planilha de saídas item por item. `API_URL` já está em `js/api.js`.
 - Os testes usam a planilha com dados até **maio/2026** (`MES_ABERTO_TESTE = 2026-05` na aba `Config`). A versão atualizada só entra depois da validação da Tereza; antes de uso real, seguir o checklist de `docs/IMPLANTACAO.md`.
-- Validação automatizada em `tests/`: servidor com Apps Script simulado (97 verificações: login, permissões, mês aberto, lançamentos, metas, usuários, backup, painel, planilha, fórmulas, colunas, CMM automático) e telas com DOM simulado (118). Rode os dois antes de publicar. Design validado em navegador real com `tools/visual/`. Antes de publicar mudanças visuais, rode `node tools/visual/auditar-bordas.js` (contraste das bordas) e o agente `ux-revisor`. Para validar uma proposta visual com o usuário, abra o comparador (`../_ux-design/comparador/README.md`): `main` × branch lado a lado, com rolagem e cliques acompanhados.
+- Validação automatizada em `tests/`: servidor com Apps Script simulado (117 verificações: login, permissões, mês aberto, lançamentos, metas, usuários, backup, painel, planilha, fórmulas, colunas, CMM automático, números em texto, cabeçalho C-MÉDIA) e telas com DOM simulado (131). Rode os dois antes de publicar. Design validado em navegador real com `tools/visual/`. Antes de publicar mudanças visuais, rode `node tools/visual/auditar-bordas.js` (contraste das bordas) e o agente `ux-revisor`. Para validar uma proposta visual com o usuário, abra o comparador (`../_ux-design/comparador/README.md`): `main` × branch lado a lado, com rolagem e cliques acompanhados.
 - Para publicar mudanças no servidor: `clasp push` + nova versão + `clasp update-deployment` (a URL do Web App não muda). Antes, `clasp show-authorized-user` deve mostrar a conta da TI.
 - **"Atualização visual":** lote grande de melhorias de tela guardado no branch `atualizacao-visual` por decisão da gestão (não entregar tudo de primeira). Não publicar nem juntar ao `main` sem o usuário escolher o que entra; lista em `docs/ATUALIZACAO-VISUAL.md` (no branch).
 - Telas de apoio: `ajuda.html` ("Como usar", sem login) e link "Relatar problema ou sugestão" no rodapé (e-mail da TI em `CONTATO_SUPORTE`, `js/api.js`).
 
-## Próximos passos
+## Etapas
 
-1. Rodada de testes com a Tereza e os coordenadores (docs/IMPLANTACAO.md → "Teste do fluxo").
-2. Decisões em aberto de negócio, listadas em docs/BRIEFING.md → "Em aberto" (virada de ano, logística no formulário, média das unidades, pedidos de correção).
-3. Pedidos de correção de mês fechado.
-4. Dashboard lendo os lançamentos reais, filtrado por perfil.
-5. Importação de arquivo na planilha de saídas (depois do item por item validado).
-6. Modelos Hospital e Maternidade; Maracanaú; demais municípios.
+Ordem de trabalho (decisão de 2026-10-28). Cada etapa só começa quando a anterior estiver fechada ou quando o usuário mandar; nada de ramificar.
+
+| # | Etapa | Situação |
+|---|---|---|
+| 1 | **Piloto em Lavras da Mangabeira**: Planilha de saídas, relatório mensal e o que já existe, com os dados de Lavras | **Planilha recebida (28/10), analisada e testada** (fluxo do coordenador e relatório de setembro, no computador). Cópia preparada em `data/PRONTA Hospital Lavras.xlsx`. Falta: a Tereza confirmar a C-MÉDIA como CMM e 3 valores atípicos; publicar na nuvem e seguir o checklist de `docs/IMPLANTACAO.md`; definir a data |
+| 2 | **Preços** (só a Tereza vê): colunas de preço e valor, histórico interno | **Depois do piloto.** Aguardando a Compras explicar como o preço é definido e muda; até lá tudo é fictício. Prévia local sem commit |
+| 3 | **Relatórios**: seção de valores no relatório mensal, relatórios de custos e outros | Brainstorming feito; nada decidido. Relatórios só para a gestora, com opção de baixar |
+| 4 | **Dashboard de prazos** (preenchimento até o dia 5) | Só registrado; brainstorming pendente |
+| 5 | **Expansão e visual**: outros municípios, painel da rede, seletor de unidades, login novo, atalhos | Guardado no branch `atualizacao-visual` e nas tags `visual-*`, `v0.7.0` e `v0.8.0`. Não publicar sem o usuário escolher |
+
+**Fora do foco por decisão do usuário:** a **Clínica Geral** (a Tereza vai se reunir com a equipe para decidir) e o dashboard com dados reais (continua com dados de exemplo).
+
+**Metas e alertas** só aparecem para a Tereza (v0.6.19); o coordenador não recebe metas do servidor.
+
+**Pendências sem etapa definida:** virada de ano (a Tereza respondeu: anos separados, CMM do último trimestre continua); pedidos de correção de mês fechado; importação de arquivo na planilha de saídas; textos de análise, Portaria 344 e vencidos (fluxo trimestral e anual, não o mensal); checklist de entrada em produção em `docs/IMPLANTACAO.md`.

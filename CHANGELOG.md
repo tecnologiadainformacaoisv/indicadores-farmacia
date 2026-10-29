@@ -1,5 +1,12 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.6.22 – 2026-10-29
+### Alterado
+- **Regra do CMM trimestral (decisão da gestão): os 3 últimos meses com dado**, do mês aberto para trás. Mês sem valor é pulado, sem contar como zero. Enquanto o mês aberto está vazio, o CMM continua o do trimestre anterior (antes, no começo do lançamento, os itens ainda sem saída caíam para a média de só 2 meses). Vale no servidor, na tela de lançamento e nos relatórios
+
+### Documentação
+- `CLAUDE.md`, `docs/BRIEFING.md`, `docs/IMPLANTACAO.md` (passo a passo da unidade de Lavras) e `docs/HISTORICO.md` atualizados: piloto em Lavras, 1.0.0 adiada, etapas, regras do CMM e dos números em texto
+
 ## v0.6.21 – 2026-10-29
 ### Corrigido (revisão geral)
 - **Número escrito como texto não vira mais número errado.** Antes, "1.020" virava 1,02 (mil vezes menor). Agora o texto só vale no formato brasileiro ("1.020" = 1020, "1.020,5", "1,5", "12"); "1e3", "0x10", "abc", data e verdadeiro/falso viram "sem dado"
