@@ -79,6 +79,7 @@ const MESES_ROTULO = ['JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO'
 
 // Abas da planilha de saídas no modelo UPA
 const ABAS_LOGISTICA = ['MEDICAMENTOS', 'MATERIAIS'];
+const LIMITE_VALOR = 100000000;   // teto de uma saída ou de um estoque digitado (cem milhões)
 
 // ── Entrada ────────────────────────────────────────────────────
 
@@ -568,6 +569,7 @@ function lerLogistica_(req, u) {
     const fCmm = est.colCmm >= 0 ? sh.getRange(1, est.colCmm + 1, sh.getLastRow(), 1).getFormulas() : null;   // CMM com fórmula não é recalculado
     return {
       nome: nome,
+      semCmm: est.colCmm < 0,   // a tela avisa: sem a coluna, o CMM não é calculado nem mostrado
       meses: est.meses.map(m => ({ mes: m.mes, rotulo: MESES_ROTULO[m.mes] })),
       itens: est.itens.map(r => ({
         linha: r + 1,
@@ -596,8 +598,8 @@ function salvarLogistica_(req, u) {
   itens.forEach(it => campos.forEach(c => {
     const v = it[c];
     if (v === undefined || v === null || v === '') return;
-    const n = Number(v);
-    if (!isFinite(n) || n < 0) erros.push('Valor inválido em "' + it.produto + '".');
+    const n = typeof v === 'number' ? v : (typeof v === 'string' && /^\d+(\.\d+)?$/.test(v.trim()) ? Number(v) : NaN);   // nada de true, lista, "1e3" ou "0x10"
+    if (!isFinite(n) || n < 0 || n > LIMITE_VALOR) erros.push('Valor inválido em "' + it.produto + '".');
   }));
   if (erros.length) throw erro_(erros.slice(0, 10).join('\n'));
 
@@ -688,7 +690,7 @@ function recalcularCmm_(sh, est, mesAberto, n) {
 function contarPreenchidos_(sh, est, colMes) {
   const col = sh.getRange(1, colMes + 1, sh.getLastRow(), 1).getValues();
   let preenchidos = 0;
-  est.itens.forEach(r => { const v = col[r][0]; if (v !== '' && String(v).trim() !== '' && (!isNaN(Number(v)) || String(v).trim() === '*')) preenchidos++; });
+  est.itens.forEach(r => { if (saidaOuNulo_(col[r][0]) !== null) preenchidos++; });   // zero, "*" e texto numérico contam como lançado
   return { preenchidos: preenchidos, total: est.itens.length };
 }
 
@@ -741,7 +743,7 @@ function estruturaAba_(sh, matriz) {
       const m = MESES.indexOf(t);
       if (m >= 0 && linhaMeses < 0) linhaMeses = r;
       if (m >= 0 && !meses.some(x => x.col === c)) meses.push({ mes: m, col: c });
-      if (t === 'CMM' && colCmm < 0) colCmm = c;
+      if (/^(CMM|C[- ]?MEDIA)$/.test(t) && colCmm < 0) colCmm = c;   // "C-MEDIANA" (mediana) não casa de propósito
       // "ESTOQUE DISP." / "ESTOQUE DISPONÍVEL"; não confundir com outros estoques
       if (t.indexOf('ESTOQUE DISP') === 0 && colEst < 0) colEst = c;
     });
@@ -895,10 +897,18 @@ function saidaOuNulo_(v) {
   return typeof v === 'string' && v.trim() === '*' ? 0 : numOuNulo_(v);
 }
 
+// Lê uma célula como número. Número de verdade passa; texto só vale no formato brasileiro
+// ("1.020" = 1020, "1.020,5" = 1020,5, "1,5" = 1,5, "12" = 12). "*", espaço, "1e3", "0x10", data, verdadeiro/falso e
+// qualquer outro texto = sem dado (null). Antes, "1.020" virava 1,02, mil vezes menor, sem aviso.
 function numOuNulo_(v) {
-  if (typeof v === 'boolean' || v instanceof Date) return null;
-  if (typeof v === 'string') v = v.trim();   // "*", texto e célula só com espaço = sem dados (Number(' ') daria 0)
-  return (v === '' || v === null || v === undefined || isNaN(Number(v))) ? null : Number(v);
+  if (typeof v === 'number') return isFinite(v) ? v : null;
+  if (typeof v !== 'string') return null;
+  const t = v.trim();
+  if (/^\d+$/.test(t)) return Number(t);
+  if (/^\d{1,3}(\.\d{3})+(,\d+)?$/.test(t)) return Number(t.replace(/\./g, '').replace(',', '.'));
+  if (/^\d+,\d+$/.test(t)) return Number(t.replace(',', '.'));
+  if (/^\d+\.\d+$/.test(t)) return Number(t);
+  return null;
 }
 
 function dataTexto_(d) {

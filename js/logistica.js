@@ -9,6 +9,7 @@ let info = null;
 // atalho da tela inicial da coordenação: logistica.html?unidade=<id> abre direto a planilha de uma unidade
 const unidadeDoEndereco = new URLSearchParams(location.search).get('unidade');
 let unidadeSel = unidadeDoEndereco && /^[A-Za-z0-9_.-]+$/.test(unidadeDoEndereco) ? unidadeDoEndereco : '';
+let avisoSemCmm = '';           // aba sem coluna de CMM (planilha fora do modelo)
 let tentouEndereco = false;   // o ?unidade= do endereço só é tentado uma vez
 let planilha = null;                  // resposta de logistica.ler
 let abaAtual = '';
@@ -100,6 +101,8 @@ function exibirPlanilha(r, rascunho) {
   // o caminho de volta mantém a unidade que a coordenação estava vendo
   document.getElementById('mig-acomp').href = 'indicadores.html' + (info.usuario.perfil === 'admin' && unidadeSel ? '?unidade=' + encodeURIComponent(unidadeSel) : '');
   montarSeletorUnidade();
+  const semCmm = r.logistica.abas.filter(a => a.semCmm).map(a => a.nome.charAt(0) + a.nome.slice(1).toLowerCase());
+  avisoSemCmm = semCmm.length ? `A planilha não tem a coluna CMM na aba ${semCmm.join(' e ')}: o CMM não é calculado nem mostrado. Avise a TI.` : '';
   const ref = planilha.mesAberto;
   document.getElementById('log-sub').textContent = planilha.editavel
     ? `Lance as saídas de ${nomeMes(ref)} e o estoque disponível de cada item. O CMM é calculado sozinho.`
@@ -120,9 +123,10 @@ function exibirPlanilha(r, rascunho) {
   const avisos = [];
   if (ref.teste) avisos.push(`Ambiente de teste: o mês aberto está fixo em ${nomeMes(ref)}.`);
   if (!planilha.editavel && info.usuario.perfil !== 'admin') avisos.push('Somente leitura.');
+  if (avisoSemCmm) avisos.push(avisoSemCmm);
   if (avisoRascunho && alteracoes.size) avisos.push(avisoRascunho);
   if (descartadas) avisos.push(`${descartadas} ${descartadas === 1 ? 'alteração foi descartada' : 'alterações foram descartadas'} porque a planilha mudou.`);
-  setStatus(avisos.join(' '), ref.teste || (avisoRascunho && alteracoes.size) || descartadas ? 'warn' : '');
+  setStatus(avisos.join(' '), ref.teste || avisoSemCmm || (avisoRascunho && alteracoes.size) || descartadas ? 'warn' : '');
 
   if (!planilha.abas.length) { setStatus('A planilha da unidade não tem as abas MEDICAMENTOS e MATERIAIS.', 'erro'); return false; }
   if (!planilha.abas.some(a => a.nome === abaAtual)) abaAtual = planilha.abas[0].nome;

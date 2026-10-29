@@ -229,6 +229,41 @@ check('não grava em linha de cabeçalho', !r.ok, r);
   check('CMM trimestral conta o "*" como zero (mar 30, abr 0, mai 60 = 30)', r.ok && gs[5][7] === 30, gs[5]);
   gs[5][5] = ant;
 }
+{
+  // números escritos como texto: só o formato brasileiro vale; o resto é "sem dado"
+  const gj = planilhas['ID-JUREMA'].getSheetByName('MEDICAMENTOS').g;
+  const salvo = gj[5].slice();
+  const col = 2;   // janeiro
+  const le = txt => { gj[5][col] = txt; return call('logistica.ler', { unidade: 'upa-jurema' }, tT2).dados.abas.find(x => x.nome === 'MEDICAMENTOS').itens[0].valores[0]; };
+  check('texto "1.020" vale 1020 (e não 1,02)', le('1.020') === 1020);
+  check('texto "1.020,5" vale 1020,5 e "1,5" vale 1,5', le('1.020,5') === 1020.5 && le('1,5') === 1.5);
+  check('texto "12" vale 12; texto com espaços em volta também', le('12') === 12 && le('  45 ') === 45);
+  check('"1e3", "0x10", "abc" e texto vazio = sem dado', [le('1e3'), le('0x10'), le('abc'), le('')].every(x => x === null));
+  check('verdadeiro/falso numa célula numérica = sem dado', le(true) === null && le(false) === null);
+  check('"*" na saída vale zero', le('*') === 0);
+  gj[5] = salvo;
+}
+{
+  // cabeçalho do CMM: "C-MÉDIA" vale como CMM (planilha de Lavras); "C-MEDIANA" (mediana) não
+  const gx = planilhas['ID-JUREMA'].getSheetByName('MATERIAIS').g;
+  const cab = gx[4].slice();
+  const iCmm = cab.findIndex(x => String(x).trim() === 'CMM');
+  const lerMat = () => call('logistica.ler', { unidade: 'upa-jurema' }, tT2).dados.abas.find(x => x.nome === 'MATERIAIS');
+  gx[4][iCmm] = 'C-MÉDIA';
+  check('cabeçalho "C-MÉDIA" é lido como CMM', lerMat().itens[0].cmm === gx[5][iCmm] && lerMat().semCmm === false, lerMat().itens[0]);
+  gx[4][iCmm] = 'C-MEDIANA';
+  check('cabeçalho "C-MEDIANA" não vale como CMM: aba avisa que está sem CMM', lerMat().semCmm === true && lerMat().itens[0].cmm === null);
+  gx[4][iCmm] = 'CMM';
+  check('cabeçalho "CMM" continua valendo e não avisa nada', lerMat().semCmm === false);
+}
+{
+  // o que o navegador envia: só número (ou texto de número) e dentro do limite
+  const enviar = v => call('logistica.salvar', { ref: R(), unidade: 'upa-centro', aba: 'MEDICAMENTOS', itens: [{ linha: 6, produto: 'DIPIRONA', saida: v }] }, tC);
+  check('saída true é recusada', !enviar(true).ok);
+  check('saída "1e3", "0x10" e lista são recusadas', !enviar('1e3').ok && !enviar('0x10').ok && !enviar([5]).ok);
+  check('saída negativa e acima do limite são recusadas', !enviar(-1).ok && !enviar(100000001).ok);
+  check('saída 0, 25 e "30" são aceitas', enviar(0).ok && enviar(25).ok && enviar('30').ok);
+}
 r = call('logistica.ler', { unidade: 'upa-jurema' }, tT2);
 check('tereza lê outra unidade sem editar', r.ok && r.dados.editavel === false);
 r = call('logistica.salvar', { ref: R(), unidade: 'upa-centro', aba: 'MEDICAMENTOS', itens: [{ linha: 6, produto: 'DIPIRONA', saida: 1 }] }, tT2);

@@ -1,5 +1,14 @@
 # Changelog – Indicadores da Farmácia
 
+## v0.6.21 – 2026-10-29
+### Corrigido (revisão geral)
+- **Número escrito como texto não vira mais número errado.** Antes, "1.020" virava 1,02 (mil vezes menor). Agora o texto só vale no formato brasileiro ("1.020" = 1020, "1.020,5", "1,5", "12"); "1e3", "0x10", "abc", data e verdadeiro/falso viram "sem dado"
+- **Cabeçalho do CMM:** além de "CMM", o servidor reconhece "C-MÉDIA" (planilha de Lavras). "C-MEDIANA" (mediana) não vale. Quando a aba não tem coluna de CMM, a tela de lançamento mostra um aviso pedindo para avisar a TI, em vez de ficar sem CMM e sem explicação
+- **Validação do que o navegador envia:** saída e estoque precisam ser número (ou texto de número) entre 0 e 100 milhões; verdadeiro/falso, lista, "1e3" e "0x10" são recusados
+- O painel de fechamento conta como lançados os itens com texto numérico, como já fazia com zero e "*"
+### Atenção
+- Exige publicar o servidor (`clasp push` + versão + `clasp update-deployment`), junto com as mudanças da v0.6.19
+
 ## v0.6.20 – 2026-10-29
 ### Corrigido (revisão da v0.6.19)
 - O coordenador não guarda mais as metas no cache do navegador (a resposta é guardada já sem elas)

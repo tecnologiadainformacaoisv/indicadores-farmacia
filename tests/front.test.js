@@ -331,6 +331,16 @@ const check = (nome, c, extra) => { if (c) ok++; else { falhas++; console.log('F
     check('Tereza: botão "Metas", item de menu e título "Configuração" visíveis', va.els['btn-metas'].hidden === false && va.els['nav-metas'].hidden === false && va.els['nav-config-titulo'].hidden === false);
     check('Tereza: valor fora da meta continua vermelho e dentro da meta, verde na tabela', vm.runInContext("statusClass('conciliacoes', 30)", va.ctx) === 'c-err' && vm.runInContext("statusClass('conciliacoes', 95)", va.ctx) === 'c-ok');
   }
+  // planilha sem coluna de CMM (fora do modelo): a tela avisa em vez de ficar muda
+  {
+    const vl = visita('logistica.js', new Map([['farma_sessao', 'TOKEN1']]), 'coordenador');
+    await pausa(120);
+    vm.runInContext("exibirPlanilha({ sessao: info, logistica: Object.assign({}, planilha, { abas: planilha.abas.map(a => Object.assign({}, a, { semCmm: true })) }) }, null)", vl.ctx);
+    const msg = vl.els['log-status'].textContent;
+    check('lançamento: aba sem coluna CMM mostra aviso e pede para avisar a TI', /não tem a coluna CMM na aba Medicamentos/.test(msg) && /TI/.test(msg) && /warn/.test(vl.els['log-status'].className), msg);
+    vm.runInContext("exibirPlanilha({ sessao: info, logistica: Object.assign({}, planilha, { abas: planilha.abas.map(a => Object.assign({}, a, { semCmm: false })) }) }, null)", vl.ctx);
+    check('lançamento: com a coluna CMM presente o aviso some', !/coluna CMM/.test(vl.els['log-status'].textContent), vl.els['log-status'].textContent);
+  }
   // troca de unidade que falha não pode deixar as metas apontando para a unidade nova
   {
     const v = visita('indicadores.js', new Map([['farma_sessao', 'TOKEN1']]), 'admin');
